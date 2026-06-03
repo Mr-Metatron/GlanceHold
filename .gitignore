@@ -1,0 +1,14 @@
+.DS_Store
+
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+*.xccheckout
+xcuserdata/
+
+# Swift Package Manager
+.build/
+
+# Local research/reference checkout; keep it on disk, not in this app repo.
+SemiUHPE/
