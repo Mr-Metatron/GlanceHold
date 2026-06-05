@@ -36,6 +36,15 @@ final class GlanceHoldStateTests: XCTestCase {
         XCTAssertEqual(state.mode.displayName, "Pause/Resume")
     }
 
+    func testModeVocabularyIncludesRequiredPhrases() {
+        let phrases = MonitoringMode.allCases.map(\.displayName)
+
+        XCTAssertEqual(phrases, [
+            "Speed Control",
+            "Pause/Resume"
+        ])
+    }
+
     func testVisibleStatusVocabularyIncludesRequiredPhrases() {
         let phrases = MonitoringStatus.allCases.map(\.visibleTitle)
 
