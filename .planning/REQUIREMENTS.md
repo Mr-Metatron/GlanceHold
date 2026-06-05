@@ -10,10 +10,10 @@ Requirements for the first usable local release. Each maps to roadmap phases.
 ### Status Bar App
 
 - [ ] **APP-01**: User can launch GlanceHold as a status-bar utility without needing a normal main window.
-- [ ] **APP-02**: User can enable and disable monitoring from the status bar menu.
-- [ ] **APP-03**: User can see current monitoring state from the status bar menu, including Off, Needs Camera Permission, Needs Calibration, Facing, Looking Away, No Face, Recovering, and IINA Unavailable.
+- [x] **APP-02**: User can enable and disable monitoring from the status bar menu.
+- [x] **APP-03**: User can see current monitoring state from the status bar menu, including Off, Needs Camera Permission, Needs Calibration, Facing, Looking Away, No Face, Recovering, and IINA Unavailable.
 - [ ] **APP-04**: User can quit GlanceHold from the status bar menu.
-- [ ] **APP-05**: User can switch between Speed Control mode and Pause/Resume mode from the status bar menu.
+- [x] **APP-05**: User can switch between Speed Control mode and Pause/Resume mode from the status bar menu.
 
 ### Privacy and Permissions
 
@@ -112,10 +112,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | APP-01 | Phase 1 | Pending |
-| APP-02 | Phase 1 | Pending |
-| APP-03 | Phase 1 | Pending |
+| APP-02 | Phase 1 | Complete |
+| APP-03 | Phase 1 | Complete |
 | APP-04 | Phase 1 | Pending |
-| APP-05 | Phase 1 | Pending |
+| APP-05 | Phase 1 | Complete |
 | PRIV-01 | Phase 1 | Pending |
 | PRIV-02 | Phase 1 | Pending |
 | PRIV-03 | Phase 3 | Pending |

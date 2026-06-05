@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. User can enable or disable monitoring, switch between Speed Control and Pause/Resume, and quit from the status-bar menu.
   3. User can see a current status row whose vocabulary includes Off, permission/calibration needs, attention states, and IINA unavailable.
   4. Camera permission is requested only after an explicit monitoring or calibration action, and the menu copy makes local-only processing clear.
-**Plans:** TBD
+**Plans:** 1/3 plans executed
 **UI hint**: yes
 
 ### Phase 2: Pure Attention State Machine and Playback Policy
@@ -93,7 +93,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Status-Bar Shell, Permission Trust, and Verification Baseline | 0/TBD | Not started | - |
+| 1. Status-Bar Shell, Permission Trust, and Verification Baseline | 1/3 | In Progress|  |
 | 2. Pure Attention State Machine and Playback Policy | 0/TBD | Not started | - |
 | 3. Local Camera, Vision Signal, Calibration, and Tuning | 0/TBD | Not started | - |
 | 4. IINA Adapter Spike and End-to-End Playback Control | 0/TBD | Not started | - |
