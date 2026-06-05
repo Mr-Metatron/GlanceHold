@@ -16,6 +16,7 @@
 		8D6E7A632F4C4D0E9A1B2C3D /* CameraPermissionClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A622F4C4D0E9A1B2C3D /* CameraPermissionClientTests.swift */; };
 		8D6E7A652F4C4D0E9A1B2C3D /* AttentionStateMachineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A642F4C4D0E9A1B2C3D /* AttentionStateMachineTests.swift */; };
 		8D6E7A672F4C4D0E9A1B2C3D /* AttentionStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A662F4C4D0E9A1B2C3D /* AttentionStateMachine.swift */; };
+		8D6E7A692F4C4D0E9A1B2C3D /* PlaybackPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A682F4C4D0E9A1B2C3D /* PlaybackPolicyTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,6 +43,7 @@
 		8D6E7A622F4C4D0E9A1B2C3D /* CameraPermissionClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPermissionClientTests.swift; sourceTree = "<group>"; };
 		8D6E7A642F4C4D0E9A1B2C3D /* AttentionStateMachineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttentionStateMachineTests.swift; sourceTree = "<group>"; };
 		8D6E7A662F4C4D0E9A1B2C3D /* AttentionStateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttentionStateMachine.swift; sourceTree = "<group>"; };
+		8D6E7A682F4C4D0E9A1B2C3D /* PlaybackPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackPolicyTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,6 +103,7 @@
 				8D6E7A4C2F4C4D0E9A1B2C3D /* GlanceHoldStateTests.swift */,
 				8D6E7A622F4C4D0E9A1B2C3D /* CameraPermissionClientTests.swift */,
 				8D6E7A642F4C4D0E9A1B2C3D /* AttentionStateMachineTests.swift */,
+				8D6E7A682F4C4D0E9A1B2C3D /* PlaybackPolicyTests.swift */,
 			);
 			path = GlanceHoldTests;
 			sourceTree = "<group>";
@@ -219,6 +222,7 @@
 				8D6E7A632F4C4D0E9A1B2C3D /* CameraPermissionClientTests.swift in Sources */,
 				8D6E7A4D2F4C4D0E9A1B2C3D /* GlanceHoldStateTests.swift in Sources */,
 				8D6E7A652F4C4D0E9A1B2C3D /* AttentionStateMachineTests.swift in Sources */,
+				8D6E7A692F4C4D0E9A1B2C3D /* PlaybackPolicyTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
