@@ -10,7 +10,19 @@
 		8D6E7A3B2F4C4D0E9A1B2C3D /* GlanceHoldApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A3A2F4C4D0E9A1B2C3D /* GlanceHoldApp.swift */; };
 		8D6E7A3D2F4C4D0E9A1B2C3D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A3C2F4C4D0E9A1B2C3D /* ContentView.swift */; };
 		8D6E7A3F2F4C4D0E9A1B2C3D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8D6E7A3E2F4C4D0E9A1B2C3D /* Assets.xcassets */; };
+		8D6E7A4B2F4C4D0E9A1B2C3D /* GlanceHoldState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A4A2F4C4D0E9A1B2C3D /* GlanceHoldState.swift */; };
+		8D6E7A4D2F4C4D0E9A1B2C3D /* GlanceHoldStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A4C2F4C4D0E9A1B2C3D /* GlanceHoldStateTests.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		8D6E7A582F4C4D0E9A1B2C3D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8D6E7A2A2F4C4D0E9A1B2C3D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8D6E7A332F4C4D0E9A1B2C3D;
+			remoteInfo = GlanceHold;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		8D6E7A342F4C4D0E9A1B2C3D /* GlanceHold.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GlanceHold.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -19,10 +31,20 @@
 		8D6E7A3E2F4C4D0E9A1B2C3D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8D6E7A402F4C4D0E9A1B2C3D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D6E7A412F4C4D0E9A1B2C3D /* GlanceHold.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GlanceHold.entitlements; sourceTree = "<group>"; };
+		8D6E7A492F4C4D0E9A1B2C3D /* GlanceHoldTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GlanceHoldTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D6E7A4A2F4C4D0E9A1B2C3D /* GlanceHoldState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlanceHoldState.swift; sourceTree = "<group>"; };
+		8D6E7A4C2F4C4D0E9A1B2C3D /* GlanceHoldStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlanceHoldStateTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		8D6E7A312F4C4D0E9A1B2C3D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8D6E7A502F4C4D0E9A1B2C3D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -36,6 +58,7 @@
 			isa = PBXGroup;
 			children = (
 				8D6E7A382F4C4D0E9A1B2C3D /* GlanceHold */,
+				8D6E7A4E2F4C4D0E9A1B2C3D /* GlanceHoldTests */,
 				8D6E7A352F4C4D0E9A1B2C3D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -44,6 +67,7 @@
 			isa = PBXGroup;
 			children = (
 				8D6E7A342F4C4D0E9A1B2C3D /* GlanceHold.app */,
+				8D6E7A492F4C4D0E9A1B2C3D /* GlanceHoldTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -53,11 +77,20 @@
 			children = (
 				8D6E7A3A2F4C4D0E9A1B2C3D /* GlanceHoldApp.swift */,
 				8D6E7A3C2F4C4D0E9A1B2C3D /* ContentView.swift */,
+				8D6E7A4A2F4C4D0E9A1B2C3D /* GlanceHoldState.swift */,
 				8D6E7A3E2F4C4D0E9A1B2C3D /* Assets.xcassets */,
 				8D6E7A402F4C4D0E9A1B2C3D /* Info.plist */,
 				8D6E7A412F4C4D0E9A1B2C3D /* GlanceHold.entitlements */,
 			);
 			path = GlanceHold;
+			sourceTree = "<group>";
+		};
+		8D6E7A4E2F4C4D0E9A1B2C3D /* GlanceHoldTests */ = {
+			isa = PBXGroup;
+			children = (
+				8D6E7A4C2F4C4D0E9A1B2C3D /* GlanceHoldStateTests.swift */,
+			);
+			path = GlanceHoldTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -80,6 +113,24 @@
 			productReference = 8D6E7A342F4C4D0E9A1B2C3D /* GlanceHold.app */;
 			productType = "com.apple.product-type.application";
 		};
+		8D6E7A552F4C4D0E9A1B2C3D /* GlanceHoldTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8D6E7A5B2F4C4D0E9A1B2C3D /* Build configuration list for PBXNativeTarget "GlanceHoldTests" */;
+			buildPhases = (
+				8D6E7A4F2F4C4D0E9A1B2C3D /* Sources */,
+				8D6E7A502F4C4D0E9A1B2C3D /* Frameworks */,
+				8D6E7A512F4C4D0E9A1B2C3D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8D6E7A592F4C4D0E9A1B2C3D /* PBXTargetDependency */,
+			);
+			name = GlanceHoldTests;
+			productName = GlanceHoldTests;
+			productReference = 8D6E7A492F4C4D0E9A1B2C3D /* GlanceHoldTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -92,6 +143,10 @@
 				TargetAttributes = {
 					8D6E7A332F4C4D0E9A1B2C3D = {
 						CreatedOnToolsVersion = 16.0;
+					};
+					8D6E7A552F4C4D0E9A1B2C3D = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = 8D6E7A332F4C4D0E9A1B2C3D;
 					};
 				};
 			};
@@ -109,6 +164,7 @@
 			projectRoot = "";
 			targets = (
 				8D6E7A332F4C4D0E9A1B2C3D /* GlanceHold */,
+				8D6E7A552F4C4D0E9A1B2C3D /* GlanceHoldTests */,
 			);
 		};
 /* End PBXProject section */
@@ -122,6 +178,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8D6E7A512F4C4D0E9A1B2C3D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -130,11 +193,28 @@
 			buildActionMask = 2147483647;
 			files = (
 				8D6E7A3D2F4C4D0E9A1B2C3D /* ContentView.swift in Sources */,
+				8D6E7A4B2F4C4D0E9A1B2C3D /* GlanceHoldState.swift in Sources */,
 				8D6E7A3B2F4C4D0E9A1B2C3D /* GlanceHoldApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8D6E7A4F2F4C4D0E9A1B2C3D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8D6E7A4D2F4C4D0E9A1B2C3D /* GlanceHoldStateTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		8D6E7A592F4C4D0E9A1B2C3D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8D6E7A332F4C4D0E9A1B2C3D /* GlanceHold */;
+			targetProxy = 8D6E7A582F4C4D0E9A1B2C3D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		8D6E7A432F4C4D0E9A1B2C3D /* Debug */ = {
@@ -297,6 +377,46 @@
 			};
 			name = Release;
 		};
+		8D6E7A5C2F4C4D0E9A1B2C3D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.metatron.GlanceHoldTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GlanceHold.app/Contents/MacOS/GlanceHold";
+			};
+			name = Debug;
+		};
+		8D6E7A5D2F4C4D0E9A1B2C3D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.metatron.GlanceHoldTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GlanceHold.app/Contents/MacOS/GlanceHold";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -314,6 +434,15 @@
 			buildConfigurations = (
 				8D6E7A462F4C4D0E9A1B2C3D /* Debug */,
 				8D6E7A472F4C4D0E9A1B2C3D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8D6E7A5B2F4C4D0E9A1B2C3D /* Build configuration list for PBXNativeTarget "GlanceHoldTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8D6E7A5C2F4C4D0E9A1B2C3D /* Debug */,
+				8D6E7A5D2F4C4D0E9A1B2C3D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
