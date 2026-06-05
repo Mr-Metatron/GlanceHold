@@ -111,51 +111,51 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| APP-01 | TBD | Pending |
-| APP-02 | TBD | Pending |
-| APP-03 | TBD | Pending |
-| APP-04 | TBD | Pending |
-| APP-05 | TBD | Pending |
-| PRIV-01 | TBD | Pending |
-| PRIV-02 | TBD | Pending |
-| PRIV-03 | TBD | Pending |
-| PRIV-04 | TBD | Pending |
-| PRIV-05 | TBD | Pending |
-| ATTN-01 | TBD | Pending |
-| ATTN-02 | TBD | Pending |
-| ATTN-03 | TBD | Pending |
-| ATTN-04 | TBD | Pending |
-| ATTN-05 | TBD | Pending |
-| ATTN-06 | TBD | Pending |
-| ATTN-07 | TBD | Pending |
-| ATTN-08 | TBD | Pending |
-| IINA-01 | TBD | Pending |
-| IINA-02 | TBD | Pending |
-| IINA-03 | TBD | Pending |
-| IINA-04 | TBD | Pending |
-| IINA-05 | TBD | Pending |
-| IINA-06 | TBD | Pending |
-| IINA-07 | TBD | Pending |
-| IINA-08 | TBD | Pending |
-| SAFE-01 | TBD | Pending |
-| SAFE-02 | TBD | Pending |
-| SAFE-03 | TBD | Pending |
-| SAFE-04 | TBD | Pending |
-| SAFE-05 | TBD | Pending |
-| SAFE-06 | TBD | Pending |
-| PREF-01 | TBD | Pending |
-| PREF-02 | TBD | Pending |
-| PREF-03 | TBD | Pending |
-| VER-01 | TBD | Pending |
-| VER-02 | TBD | Pending |
-| VER-03 | TBD | Pending |
-| VER-04 | TBD | Pending |
+| APP-01 | Phase 1 | Pending |
+| APP-02 | Phase 1 | Pending |
+| APP-03 | Phase 1 | Pending |
+| APP-04 | Phase 1 | Pending |
+| APP-05 | Phase 1 | Pending |
+| PRIV-01 | Phase 1 | Pending |
+| PRIV-02 | Phase 1 | Pending |
+| PRIV-03 | Phase 3 | Pending |
+| PRIV-04 | Phase 3 | Pending |
+| PRIV-05 | Phase 3 | Pending |
+| ATTN-01 | Phase 3 | Pending |
+| ATTN-02 | Phase 3 | Pending |
+| ATTN-03 | Phase 3 | Pending |
+| ATTN-04 | Phase 3 | Pending |
+| ATTN-05 | Phase 3 | Pending |
+| ATTN-06 | Phase 3 | Pending |
+| ATTN-07 | Phase 2 | Pending |
+| ATTN-08 | Phase 3 | Pending |
+| IINA-01 | Phase 4 | Pending |
+| IINA-02 | Phase 4 | Pending |
+| IINA-03 | Phase 4 | Pending |
+| IINA-04 | Phase 4 | Pending |
+| IINA-05 | Phase 4 | Pending |
+| IINA-06 | Phase 4 | Pending |
+| IINA-07 | Phase 4 | Pending |
+| IINA-08 | Phase 4 | Pending |
+| SAFE-01 | Phase 2 | Pending |
+| SAFE-02 | Phase 2 | Pending |
+| SAFE-03 | Phase 2 | Pending |
+| SAFE-04 | Phase 2 | Pending |
+| SAFE-05 | Phase 2 | Pending |
+| SAFE-06 | Phase 5 | Pending |
+| PREF-01 | Phase 3 | Pending |
+| PREF-02 | Phase 3 | Pending |
+| PREF-03 | Phase 5 | Pending |
+| VER-01 | Phase 2 | Pending |
+| VER-02 | Phase 2 | Pending |
+| VER-03 | Phase 5 | Pending |
+| VER-04 | Phase 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 39 total
-- Mapped to phases: 0
-- Unmapped: 39 (to be mapped during roadmap creation)
+- Mapped to phases: 39
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-06-05*
-*Last updated: 2026-06-05 after initialization*
+*Last updated: 2026-06-05 after roadmap creation*
