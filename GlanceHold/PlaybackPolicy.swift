@@ -205,7 +205,7 @@ struct PlaybackPolicy: Equatable {
         case .idle, .playerUnavailable:
             return false
         case .playing, .paused:
-            return true
+            return player.speed != nil
         }
     }
 

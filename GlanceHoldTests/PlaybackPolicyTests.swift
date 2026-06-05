@@ -165,6 +165,44 @@ final class PlaybackPolicyTests: XCTestCase {
         XCTAssertEqual(pausePolicy.apply(attention: .lookingAway, player: .playerUnavailable).intents, [])
     }
 
+    func testMissingSpeedSnapshotsAreSafeNoops() {
+        var speedPolicy = PlaybackPolicy(mode: .speedControl)
+        XCTAssertEqual(
+            speedPolicy.apply(
+                attention: .lookingAway,
+                player: PlayerSnapshot(playbackState: .playing, speed: nil)
+            ).intents,
+            []
+        )
+
+        var ownedSpeedPolicy = PlaybackPolicy(mode: .speedControl)
+        XCTAssertEqual(ownedSpeedPolicy.apply(attention: .lookingAway, player: .playing(speed: 1.75)).intents, [.holdSpeedAtOne])
+        let missingRestore = ownedSpeedPolicy.apply(
+            attention: .facing,
+            player: PlayerSnapshot(playbackState: .playing, speed: nil)
+        )
+        XCTAssertEqual(missingRestore.intents, [])
+        XCTAssertEqual(missingRestore.state.capturedSpeed, 1.75)
+
+        var pausePolicy = PlaybackPolicy(mode: .pauseResume)
+        XCTAssertEqual(
+            pausePolicy.apply(
+                attention: .lookingAway,
+                player: PlayerSnapshot(playbackState: .playing, speed: nil)
+            ).intents,
+            []
+        )
+
+        var ownedPausePolicy = PlaybackPolicy(mode: .pauseResume)
+        XCTAssertEqual(ownedPausePolicy.apply(attention: .lookingAway, player: .playing(speed: 1.5)).intents, [.pause])
+        let missingResume = ownedPausePolicy.apply(
+            attention: .facing,
+            player: PlayerSnapshot(playbackState: .paused, speed: nil)
+        )
+        XCTAssertEqual(missingResume.intents, [])
+        XCTAssertTrue(missingResume.state.pauseOwnedByGlanceHold)
+    }
+
     private func assertNoRestoreOrResume(_ intents: [PlaybackIntent]) {
         XCTAssertFalse(intents.contains(.resume))
         XCTAssertFalse(intents.contains { intent in
