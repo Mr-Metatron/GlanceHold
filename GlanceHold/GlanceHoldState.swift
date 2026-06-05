@@ -72,6 +72,25 @@ struct GlanceHoldState: Equatable {
         status = .cameraPermissionNeeded
     }
 
+    func resolvedStatusAfterEnable(permissionProvider: CameraPermissionProviding) async -> MonitoringStatus {
+        guard status == .off || status == .cameraPermissionNeeded else {
+            return status
+        }
+
+        switch permissionProvider.authorizationStatus() {
+        case .granted:
+            return .readyAfterCalibration
+        case .denied, .restricted:
+            return .cameraPermissionNeeded
+        case .undetermined:
+            return await permissionProvider.requestAccess() ? .readyAfterCalibration : .cameraPermissionNeeded
+        }
+    }
+
+    mutating func enableMonitoring(permissionProvider: CameraPermissionProviding) async {
+        status = await resolvedStatusAfterEnable(permissionProvider: permissionProvider)
+    }
+
     mutating func disableMonitoring() {
         status = .off
     }
