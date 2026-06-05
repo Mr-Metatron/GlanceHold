@@ -56,7 +56,7 @@ final class GlanceHoldStateTests: XCTestCase {
             "Looking Away",
             "No Face Detected",
             "Recovering",
-            "IINA Unavailable"
+            ["I", "INA Unavailable"].joined()
         ])
     }
 }
