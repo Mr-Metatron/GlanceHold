@@ -65,6 +65,29 @@ final class CameraPermissionClientTests: XCTestCase {
 
         XCTAssertEqual(provider.requestCount, 0)
     }
+
+    func testPendingPermissionDoesNotStartAnotherRequestFromStateEnable() async {
+        let provider = FakePermissionProvider(status: .undetermined, requestResult: true)
+        var state = GlanceHoldState(status: .requestingCameraPermission)
+
+        await state.enableMonitoring(permissionProvider: provider)
+
+        XCTAssertEqual(provider.requestCount, 0)
+        XCTAssertEqual(state.status, .requestingCameraPermission)
+    }
+
+    func testPrimaryMenuActionIsTypedForPermissionStates() {
+        XCTAssertEqual(GlanceHoldPrimaryAction.resolve(for: .off), .enable)
+        XCTAssertEqual(GlanceHoldPrimaryAction.resolve(for: .cameraPermissionNeeded), .enable)
+        XCTAssertEqual(GlanceHoldPrimaryAction.resolve(for: .requestingCameraPermission), .wait)
+        XCTAssertEqual(GlanceHoldPrimaryAction.resolve(for: .cameraPermissionDenied), .openCameraSettings)
+        XCTAssertEqual(GlanceHoldPrimaryAction.resolve(for: .facing), .disable)
+
+        XCTAssertEqual(GlanceHoldPrimaryAction.wait.title, "Requesting Camera Permission...")
+        XCTAssertFalse(GlanceHoldPrimaryAction.wait.isEnabled)
+        XCTAssertEqual(GlanceHoldPrimaryAction.openCameraSettings.title, "Open Camera Settings...")
+        XCTAssertTrue(GlanceHoldPrimaryAction.openCameraSettings.isEnabled)
+    }
 }
 
 private final class FakePermissionProvider: CameraPermissionProviding {
