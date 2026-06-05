@@ -44,7 +44,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Pause policy resumes only pauses owned by GlanceHold; manual-pause sequences produce no auto-resume intent.
   4. Unknown, uncalibrated, ambiguous, denied, camera-unavailable, and IINA-unavailable inputs produce safe no-op intents.
   5. Repeated away or recovery inputs do not produce duplicate playback commands while an owned intervention is already active.
-**Plans:** TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 02-01-PLAN.md — Pure timestamped attention reducer and synthetic sequence tests.
+- [ ] 02-02-PLAN.md — Pure playback ownership policy, intents, takeover handling, and tests.
 
 ### Phase 3: Local Camera, Vision Signal, Calibration, and Tuning
 **Goal:** Users can calibrate and tune a local AVFoundation/Vision attention signal that drives visible Facing, Looking Away, No Face, and Recovering states.
