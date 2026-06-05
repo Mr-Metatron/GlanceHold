@@ -14,6 +14,7 @@
 		8D6E7A4D2F4C4D0E9A1B2C3D /* GlanceHoldStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A4C2F4C4D0E9A1B2C3D /* GlanceHoldStateTests.swift */; };
 		8D6E7A612F4C4D0E9A1B2C3D /* CameraPermissionClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A602F4C4D0E9A1B2C3D /* CameraPermissionClient.swift */; };
 		8D6E7A632F4C4D0E9A1B2C3D /* CameraPermissionClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A622F4C4D0E9A1B2C3D /* CameraPermissionClientTests.swift */; };
+		8D6E7A652F4C4D0E9A1B2C3D /* AttentionStateMachineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A642F4C4D0E9A1B2C3D /* AttentionStateMachineTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,6 +39,7 @@
 		8D6E7A4C2F4C4D0E9A1B2C3D /* GlanceHoldStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlanceHoldStateTests.swift; sourceTree = "<group>"; };
 		8D6E7A602F4C4D0E9A1B2C3D /* CameraPermissionClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPermissionClient.swift; sourceTree = "<group>"; };
 		8D6E7A622F4C4D0E9A1B2C3D /* CameraPermissionClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPermissionClientTests.swift; sourceTree = "<group>"; };
+		8D6E7A642F4C4D0E9A1B2C3D /* AttentionStateMachineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttentionStateMachineTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,6 +97,7 @@
 			children = (
 				8D6E7A4C2F4C4D0E9A1B2C3D /* GlanceHoldStateTests.swift */,
 				8D6E7A622F4C4D0E9A1B2C3D /* CameraPermissionClientTests.swift */,
+				8D6E7A642F4C4D0E9A1B2C3D /* AttentionStateMachineTests.swift */,
 			);
 			path = GlanceHoldTests;
 			sourceTree = "<group>";
@@ -211,6 +214,7 @@
 			files = (
 				8D6E7A632F4C4D0E9A1B2C3D /* CameraPermissionClientTests.swift in Sources */,
 				8D6E7A4D2F4C4D0E9A1B2C3D /* GlanceHoldStateTests.swift in Sources */,
+				8D6E7A652F4C4D0E9A1B2C3D /* AttentionStateMachineTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
