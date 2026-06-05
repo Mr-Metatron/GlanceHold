@@ -17,6 +17,7 @@
 		8D6E7A652F4C4D0E9A1B2C3D /* AttentionStateMachineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A642F4C4D0E9A1B2C3D /* AttentionStateMachineTests.swift */; };
 		8D6E7A672F4C4D0E9A1B2C3D /* AttentionStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A662F4C4D0E9A1B2C3D /* AttentionStateMachine.swift */; };
 		8D6E7A692F4C4D0E9A1B2C3D /* PlaybackPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A682F4C4D0E9A1B2C3D /* PlaybackPolicyTests.swift */; };
+		8D6E7A6B2F4C4D0E9A1B2C3D /* PlaybackPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A6A2F4C4D0E9A1B2C3D /* PlaybackPolicy.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,6 +45,7 @@
 		8D6E7A642F4C4D0E9A1B2C3D /* AttentionStateMachineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttentionStateMachineTests.swift; sourceTree = "<group>"; };
 		8D6E7A662F4C4D0E9A1B2C3D /* AttentionStateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttentionStateMachine.swift; sourceTree = "<group>"; };
 		8D6E7A682F4C4D0E9A1B2C3D /* PlaybackPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackPolicyTests.swift; sourceTree = "<group>"; };
+		8D6E7A6A2F4C4D0E9A1B2C3D /* PlaybackPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackPolicy.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,6 +92,7 @@
 				8D6E7A4A2F4C4D0E9A1B2C3D /* GlanceHoldState.swift */,
 				8D6E7A602F4C4D0E9A1B2C3D /* CameraPermissionClient.swift */,
 				8D6E7A662F4C4D0E9A1B2C3D /* AttentionStateMachine.swift */,
+				8D6E7A6A2F4C4D0E9A1B2C3D /* PlaybackPolicy.swift */,
 				8D6E7A3E2F4C4D0E9A1B2C3D /* Assets.xcassets */,
 				8D6E7A402F4C4D0E9A1B2C3D /* Info.plist */,
 				8D6E7A412F4C4D0E9A1B2C3D /* GlanceHold.entitlements */,
@@ -211,6 +214,7 @@
 				8D6E7A612F4C4D0E9A1B2C3D /* CameraPermissionClient.swift in Sources */,
 				8D6E7A4B2F4C4D0E9A1B2C3D /* GlanceHoldState.swift in Sources */,
 				8D6E7A672F4C4D0E9A1B2C3D /* AttentionStateMachine.swift in Sources */,
+				8D6E7A6B2F4C4D0E9A1B2C3D /* PlaybackPolicy.swift in Sources */,
 				8D6E7A3B2F4C4D0E9A1B2C3D /* GlanceHoldApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
