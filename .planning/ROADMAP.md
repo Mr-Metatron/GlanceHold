@@ -13,7 +13,7 @@ GlanceHold v1 delivers a speed-first macOS status-bar utility for IINA. The road
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Status-Bar Shell, Permission Trust, and Verification Baseline** - Users can run GlanceHold as an ambient menu-bar utility with explicit controls and privacy/permission trust.
+- [x] **Phase 1: Status-Bar Shell, Permission Trust, and Verification Baseline** - Users can run GlanceHold as an ambient menu-bar utility with explicit controls and privacy/permission trust. (completed 2026-06-06)
 - [x] **Phase 2: Pure Attention State Machine and Playback Policy** - The trust-critical attention debounce and playback ownership rules are deterministic and test-covered before side effects exist. (completed 2026-06-05)
 - [ ] **Phase 3: Local Camera, Vision Signal, Calibration, and Tuning** - Users can calibrate and tune a local Vision-based attention signal that drives visible attention states.
 - [ ] **Phase 4: IINA Adapter Spike and End-to-End Playback Control** - GlanceHold controls real IINA playback for speed and pause modes through a validated adapter.
@@ -34,7 +34,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. User can see a current status row whose vocabulary includes Off, permission/calibration needs, attention states, and IINA unavailable.
   4. Camera permission is requested only after an explicit monitoring or calibration action, and the menu copy makes local-only processing clear.
 
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 **UI hint**: yes
 
 ### Phase 2: Pure Attention State Machine and Playback Policy
@@ -117,7 +117,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Status-Bar Shell, Permission Trust, and Verification Baseline | 2/3 | In Progress|  |
+| 1. Status-Bar Shell, Permission Trust, and Verification Baseline | 3/3 | Complete   | 2026-06-06 |
 | 2. Pure Attention State Machine and Playback Policy | 2/2 | Complete   | 2026-06-05 |
 | 3. Local Camera, Vision Signal, Calibration, and Tuning | 0/TBD | Not started | - |
 | 4. IINA Adapter Spike and End-to-End Playback Control | 0/TBD | Not started | - |
