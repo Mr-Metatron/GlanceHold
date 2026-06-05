@@ -4,7 +4,7 @@ struct ContentView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("GlanceHold")
-                .font(.title2)
+                .font(.title3)
                 .fontWeight(.semibold)
 
             Text("Monitoring is off")
