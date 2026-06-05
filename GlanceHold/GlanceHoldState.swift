@@ -1,6 +1,6 @@
 import Foundation
 
-enum MonitoringMode: CaseIterable, Equatable {
+enum MonitoringMode: CaseIterable, Equatable, Hashable {
     case speedControl
     case pauseResume
 
