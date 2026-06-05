@@ -5,7 +5,7 @@ struct GlanceHoldApp: App {
     @State private var glanceHoldState = GlanceHoldState()
 
     var body: some Scene {
-        MenuBarExtra("GlanceHold", systemImage: "eye") {
+        MenuBarExtra("GlanceHold", systemImage: "display") {
             GlanceHoldMenu(state: $glanceHoldState)
         }
 
@@ -16,20 +16,53 @@ struct GlanceHoldApp: App {
     }
 }
 
+enum GlanceHoldPrimaryAction: Equatable {
+    case enable
+    case disable
+    case wait
+    case openCameraSettings
+
+    static func resolve(for status: MonitoringStatus) -> GlanceHoldPrimaryAction {
+        switch status {
+        case .off, .cameraPermissionNeeded:
+            .enable
+        case .requestingCameraPermission:
+            .wait
+        case .cameraPermissionDenied:
+            .openCameraSettings
+        default:
+            .disable
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .enable:
+            "Enable Monitoring"
+        case .disable:
+            "Disable Monitoring"
+        case .wait:
+            "Requesting Camera Permission..."
+        case .openCameraSettings:
+            "Open Camera Settings..."
+        }
+    }
+
+    var isEnabled: Bool {
+        self != .wait
+    }
+}
+
 private struct GlanceHoldMenu: View {
     @Binding var state: GlanceHoldState
+    @State private var permissionRequestID: UUID?
     @Environment(\.openWindow) private var openWindow
 
     private let privacyNote = "Camera stays on this Mac. Frames are not saved or uploaded."
     private let permissionExplanation = "GlanceHold uses the camera only on this Mac to tell whether you are facing the screen. Frames are not saved or uploaded."
 
-    private var primaryActionTitle: String {
-        switch state.status {
-        case .off, .cameraPermissionNeeded:
-            "Enable Monitoring"
-        default:
-            "Disable Monitoring"
-        }
+    private var primaryAction: GlanceHoldPrimaryAction {
+        GlanceHoldPrimaryAction.resolve(for: state.status)
     }
 
     var body: some View {
@@ -37,20 +70,19 @@ private struct GlanceHoldMenu: View {
             .accessibilityLabel("Status: \(state.status.visibleTitle)")
 
         if state.status == .cameraPermissionNeeded {
-            Text("Camera Permission Needed")
             Text(permissionExplanation)
                 .foregroundStyle(.secondary)
+        } else if !state.status.detailText.isEmpty {
+            Text(state.status.detailText)
+                .foregroundStyle(state.status == .cameraPermissionDenied ? .orange : .secondary)
         }
 
         Divider()
 
-        Button(primaryActionTitle) {
-            if primaryActionTitle == "Enable Monitoring" {
-                enableMonitoring()
-            } else {
-                state.disableMonitoring()
-            }
+        Button(primaryAction.title) {
+            performPrimaryAction(primaryAction)
         }
+        .disabled(!primaryAction.isEnabled)
 
         Divider()
 
@@ -78,14 +110,49 @@ private struct GlanceHoldMenu: View {
         }
     }
 
+    private func performPrimaryAction(_ action: GlanceHoldPrimaryAction) {
+        switch action {
+        case .enable:
+            enableMonitoring()
+        case .disable:
+            permissionRequestID = nil
+            state.disableMonitoring()
+        case .wait:
+            break
+        case .openCameraSettings:
+            openCameraSettings()
+        }
+    }
+
     private func enableMonitoring() {
-        let currentState = state
+        guard state.status != .requestingCameraPermission else {
+            return
+        }
+
+        let requestID = UUID()
+        permissionRequestID = requestID
+        state.status = .requestingCameraPermission
+
+        let pendingState = state
 
         Task {
-            let nextStatus = await currentState.resolvedStatusAfterEnable(permissionProvider: CameraPermissionClient.live)
+            let nextStatus = await pendingState.resolvedStatusAfterEnable(permissionProvider: CameraPermissionClient.live)
             await MainActor.run {
+                guard permissionRequestID == requestID else {
+                    return
+                }
+
+                permissionRequestID = nil
                 state.status = nextStatus
             }
         }
+    }
+
+    private func openCameraSettings() {
+        guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Camera") else {
+            return
+        }
+
+        NSWorkspace.shared.open(url)
     }
 }
