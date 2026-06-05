@@ -14,7 +14,7 @@ GlanceHold v1 delivers a speed-first macOS status-bar utility for IINA. The road
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Status-Bar Shell, Permission Trust, and Verification Baseline** - Users can run GlanceHold as an ambient menu-bar utility with explicit controls and privacy/permission trust.
-- [ ] **Phase 2: Pure Attention State Machine and Playback Policy** - The trust-critical attention debounce and playback ownership rules are deterministic and test-covered before side effects exist.
+- [x] **Phase 2: Pure Attention State Machine and Playback Policy** - The trust-critical attention debounce and playback ownership rules are deterministic and test-covered before side effects exist. (completed 2026-06-05)
 - [ ] **Phase 3: Local Camera, Vision Signal, Calibration, and Tuning** - Users can calibrate and tune a local Vision-based attention signal that drives visible attention states.
 - [ ] **Phase 4: IINA Adapter Spike and End-to-End Playback Control** - GlanceHold controls real IINA playback for speed and pause modes through a validated adapter.
 - [ ] **Phase 5: End-to-End UX Hardening and Manual UAT** - The MVP is safe to use across real camera/player failures, disable/quit flows, and manual acceptance checks.
@@ -51,7 +51,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. Unknown, uncalibrated, ambiguous, denied, camera-unavailable, and IINA-unavailable inputs produce safe no-op intents.
   5. Repeated away or recovery inputs do not produce duplicate playback commands while an owned intervention is already active.
 
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 **Wave 1**
 
@@ -59,7 +59,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 02-02-PLAN.md — Pure playback ownership policy, intents, takeover handling, and tests.
+- [x] 02-02-PLAN.md — Pure playback ownership policy, intents, takeover handling, and tests.
 
 ### Phase 3: Local Camera, Vision Signal, Calibration, and Tuning
 
@@ -118,7 +118,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Status-Bar Shell, Permission Trust, and Verification Baseline | 2/3 | In Progress|  |
-| 2. Pure Attention State Machine and Playback Policy | 1/2 | In Progress|  |
+| 2. Pure Attention State Machine and Playback Policy | 2/2 | Complete   | 2026-06-05 |
 | 3. Local Camera, Vision Signal, Calibration, and Tuning | 0/TBD | Not started | - |
 | 4. IINA Adapter Spike and End-to-End Playback Control | 0/TBD | Not started | - |
 | 5. End-to-End UX Hardening and Manual UAT | 0/TBD | Not started | - |
