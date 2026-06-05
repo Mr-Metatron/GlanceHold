@@ -20,6 +20,9 @@ GlanceHold 是一个 macOS 状态栏工具，用普通摄像头和 Apple Vision 
 - ✓ App sandbox and camera entitlement exist — `GlanceHold/GlanceHold.entitlements` enables sandbox and camera access.
 - ✓ Product concept is documented — `README.md` states local camera processing, privacy posture, and attention-aware playback control goal.
 - ✓ Research reference is separated — `SemiUHPE/` is ignored by git and treated as local reference, not app product code.
+- ✓ Pure debounced attention state machine exists — Phase 2 added `AttentionStateMachine` with timestamped facing/away/no-face/recovery behavior.
+- ✓ Pure playback ownership policy exists — Phase 2 added intent-only speed and pause ownership reducers with manual takeover protection.
+- ✓ Phase 2 safety behavior is tested — XCTest covers attention jitter/recovery, speed capture/restore, pause ownership, duplicate suppression, missing speed, unavailable player state, and manual takeover no-op/stop-monitoring behavior.
 
 ### Active
 
@@ -27,7 +30,6 @@ GlanceHold 是一个 macOS 状态栏工具，用普通摄像头和 Apple Vision 
 - [ ] Use AVFoundation camera capture plus Apple Vision face/head-pose observations locally; do not upload, store, or send camera frames.
 - [ ] Implement a calibration flow that samples the user's neutral facing-screen pose before monitoring.
 - [ ] Let the user adjust head-turn threshold and recovery timing from the status bar menu.
-- [ ] Implement a debounced attention state machine that distinguishes facing screen, looking away, missing face, and recovering states.
 - [ ] Support a primary "speed control" mode for IINA: restore the user's original playback speed when facing screen, switch to 1x when looking away.
 - [ ] Support a secondary "play/pause" mode: pause when looking away or absent, resume only if GlanceHold caused the pause.
 - [ ] Respect user manual pause state; GlanceHold must not auto-resume a video the user manually paused.
@@ -46,7 +48,7 @@ GlanceHold 是一个 macOS 状态栏工具，用普通摄像头和 Apple Vision 
 
 ## Context
 
-The repository is currently an early macOS SwiftUI scaffold. The app target exists, but the product behavior in `README.md` is not implemented yet: there is no camera capture, Vision analysis, attention state machine, playback controller, status bar app shell, or tests.
+The repository is currently an early macOS SwiftUI scaffold with tested pure domain logic. The app target exists, Phase 1 established status-bar and permission-state foundations, and Phase 2 added pure attention/playback reducers with XCTest coverage. The product behavior in `README.md` is still not end-to-end implemented yet: there is no camera capture, Vision analysis, real playback transport, calibration UI, or IINA adapter.
 
 The current codebase map lives in `.planning/codebase/`. It records that the app is a single macOS target using Swift 5.0, SwiftUI, macOS deployment target 14.0, App Sandbox, and camera entitlement. It also records that `SemiUHPE/` is a local ignored research checkout and should remain reference-only for now.
 
@@ -71,10 +73,10 @@ The first real product direction is user-specific and concrete: while watching I
 | Build as a macOS status bar utility, not a full-window app | The tool should stay ambient and controllable without interrupting video watching | — Pending |
 | Use Apple Vision Framework for v1 | Native, local, lightweight, avoids PyTorch/model/license burden | — Pending |
 | Prioritize IINA for first playback integration | User's immediate pain point is watching video in IINA, especially 2x to 1x speed behavior | — Pending |
-| Make speed-control mode the primary v1 mode | Looking away should often reduce cognitive pressure by dropping to 1x instead of stopping playback | — Pending |
-| Keep play/pause as a selectable secondary mode | README's original behavior remains useful and should be available | — Pending |
-| Restore the user's original playback speed when they look back | Preserves the user's chosen speed instead of hard-coding 2x | — Pending |
-| Respect manual pause but continue auto-managing speed | User explicitly wants pause protection first; speed can stay under GlanceHold control during monitoring | — Pending |
+| Make speed-control mode the primary v1 mode | Looking away should often reduce cognitive pressure by dropping to 1x instead of stopping playback | Pure policy validated in Phase 2; real IINA transport pending |
+| Keep play/pause as a selectable secondary mode | README's original behavior remains useful and should be available | Pure policy validated in Phase 2; real IINA transport pending |
+| Restore the user's original playback speed when they look back | Preserves the user's chosen speed instead of hard-coding 2x | Pure speed ownership validated in Phase 2 |
+| Respect manual pause but continue auto-managing speed | User explicitly wants pause protection first; speed can stay under GlanceHold control during monitoring | Pure pause/speed ownership validated in Phase 2 |
 | Implement both startup calibration and menu-adjustable thresholds | Calibration handles camera/screen geometry; manual tuning handles edge cases | — Pending |
 | Keep SemiUHPE out of v1 implementation | It is useful reference material but creates licensing, dependency, and performance risk | — Pending |
 
@@ -96,4 +98,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-05 after initialization*
+*Last updated: 2026-06-05 after Phase 2 completion*
