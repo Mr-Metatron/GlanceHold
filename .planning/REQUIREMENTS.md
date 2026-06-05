@@ -31,7 +31,7 @@ Requirements for the first usable local release. Each maps to roadmap phases.
 - [ ] **ATTN-04**: User can recalibrate without restarting the app.
 - [ ] **ATTN-05**: User can adjust head-turn sensitivity or threshold from the status bar menu.
 - [ ] **ATTN-06**: User can adjust away delay and recovery delay from the status bar menu.
-- [ ] **ATTN-07**: GlanceHold classifies attention through a debounced state machine rather than directly acting on single Vision frames.
+- [x] **ATTN-07**: GlanceHold classifies attention through a debounced state machine rather than directly acting on single Vision frames.
 - [ ] **ATTN-08**: GlanceHold distinguishes at least Facing, Looking Away, No Face, and Recovering states internally and in user-visible status.
 
 ### IINA Playback
@@ -51,7 +51,7 @@ Requirements for the first usable local release. Each maps to roadmap phases.
 - [ ] **SAFE-02**: GlanceHold tracks whether it currently owns a speed override before attempting to restore speed.
 - [ ] **SAFE-03**: GlanceHold tracks whether it currently owns a pause before attempting to resume playback.
 - [ ] **SAFE-04**: GlanceHold suppresses duplicate playback commands while an owned speed or pause intervention is already active.
-- [ ] **SAFE-05**: Unknown, uncalibrated, ambiguous, denied-permission, camera-unavailable, or IINA-unavailable states produce safe no-op behavior.
+- [x] **SAFE-05**: Unknown, uncalibrated, ambiguous, denied-permission, camera-unavailable, or IINA-unavailable states produce safe no-op behavior.
 - [ ] **SAFE-06**: Disabling or quitting GlanceHold releases or best-effort restores owned playback interventions according to the selected mode and current known IINA state.
 
 ### Preferences and Feedback
@@ -62,7 +62,7 @@ Requirements for the first usable local release. Each maps to roadmap phases.
 
 ### Verification
 
-- [ ] **VER-01**: Pure attention state-machine behavior is covered by synthetic sequence tests for facing, away, no-face, recovery, and jitter.
+- [x] **VER-01**: Pure attention state-machine behavior is covered by synthetic sequence tests for facing, away, no-face, recovery, and jitter.
 - [ ] **VER-02**: Playback policy behavior is covered by tests for speed capture/restore, pause ownership, manual pause protection, duplicate command suppression, and safe no-op states.
 - [ ] **VER-03**: The app has a manual verification checklist covering camera permission grant/deny, calibration success/failure, IINA open/closed/idle, speed mode, pause mode, manual pause, disable, and quit.
 - [ ] **VER-04**: The macOS app builds successfully after the status-bar, camera/Vision, and IINA integration changes.
@@ -127,7 +127,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ATTN-04 | Phase 3 | Pending |
 | ATTN-05 | Phase 3 | Pending |
 | ATTN-06 | Phase 3 | Pending |
-| ATTN-07 | Phase 2 | Pending |
+| ATTN-07 | Phase 2 | Complete |
 | ATTN-08 | Phase 3 | Pending |
 | IINA-01 | Phase 4 | Pending |
 | IINA-02 | Phase 4 | Pending |
@@ -141,12 +141,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SAFE-02 | Phase 2 | Pending |
 | SAFE-03 | Phase 2 | Pending |
 | SAFE-04 | Phase 2 | Pending |
-| SAFE-05 | Phase 2 | Pending |
+| SAFE-05 | Phase 2 | Complete |
 | SAFE-06 | Phase 5 | Pending |
 | PREF-01 | Phase 3 | Pending |
 | PREF-02 | Phase 3 | Pending |
 | PREF-03 | Phase 5 | Pending |
-| VER-01 | Phase 2 | Pending |
+| VER-01 | Phase 2 | Complete |
 | VER-02 | Phase 2 | Pending |
 | VER-03 | Phase 5 | Pending |
 | VER-04 | Phase 5 | Pending |

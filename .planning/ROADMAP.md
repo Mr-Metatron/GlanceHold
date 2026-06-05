@@ -51,11 +51,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. Unknown, uncalibrated, ambiguous, denied, camera-unavailable, and IINA-unavailable inputs produce safe no-op intents.
   5. Repeated away or recovery inputs do not produce duplicate playback commands while an owned intervention is already active.
 
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
 **Wave 1**
 
-- [ ] 02-01-PLAN.md — Pure timestamped attention reducer and synthetic sequence tests.
+- [x] 02-01-PLAN.md — Pure timestamped attention reducer and synthetic sequence tests.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -118,7 +118,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Status-Bar Shell, Permission Trust, and Verification Baseline | 2/3 | In Progress|  |
-| 2. Pure Attention State Machine and Playback Policy | 0/TBD | Not started | - |
+| 2. Pure Attention State Machine and Playback Policy | 1/2 | In Progress|  |
 | 3. Local Camera, Vision Signal, Calibration, and Tuning | 0/TBD | Not started | - |
 | 4. IINA Adapter Spike and End-to-End Playback Control | 0/TBD | Not started | - |
 | 5. End-to-End UX Hardening and Manual UAT | 0/TBD | Not started | - |
