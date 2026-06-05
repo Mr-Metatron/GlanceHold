@@ -21,16 +21,32 @@ private struct GlanceHoldMenu: View {
     @Environment(\.openWindow) private var openWindow
 
     private let privacyNote = "Camera stays on this Mac. Frames are not saved or uploaded."
+    private let permissionExplanation = "GlanceHold uses the camera only on this Mac to tell whether you are facing the screen. Frames are not saved or uploaded."
+
+    private var primaryActionTitle: String {
+        switch state.status {
+        case .off, .cameraPermissionNeeded:
+            "Enable Monitoring"
+        default:
+            "Disable Monitoring"
+        }
+    }
 
     var body: some View {
         Text("Status: \(state.status.visibleTitle)")
             .accessibilityLabel("Status: \(state.status.visibleTitle)")
 
+        if state.status == .cameraPermissionNeeded {
+            Text("Camera Permission Needed")
+            Text(permissionExplanation)
+                .foregroundStyle(.secondary)
+        }
+
         Divider()
 
-        Button(state.status == .off ? "Enable Monitoring" : "Disable Monitoring") {
-            if state.status == .off {
-                state.enableMonitoring()
+        Button(primaryActionTitle) {
+            if primaryActionTitle == "Enable Monitoring" {
+                enableMonitoring()
             } else {
                 state.disableMonitoring()
             }
@@ -59,6 +75,17 @@ private struct GlanceHoldMenu: View {
 
         Button("Quit GlanceHold") {
             NSApplication.shared.terminate(nil)
+        }
+    }
+
+    private func enableMonitoring() {
+        let currentState = state
+
+        Task {
+            let nextStatus = await currentState.resolvedStatusAfterEnable(permissionProvider: CameraPermissionClient.live)
+            await MainActor.run {
+                state.status = nextStatus
+            }
         }
     }
 }
