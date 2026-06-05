@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: Completed 02-02-PLAN.md
-last_updated: "2026-06-05T12:13:20.076Z"
+status: ready_to_plan
+stopped_at: Phase 02 complete (2/2) — ready to discuss Phase 3
+last_updated: 2026-06-05T12:19:13.786Z
 last_activity: 2026-06-05
 progress:
   total_phases: 5
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-05)
 
 **Core value:** 当用户注意力离开屏幕时，GlanceHold 能可靠、克制地替用户处理视频速度或播放状态，并在用户回来时恢复到合适状态，且不误恢复用户手动暂停的视频。
-**Current focus:** Phase 02 — pure-attention-state-machine-and-playback-policy
+**Current focus:** Phase 3 — local camera, vision signal, calibration, and tuning
 
 ## Current Position
 
-Phase: 02 (pure-attention-state-machine-and-playback-policy) — EXECUTING
-Plan: 2 of 2
-Status: Phase complete — ready for verification
+Phase: 3
+Plan: Not started
+Status: Ready to plan
 Last activity: 2026-06-05
 
 Progress: [████████░░] 80%
@@ -36,7 +36,7 @@ Progress: [████████░░] 80%
 
 **Velocity:**
 
-- Total plans completed: 0
+- Total plans completed: 2
 - Average duration: N/A
 - Total execution time: 0.0 hours
 
@@ -44,7 +44,7 @@ Progress: [████████░░] 80%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 02 | 2 | - | - |
 
 **Recent Trend:**
 
