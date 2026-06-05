@@ -15,25 +15,36 @@ final class CameraPermissionClientTests: XCTestCase {
         XCTAssertFalse(state.isMonitoringActive)
     }
 
-    func testDeniedPermissionBecomesCameraPermissionNeededWithoutActiveMonitoring() async {
+    func testDeniedPermissionBecomesDeniedRecoveryWithoutActiveMonitoring() async {
         let provider = FakePermissionProvider(status: .denied, requestResult: false)
         var state = GlanceHoldState()
 
         await state.enableMonitoring(permissionProvider: provider)
 
         XCTAssertEqual(provider.requestCount, 0)
-        XCTAssertEqual(state.status.visibleTitle, "Camera Permission Needed")
+        XCTAssertEqual(state.status.visibleTitle, "Camera Permission Denied")
         XCTAssertFalse(state.isMonitoringActive)
     }
 
-    func testRestrictedPermissionBecomesCameraPermissionNeededWithoutActiveMonitoring() async {
+    func testRestrictedPermissionBecomesDeniedRecoveryWithoutActiveMonitoring() async {
         let provider = FakePermissionProvider(status: .restricted, requestResult: false)
         var state = GlanceHoldState()
 
         await state.enableMonitoring(permissionProvider: provider)
 
         XCTAssertEqual(provider.requestCount, 0)
-        XCTAssertEqual(state.status.visibleTitle, "Camera Permission Needed")
+        XCTAssertEqual(state.status.visibleTitle, "Camera Permission Denied")
+        XCTAssertFalse(state.isMonitoringActive)
+    }
+
+    func testUndeterminedPermissionDeniedByUserBecomesDeniedRecoveryWithoutActiveMonitoring() async {
+        let provider = FakePermissionProvider(status: .undetermined, requestResult: false)
+        var state = GlanceHoldState()
+
+        await state.enableMonitoring(permissionProvider: provider)
+
+        XCTAssertEqual(provider.requestCount, 1)
+        XCTAssertEqual(state.status.visibleTitle, "Camera Permission Denied")
         XCTAssertFalse(state.isMonitoringActive)
     }
 

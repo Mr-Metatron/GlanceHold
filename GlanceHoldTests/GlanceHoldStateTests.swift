@@ -51,6 +51,8 @@ final class GlanceHoldStateTests: XCTestCase {
         XCTAssertEqual(phrases, [
             "Off",
             "Camera Permission Needed",
+            "Camera Permission Denied",
+            "Requesting Camera Permission",
             "Ready After Calibration",
             "Facing",
             "Looking Away",
@@ -58,5 +60,21 @@ final class GlanceHoldStateTests: XCTestCase {
             "Recovering",
             ["I", "INA Unavailable"].joined()
         ])
+    }
+
+    func testPendingAndPermissionDeniedStatusesAreNotMonitoringActive() {
+        XCTAssertFalse(GlanceHoldState(status: .requestingCameraPermission).isMonitoringActive)
+        XCTAssertFalse(GlanceHoldState(status: .cameraPermissionDenied).isMonitoringActive)
+    }
+
+    func testPermissionRecoveryAndUnavailableCopyAreStable() {
+        XCTAssertEqual(
+            MonitoringStatus.cameraPermissionDenied.detailText,
+            "Camera permission is denied. Allow camera access in System Settings, then enable monitoring again."
+        )
+        XCTAssertEqual(
+            MonitoringStatus.iinaUnavailable.detailText,
+            "Monitoring cannot start yet because IINA is unavailable."
+        )
     }
 }
