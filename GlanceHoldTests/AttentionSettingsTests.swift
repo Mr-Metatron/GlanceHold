@@ -25,6 +25,18 @@ final class AttentionSettingsTests: XCTestCase {
         XCTAssertLessThan(AttentionSensitivity.strict.thresholdDegrees, AttentionSensitivity.balanced.thresholdDegrees)
     }
 
+    func testMenuFacingTuningLabelsAndSensitivityNamesAreStable() {
+        XCTAssertEqual(AttentionSensitivity.allCases.map(\.displayName), [
+            "Relaxed",
+            "Balanced",
+            "Strict"
+        ])
+        XCTAssertEqual(GlanceHoldMenuCopy.sensitivityLabel, "Head Turn Sensitivity")
+        XCTAssertEqual(GlanceHoldMenuCopy.speedControlAwayDelayLabel, "Speed Control Away Delay")
+        XCTAssertEqual(GlanceHoldMenuCopy.pauseResumeAwayDelayLabel, "Pause/Resume Away Delay")
+        XCTAssertEqual(GlanceHoldMenuCopy.recoveryDelayLabel, "Recovery Delay")
+    }
+
     func testStoreRoundTripsScalarSettingsAndResetClearsCalibration() throws {
         let store = InMemoryAttentionSettingsStore()
         let calibration = CalibrationSnapshot(

@@ -46,12 +46,16 @@ final class GlanceHoldStateTests: XCTestCase {
     }
 
     func testVisibleStatusVocabularyIncludesRequiredPhrases() {
-        let phrases = MonitoringStatus.allCases.map(\.visibleTitle)
+        let phrases = MonitoringStatus.visibleVocabulary
 
         XCTAssertEqual(phrases, [
             "Off",
             "Camera Permission Needed",
             "Camera Permission Denied",
+            "Camera Unavailable",
+            "Needs Calibration",
+            "Calibrating Facing Pose",
+            "Calibration Failed",
             "Requesting Camera Permission",
             "Ready After Calibration",
             "Facing",
@@ -62,19 +66,90 @@ final class GlanceHoldStateTests: XCTestCase {
         ])
     }
 
-    func testPendingAndPermissionDeniedStatusesAreNotMonitoringActive() {
-        XCTAssertFalse(GlanceHoldState(status: .requestingCameraPermission).isMonitoringActive)
-        XCTAssertFalse(GlanceHoldState(status: .cameraPermissionDenied).isMonitoringActive)
+    func testPhase3StatusTitlesAreExact() {
+        XCTAssertEqual(MonitoringStatus.cameraUnavailable.visibleTitle, "Camera Unavailable")
+        XCTAssertEqual(MonitoringStatus.needsCalibration.visibleTitle, "Needs Calibration")
+        XCTAssertEqual(MonitoringStatus.calibratingFacingPose.visibleTitle, "Calibrating Facing Pose")
+        XCTAssertEqual(MonitoringStatus.calibrationFailed(previousKept: true).visibleTitle, "Calibration Failed")
+        XCTAssertEqual(MonitoringStatus.readyAfterCalibration.visibleTitle, "Ready After Calibration")
+        XCTAssertEqual(MonitoringStatus.facing.visibleTitle, "Facing")
+        XCTAssertEqual(MonitoringStatus.lookingAway.visibleTitle, "Looking Away")
+        XCTAssertEqual(MonitoringStatus.noFaceDetected.visibleTitle, "No Face Detected")
+        XCTAssertEqual(MonitoringStatus.recovering.visibleTitle, "Recovering")
     }
 
-    func testPermissionRecoveryAndUnavailableCopyAreStable() {
+    func testPendingAndFailureStatusesAreNotMonitoringActive() {
+        XCTAssertFalse(GlanceHoldState(status: .requestingCameraPermission).isMonitoringActive)
+        XCTAssertFalse(GlanceHoldState(status: .cameraPermissionDenied).isMonitoringActive)
+        XCTAssertFalse(GlanceHoldState(status: .cameraUnavailable).isMonitoringActive)
+        XCTAssertFalse(GlanceHoldState(status: .needsCalibration).isMonitoringActive)
+        XCTAssertFalse(GlanceHoldState(status: .calibratingFacingPose).isMonitoringActive)
+        XCTAssertFalse(GlanceHoldState(status: .calibrationFailed(previousKept: true)).isMonitoringActive)
+    }
+
+    func testPhase3DetailCopyIsStable() {
         XCTAssertEqual(
             MonitoringStatus.cameraPermissionDenied.detailText,
             "Camera permission is denied. Allow camera access in System Settings, then enable monitoring again."
         )
         XCTAssertEqual(
-            MonitoringStatus.iinaUnavailable.detailText,
-            "Monitoring cannot start yet because IINA is unavailable."
+            MonitoringStatus.cameraUnavailable.detailText,
+            "Camera is unavailable. Check camera access or close other apps using the camera, then try again."
         )
+        XCTAssertEqual(
+            MonitoringStatus.calibrationFailed(previousKept: true).detailText,
+            "Calibration failed because no stable face was detected. Your previous calibration was kept."
+        )
+        XCTAssertEqual(
+            MonitoringStatus.calibrationFailed(previousKept: false).detailText,
+            "Calibration failed because no stable face was detected. Try again while facing the screen."
+        )
+        XCTAssertEqual(
+            MonitoringStatus.readyAfterMarginalCalibration.detailText,
+            "Recalibration recommended. Monitoring can continue with the current calibration."
+        )
+        XCTAssertEqual(
+            MonitoringStatus.needsCalibration.detailText,
+            "Calibrate your facing-screen pose before monitoring can use camera signals. Camera access starts only after you choose calibration or monitoring."
+        )
+    }
+
+    func testPrimaryActionsCoverCalibrationPermissionAndMonitoringStates() {
+        XCTAssertEqual(GlanceHoldPrimaryAction.resolve(for: .off, hasCalibration: false), .calibrate)
+        XCTAssertEqual(GlanceHoldPrimaryAction.resolve(for: .needsCalibration, hasCalibration: false), .calibrate)
+        XCTAssertEqual(GlanceHoldPrimaryAction.resolve(for: .readyAfterCalibration, hasCalibration: true), .enable)
+        XCTAssertEqual(GlanceHoldPrimaryAction.resolve(for: .facing, hasCalibration: true), .disable)
+        XCTAssertEqual(GlanceHoldPrimaryAction.resolve(for: .cameraPermissionDenied, hasCalibration: false), .openCameraSettings)
+        XCTAssertEqual(GlanceHoldPrimaryAction.resolve(for: .calibratingFacingPose, hasCalibration: false), .wait)
+
+        XCTAssertEqual(GlanceHoldPrimaryAction.calibrate.title, "Calibrate Facing Pose")
+        XCTAssertEqual(GlanceHoldPrimaryAction.recalibrate.title, "Recalibrate Facing Pose")
+        XCTAssertEqual(GlanceHoldPrimaryAction.resetCalibration.title, "Reset Calibration")
+    }
+
+    func testMenuCopyIncludesTuningCalibrationPrivacyAndConfirmationVocabulary() {
+        XCTAssertEqual(GlanceHoldMenuCopy.tuningSectionTitle, "Tuning")
+        XCTAssertEqual(GlanceHoldMenuCopy.sensitivityLabel, "Head Turn Sensitivity")
+        XCTAssertEqual(GlanceHoldMenuCopy.speedControlAwayDelayLabel, "Speed Control Away Delay")
+        XCTAssertEqual(GlanceHoldMenuCopy.pauseResumeAwayDelayLabel, "Pause/Resume Away Delay")
+        XCTAssertEqual(GlanceHoldMenuCopy.recoveryDelayLabel, "Recovery Delay")
+        XCTAssertEqual(GlanceHoldMenuCopy.privacyNote, "Camera stays on this Mac. Frames are not saved or uploaded.")
+        XCTAssertEqual(GlanceHoldMenuCopy.marginalReplacementPrompt, "The new calibration is usable but less stable than the current one. Keep the current calibration or use the new one?")
+        XCTAssertEqual(GlanceHoldMenuCopy.keepCurrentCalibrationButton, "Keep Current Calibration")
+        XCTAssertEqual(GlanceHoldMenuCopy.useNewCalibrationButton, "Use New Calibration")
+    }
+
+    func testMonitorStatesMapToVisibleStatusVocabulary() {
+        XCTAssertEqual(MonitoringStatus(monitorState: .off), .off)
+        XCTAssertEqual(MonitoringStatus(monitorState: .needsCalibration), .needsCalibration)
+        XCTAssertEqual(MonitoringStatus(monitorState: .calibrating), .calibratingFacingPose)
+        XCTAssertEqual(MonitoringStatus(monitorState: .ready), .readyAfterCalibration)
+        XCTAssertEqual(MonitoringStatus(monitorState: .facing), .facing)
+        XCTAssertEqual(MonitoringStatus(monitorState: .lookingAway), .lookingAway)
+        XCTAssertEqual(MonitoringStatus(monitorState: .noFaceDetected), .noFaceDetected)
+        XCTAssertEqual(MonitoringStatus(monitorState: .recovering), .recovering)
+        XCTAssertEqual(MonitoringStatus(monitorState: .cameraPermissionDenied), .cameraPermissionDenied)
+        XCTAssertEqual(MonitoringStatus(monitorState: .cameraUnavailable), .cameraUnavailable)
+        XCTAssertEqual(MonitoringStatus(monitorState: .calibrationFailed(previousKept: true)), .calibrationFailed(previousKept: true))
     }
 }

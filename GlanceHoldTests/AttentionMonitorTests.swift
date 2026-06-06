@@ -187,13 +187,17 @@ final class AttentionMonitorTests: XCTestCase {
         var settings = monitor.settings
         settings.mode = .pauseResume
         settings = settings.withSensitivity(.strict)
+        settings.speedControlAwayDelay = 0.5
         settings.pauseResumeAwayDelay = 1.6
         settings.recoveryDelay = 0.7
 
         try monitor.updateSettings(settings)
 
         XCTAssertEqual(store.load(), settings)
-        XCTAssertEqual(AttentionMonitor(permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true), settingsStore: store, capture: FakeCameraFrameCapture(), analyzer: FakeVisionAnalyzer()).settings, settings)
+        let reloaded = AttentionMonitor(permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true), settingsStore: store, capture: FakeCameraFrameCapture(), analyzer: FakeVisionAnalyzer()).settings
+        XCTAssertEqual(reloaded, settings)
+        XCTAssertEqual(reloaded.timing(for: .speedControl), AttentionTiming(awayDelay: 0.5, recoveryDelay: 0.7))
+        XCTAssertEqual(reloaded.timing(for: .pauseResume), AttentionTiming(awayDelay: 1.6, recoveryDelay: 0.7))
     }
 
     private func samples(spread: Double) -> [PoseSample] {
