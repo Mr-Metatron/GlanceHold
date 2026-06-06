@@ -84,13 +84,20 @@ final class AttentionMonitorTests: XCTestCase {
         XCTAssertEqual(highSnapshot.quality, .high)
         XCTAssertEqual(store.load().calibration?.quality, .high)
 
-        let marginal = await monitor.startCalibration(samples: samples(spread: 2.0))
+        let marginalStore = MonitorSettingsStore()
+        let marginalMonitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: marginalStore,
+            capture: FakeCameraFrameCapture(),
+            analyzer: FakeVisionAnalyzer()
+        )
+        let marginal = await marginalMonitor.startCalibration(samples: samples(spread: 2.0))
 
         guard case .accepted(let marginalSnapshot) = marginal else {
             return XCTFail("Expected accepted marginal calibration")
         }
         XCTAssertEqual(marginalSnapshot.quality, .marginal)
-        XCTAssertEqual(store.load().calibration?.quality, .marginal)
+        XCTAssertEqual(marginalStore.load().calibration?.quality, .marginal)
     }
 
     func testCalibrationFailurePreservesPreviousCalibration() async {
@@ -110,6 +117,24 @@ final class AttentionMonitorTests: XCTestCase {
         XCTAssertEqual(monitor.state, .calibrationFailed(previousKept: true))
     }
 
+    func testCalibrationSaveFailureLeavesMonitorUnavailable() async {
+        let store = MonitorSettingsStore(saveError: MonitorStoreError.saveFailed)
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: store,
+            capture: FakeCameraFrameCapture(),
+            analyzer: FakeVisionAnalyzer()
+        )
+
+        let result = await monitor.startCalibration(samples: samples(spread: 0.4))
+
+        guard case .accepted = result else {
+            return XCTFail("Expected valid samples to be accepted before save failure")
+        }
+        XCTAssertNil(store.load().calibration)
+        XCTAssertEqual(monitor.state, .unavailable)
+    }
+
     func testRawObservationsFlowThroughDebounceToVisibleStates() async {
         let store = MonitorSettingsStore(settings: .defaults.withCalibration(snapshot(.high)))
         let monitor = AttentionMonitor(
@@ -121,11 +146,11 @@ final class AttentionMonitorTests: XCTestCase {
 
         await monitor.startMonitoring()
 
-        XCTAssertEqual(monitor.applySample(.pose(pose(yaw: 0.0, pitch: 0.0, time: 0.0))), .facing)
-        XCTAssertEqual(monitor.applySample(.pose(pose(yaw: 30.0, pitch: 0.0, time: 0.1))), .facing)
-        XCTAssertEqual(monitor.applySample(.pose(pose(yaw: 30.0, pitch: 0.0, time: 0.9))), .lookingAway)
-        XCTAssertEqual(monitor.applySample(.pose(pose(yaw: 0.0, pitch: 0.0, time: 1.0))), .recovering)
-        XCTAssertEqual(monitor.applySample(.pose(pose(yaw: 0.0, pitch: 0.0, time: 1.6))), .facing)
+        XCTAssertEqual(monitor.applySample(.pose(makePose(yaw: 0.0, pitch: 0.0, time: 0.0))), .facing)
+        XCTAssertEqual(monitor.applySample(.pose(makePose(yaw: 30.0, pitch: 0.0, time: 0.1))), .facing)
+        XCTAssertEqual(monitor.applySample(.pose(makePose(yaw: 30.0, pitch: 0.0, time: 0.9))), .lookingAway)
+        XCTAssertEqual(monitor.applySample(.pose(makePose(yaw: 0.0, pitch: 0.0, time: 1.0))), .recovering)
+        XCTAssertEqual(monitor.applySample(.pose(makePose(yaw: 0.0, pitch: 0.0, time: 1.6))), .facing)
         XCTAssertEqual(monitor.applySample(.noFace(time: 2.0)), .facing)
         XCTAssertEqual(monitor.applySample(.noFace(time: 2.8)), .noFaceDetected)
     }
@@ -138,7 +163,7 @@ final class AttentionMonitorTests: XCTestCase {
             analyzer: FakeVisionAnalyzer()
         )
 
-        XCTAssertEqual(uncalibrated.applySample(.pose(pose(yaw: 0.0, pitch: 0.0))), .needsCalibration)
+        XCTAssertEqual(uncalibrated.applySample(.pose(makePose(yaw: 0.0, pitch: 0.0))), .needsCalibration)
 
         let calibrated = AttentionMonitor(
             permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
@@ -173,9 +198,9 @@ final class AttentionMonitorTests: XCTestCase {
 
     private func samples(spread: Double) -> [PoseSample] {
         [
-            pose(yaw: 0.0, pitch: 0.0, time: 0.0),
-            pose(yaw: spread, pitch: spread, time: 0.1),
-            pose(yaw: spread / 2.0, pitch: spread / 2.0, time: 0.2)
+            makePose(yaw: 0.0, pitch: 0.0, time: 0.0),
+            makePose(yaw: spread, pitch: spread, time: 0.1),
+            makePose(yaw: spread / 2.0, pitch: spread / 2.0, time: 0.2)
         ]
     }
 }
@@ -202,9 +227,11 @@ private final class MonitorPermissionProvider: CameraPermissionProviding {
 
 private final class MonitorSettingsStore: AttentionSettingsStoring {
     private var storedSettings: AttentionSettings
+    private let saveError: Error?
 
-    init(settings: AttentionSettings = .defaults) {
+    init(settings: AttentionSettings = .defaults, saveError: Error? = nil) {
         self.storedSettings = settings
+        self.saveError = saveError
     }
 
     func load() -> AttentionSettings {
@@ -212,12 +239,19 @@ private final class MonitorSettingsStore: AttentionSettingsStoring {
     }
 
     func save(_ settings: AttentionSettings) throws {
+        if let saveError {
+            throw saveError
+        }
         storedSettings = settings
     }
 
     func reset() throws {
         storedSettings = .defaults
     }
+}
+
+private enum MonitorStoreError: Error {
+    case saveFailed
 }
 
 private final class FakeCameraFrameCapture: CameraFrameCapturing {
@@ -258,12 +292,12 @@ private struct FakeVisionAnalyzer: VisionAttentionAnalyzing {
 
 private func snapshot(_ quality: CalibrationQuality) -> CalibrationSnapshot {
     CalibrationSnapshot(
-        neutralPose: pose(yaw: 0.0, pitch: 0.0),
+        neutralPose: makePose(yaw: 0.0, pitch: 0.0),
         quality: quality,
         createdAt: Date(timeIntervalSince1970: 1.0)
     )
 }
 
-private func pose(yaw: Double, pitch: Double, roll: Double = 0.0, time: TimeInterval = 0.0) -> PoseSample {
+private func makePose(yaw: Double, pitch: Double, roll: Double = 0.0, time: TimeInterval = 0.0) -> PoseSample {
     PoseSample(yawDegrees: yaw, pitchDegrees: pitch, rollDegrees: roll, time: time)
 }

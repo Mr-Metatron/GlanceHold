@@ -27,6 +27,7 @@
 		8D6E7A792F4C4D0E9A1B2C3D /* VisionAttentionAnalyzerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A782F4C4D0E9A1B2C3D /* VisionAttentionAnalyzerTests.swift */; };
 		8D6E7A7B2F4C4D0E9A1B2C3D /* CameraFrameCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A7A2F4C4D0E9A1B2C3D /* CameraFrameCapture.swift */; };
 		8D6E7A7D2F4C4D0E9A1B2C3D /* VisionAttentionAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A7C2F4C4D0E9A1B2C3D /* VisionAttentionAnalyzer.swift */; };
+		8D6E7A7F2F4C4D0E9A1B2C3D /* AttentionMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A7E2F4C4D0E9A1B2C3D /* AttentionMonitor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,6 +65,7 @@
 		8D6E7A782F4C4D0E9A1B2C3D /* VisionAttentionAnalyzerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionAttentionAnalyzerTests.swift; sourceTree = "<group>"; };
 		8D6E7A7A2F4C4D0E9A1B2C3D /* CameraFrameCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraFrameCapture.swift; sourceTree = "<group>"; };
 		8D6E7A7C2F4C4D0E9A1B2C3D /* VisionAttentionAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionAttentionAnalyzer.swift; sourceTree = "<group>"; };
+		8D6E7A7E2F4C4D0E9A1B2C3D /* AttentionMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttentionMonitor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -116,6 +118,7 @@
 				8D6E7A742F4C4D0E9A1B2C3D /* AttentionSettingsStore.swift */,
 				8D6E7A7A2F4C4D0E9A1B2C3D /* CameraFrameCapture.swift */,
 				8D6E7A7C2F4C4D0E9A1B2C3D /* VisionAttentionAnalyzer.swift */,
+				8D6E7A7E2F4C4D0E9A1B2C3D /* AttentionMonitor.swift */,
 				8D6E7A3E2F4C4D0E9A1B2C3D /* Assets.xcassets */,
 				8D6E7A402F4C4D0E9A1B2C3D /* Info.plist */,
 				8D6E7A412F4C4D0E9A1B2C3D /* GlanceHold.entitlements */,
@@ -247,6 +250,7 @@
 				8D6E7A752F4C4D0E9A1B2C3D /* AttentionSettingsStore.swift in Sources */,
 				8D6E7A7B2F4C4D0E9A1B2C3D /* CameraFrameCapture.swift in Sources */,
 				8D6E7A7D2F4C4D0E9A1B2C3D /* VisionAttentionAnalyzer.swift in Sources */,
+				8D6E7A7F2F4C4D0E9A1B2C3D /* AttentionMonitor.swift in Sources */,
 				8D6E7A3B2F4C4D0E9A1B2C3D /* GlanceHoldApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
