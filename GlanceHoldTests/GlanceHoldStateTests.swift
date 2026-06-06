@@ -66,6 +66,34 @@ final class GlanceHoldStateTests: XCTestCase {
         ])
     }
 
+    func testPlayerControlStatusVocabularyIncludesIINAStates() {
+        let phrases = PlayerControlStatus.visibleVocabulary
+
+        XCTAssertEqual(phrases, [
+            "IINA Unavailable",
+            "IINA Setup Needed",
+            "IINA Idle",
+            "IINA Paused",
+            "IINA Playing",
+            "IINA Not Controllable"
+        ])
+    }
+
+    func testAttentionStatusAndPlayerStatusCanCoexist() {
+        let state = GlanceHoldState(status: .facing, playerStatus: .unavailable)
+
+        XCTAssertEqual(state.status.visibleTitle, "Facing")
+        XCTAssertEqual(state.playerStatus.visibleTitle, "IINA Unavailable")
+        XCTAssertTrue(state.isMonitoringActive)
+    }
+
+    func testIINAUnavailableDetailExplainsMonitoringCanContinue() {
+        XCTAssertEqual(
+            PlayerControlStatus.unavailable.detailText,
+            "Attention monitoring can continue while playback control waits for controllable IINA state."
+        )
+    }
+
     func testPhase3StatusTitlesAreExact() {
         XCTAssertEqual(MonitoringStatus.cameraUnavailable.visibleTitle, "Camera Unavailable")
         XCTAssertEqual(MonitoringStatus.needsCalibration.visibleTitle, "Needs Calibration")
