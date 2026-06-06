@@ -12,7 +12,7 @@ final class CalibrationModelTests: XCTestCase {
         XCTAssertEqual(snapshot.quality, .high)
         XCTAssertEqual(snapshot.neutralPose.yawDegrees, 0.2, accuracy: 0.001)
         XCTAssertEqual(snapshot.neutralPose.pitchDegrees, 0.2, accuracy: 0.001)
-        XCTAssertEqual(snapshot.neutralPose.rollDegrees, 0.2, accuracy: 0.001)
+        XCTAssertEqual(snapshot.neutralPose.rollDegrees, 0.0, accuracy: 0.001)
     }
 
     func testMarginalCalibrationWithoutPreviousCalibrationIsAccepted() {

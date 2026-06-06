@@ -196,10 +196,6 @@ struct GlanceHoldState: Equatable {
             return status
         }
 
-        guard hasCalibration else {
-            return .needsCalibration
-        }
-
         switch permissionProvider.authorizationStatus() {
         case .granted:
             return .readyAfterCalibration
