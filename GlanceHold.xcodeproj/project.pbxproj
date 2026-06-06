@@ -32,6 +32,7 @@
 		8D6E7A832F4C4D0E9A1B2C3D /* MPVJSONIPCClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A822F4C4D0E9A1B2C3D /* MPVJSONIPCClientTests.swift */; };
 		8D6E7A852F4C4D0E9A1B2C3D /* IINAPlaybackAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A842F4C4D0E9A1B2C3D /* IINAPlaybackAdapter.swift */; };
 		8D6E7A872F4C4D0E9A1B2C3D /* MPVJSONIPCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A862F4C4D0E9A1B2C3D /* MPVJSONIPCClient.swift */; };
+		8D6E7A892F4C4D0E9A1B2C3D /* PlaybackCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A882F4C4D0E9A1B2C3D /* PlaybackCoordinatorTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -74,6 +75,7 @@
 		8D6E7A822F4C4D0E9A1B2C3D /* MPVJSONIPCClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPVJSONIPCClientTests.swift; sourceTree = "<group>"; };
 		8D6E7A842F4C4D0E9A1B2C3D /* IINAPlaybackAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IINAPlaybackAdapter.swift; sourceTree = "<group>"; };
 		8D6E7A862F4C4D0E9A1B2C3D /* MPVJSONIPCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPVJSONIPCClient.swift; sourceTree = "<group>"; };
+		8D6E7A882F4C4D0E9A1B2C3D /* PlaybackCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackCoordinatorTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -149,6 +151,7 @@
 				8D6E7A782F4C4D0E9A1B2C3D /* VisionAttentionAnalyzerTests.swift */,
 				8D6E7A802F4C4D0E9A1B2C3D /* IINAPlaybackAdapterTests.swift */,
 				8D6E7A822F4C4D0E9A1B2C3D /* MPVJSONIPCClientTests.swift */,
+				8D6E7A882F4C4D0E9A1B2C3D /* PlaybackCoordinatorTests.swift */,
 			);
 			path = GlanceHoldTests;
 			sourceTree = "<group>";
@@ -283,6 +286,7 @@
 				8D6E7A792F4C4D0E9A1B2C3D /* VisionAttentionAnalyzerTests.swift in Sources */,
 				8D6E7A812F4C4D0E9A1B2C3D /* IINAPlaybackAdapterTests.swift in Sources */,
 				8D6E7A832F4C4D0E9A1B2C3D /* MPVJSONIPCClientTests.swift in Sources */,
+				8D6E7A892F4C4D0E9A1B2C3D /* PlaybackCoordinatorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
