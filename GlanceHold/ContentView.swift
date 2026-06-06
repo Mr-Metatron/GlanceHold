@@ -7,13 +7,13 @@ struct ContentView: View {
                 .font(.title3)
                 .fontWeight(.semibold)
 
-            Text("Monitoring is off")
+            Text("Local camera attention signal")
                 .font(.headline)
 
-            Text("Enable monitoring when you are ready. Camera access is requested only after you start.")
+            Text("Calibrate your facing-screen pose before monitoring can use camera signals. Camera access starts only after you choose calibration or monitoring.")
                 .foregroundStyle(.secondary)
 
-            Text("GlanceHold uses the camera only on this Mac to tell whether you are facing the screen. Frames are not saved or uploaded.")
+            Text("Camera stays on this Mac. Frames are not saved or uploaded.")
                 .foregroundStyle(.secondary)
         }
         .frame(minWidth: 420, minHeight: 260)

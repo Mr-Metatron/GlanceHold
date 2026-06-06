@@ -5,6 +5,17 @@ enum AttentionSensitivity: String, CaseIterable, Equatable, Codable {
     case balanced
     case strict
 
+    var displayName: String {
+        switch self {
+        case .relaxed:
+            "Relaxed"
+        case .balanced:
+            "Balanced"
+        case .strict:
+            "Strict"
+        }
+    }
+
     var thresholdDegrees: Double {
         switch self {
         case .relaxed:
