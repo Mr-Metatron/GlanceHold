@@ -136,6 +136,83 @@ enum MonitoringStatus: Equatable {
     }
 }
 
+enum PlayerControlStatus: Equatable {
+    case unavailable
+    case setupNeeded
+    case idle
+    case paused
+    case playing
+    case notControllable
+
+    static var visibleVocabulary: [String] {
+        [
+            "IINA Unavailable",
+            "IINA Setup Needed",
+            "IINA Idle",
+            "IINA Paused",
+            "IINA Playing",
+            "IINA Not Controllable"
+        ]
+    }
+
+    init(coordinatorState: PlaybackCoordinatorState) {
+        if coordinatorState.stoppedReason != nil || !coordinatorState.isPlayerControllable {
+            switch coordinatorState.playerSnapshot.playbackState {
+            case .idle:
+                self = .idle
+            case .playing, .paused:
+                self = .notControllable
+            case .playerUnavailable:
+                self = .unavailable
+            }
+            return
+        }
+
+        switch coordinatorState.playerSnapshot.playbackState {
+        case .playing:
+            self = .playing
+        case .paused:
+            self = .paused
+        case .idle:
+            self = .idle
+        case .playerUnavailable:
+            self = .unavailable
+        }
+    }
+
+    var visibleTitle: String {
+        switch self {
+        case .unavailable:
+            "IINA Unavailable"
+        case .setupNeeded:
+            "IINA Setup Needed"
+        case .idle:
+            "IINA Idle"
+        case .paused:
+            "IINA Paused"
+        case .playing:
+            "IINA Playing"
+        case .notControllable:
+            "IINA Not Controllable"
+        }
+    }
+
+    var detailText: String {
+        switch self {
+        case .unavailable:
+            "Attention monitoring can continue while playback control waits for controllable IINA state."
+        case .setupNeeded:
+            "Configure IINA with a local mpv IPC socket before playback control can connect."
+        case .idle:
+            "IINA is open without active playback. No playback command will be sent."
+        case .notControllable:
+            "IINA playback state is readable but not safe to control. No playback command will be sent."
+        case .paused, .playing:
+            ""
+        }
+    }
+}
+
 enum GlanceHoldMenuCopy {
     static let tuningSectionTitle = "Tuning"
     static let sensitivityLabel = "Head Turn Sensitivity"
@@ -153,12 +230,19 @@ enum GlanceHoldMenuCopy {
 struct GlanceHoldState: Equatable {
     var settings: AttentionSettings
     var status: MonitoringStatus
+    var playerStatus: PlayerControlStatus
 
-    init(mode: MonitoringMode = .speedControl, status: MonitoringStatus = .off, settings: AttentionSettings = .defaults) {
+    init(
+        mode: MonitoringMode = .speedControl,
+        status: MonitoringStatus = .off,
+        playerStatus: PlayerControlStatus = .setupNeeded,
+        settings: AttentionSettings = .defaults
+    ) {
         var resolvedSettings = settings
         resolvedSettings.mode = mode
         self.settings = resolvedSettings
         self.status = status
+        self.playerStatus = playerStatus
     }
 
     var mode: MonitoringMode {
@@ -228,6 +312,10 @@ struct GlanceHoldState: Equatable {
 
     mutating func updateSettings(_ settings: AttentionSettings) {
         self.settings = settings
+    }
+
+    mutating func apply(playerControlState: PlaybackCoordinatorState) {
+        playerStatus = PlayerControlStatus(coordinatorState: playerControlState)
     }
 
     mutating func apply(monitorState: AttentionMonitorState) {
