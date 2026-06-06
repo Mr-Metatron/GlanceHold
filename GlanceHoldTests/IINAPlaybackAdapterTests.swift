@@ -9,7 +9,7 @@ final class IINAPlaybackAdapterTests: XCTestCase {
             "pause": .bool(false),
             "idle-active": .bool(false)
         ]
-        var adapter = IINAPlaybackAdapter(client: client)
+        let adapter = IINAPlaybackAdapter(client: client)
 
         let playing = await adapter.snapshot()
         XCTAssertEqual(playing, .playing(speed: 1.5))
@@ -33,17 +33,19 @@ final class IINAPlaybackAdapterTests: XCTestCase {
             "pause": .bool(false),
             "idle-active": .bool(false)
         ]
-        var adapter = IINAPlaybackAdapter(client: client)
+        let adapter = IINAPlaybackAdapter(client: client)
 
-        XCTAssertEqual(await adapter.snapshot(), .playerUnavailable)
+        let missingSpeed = await adapter.snapshot()
+        XCTAssertEqual(missingSpeed, .playerUnavailable)
 
         client.propertyValues["speed"] = .string("1.5")
-        XCTAssertEqual(await adapter.snapshot(), .playerUnavailable)
+        let nonNumericSpeed = await adapter.snapshot()
+        XCTAssertEqual(nonNumericSpeed, .playerUnavailable)
     }
 
     func testSpeedIntentsMapToSingleSetPropertyCommands() async throws {
         let client = FakeMPVJSONIPCClient()
-        var adapter = IINAPlaybackAdapter(client: client)
+        let adapter = IINAPlaybackAdapter(client: client)
 
         try await adapter.execute(.holdSpeedAtOne)
         XCTAssertEqual(client.commands, [

@@ -30,6 +30,8 @@
 		8D6E7A7F2F4C4D0E9A1B2C3D /* AttentionMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A7E2F4C4D0E9A1B2C3D /* AttentionMonitor.swift */; };
 		8D6E7A812F4C4D0E9A1B2C3D /* IINAPlaybackAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A802F4C4D0E9A1B2C3D /* IINAPlaybackAdapterTests.swift */; };
 		8D6E7A832F4C4D0E9A1B2C3D /* MPVJSONIPCClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A822F4C4D0E9A1B2C3D /* MPVJSONIPCClientTests.swift */; };
+		8D6E7A852F4C4D0E9A1B2C3D /* IINAPlaybackAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A842F4C4D0E9A1B2C3D /* IINAPlaybackAdapter.swift */; };
+		8D6E7A872F4C4D0E9A1B2C3D /* MPVJSONIPCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A862F4C4D0E9A1B2C3D /* MPVJSONIPCClient.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,6 +72,8 @@
 		8D6E7A7E2F4C4D0E9A1B2C3D /* AttentionMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttentionMonitor.swift; sourceTree = "<group>"; };
 		8D6E7A802F4C4D0E9A1B2C3D /* IINAPlaybackAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IINAPlaybackAdapterTests.swift; sourceTree = "<group>"; };
 		8D6E7A822F4C4D0E9A1B2C3D /* MPVJSONIPCClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPVJSONIPCClientTests.swift; sourceTree = "<group>"; };
+		8D6E7A842F4C4D0E9A1B2C3D /* IINAPlaybackAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IINAPlaybackAdapter.swift; sourceTree = "<group>"; };
+		8D6E7A862F4C4D0E9A1B2C3D /* MPVJSONIPCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPVJSONIPCClient.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -123,6 +127,8 @@
 				8D6E7A7A2F4C4D0E9A1B2C3D /* CameraFrameCapture.swift */,
 				8D6E7A7C2F4C4D0E9A1B2C3D /* VisionAttentionAnalyzer.swift */,
 				8D6E7A7E2F4C4D0E9A1B2C3D /* AttentionMonitor.swift */,
+				8D6E7A842F4C4D0E9A1B2C3D /* IINAPlaybackAdapter.swift */,
+				8D6E7A862F4C4D0E9A1B2C3D /* MPVJSONIPCClient.swift */,
 				8D6E7A3E2F4C4D0E9A1B2C3D /* Assets.xcassets */,
 				8D6E7A402F4C4D0E9A1B2C3D /* Info.plist */,
 				8D6E7A412F4C4D0E9A1B2C3D /* GlanceHold.entitlements */,
@@ -257,6 +263,8 @@
 				8D6E7A7B2F4C4D0E9A1B2C3D /* CameraFrameCapture.swift in Sources */,
 				8D6E7A7D2F4C4D0E9A1B2C3D /* VisionAttentionAnalyzer.swift in Sources */,
 				8D6E7A7F2F4C4D0E9A1B2C3D /* AttentionMonitor.swift in Sources */,
+				8D6E7A852F4C4D0E9A1B2C3D /* IINAPlaybackAdapter.swift in Sources */,
+				8D6E7A872F4C4D0E9A1B2C3D /* MPVJSONIPCClient.swift in Sources */,
 				8D6E7A3B2F4C4D0E9A1B2C3D /* GlanceHoldApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
