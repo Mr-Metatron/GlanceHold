@@ -75,7 +75,20 @@ Plans:
   4. User-visible attention status updates from local AVFoundation camera capture plus Apple Vision face/head-pose observations.
   5. Camera frames are processed locally without upload, storage, or persistence, and disabling or quitting stops camera capture.
 
-**Plans:** TBD
+**Plans:** 0/3 plans complete
+Plans:
+**Wave 1**
+
+- [ ] 03-01-PLAN.md — Pure settings, scalar calibration, raw classifier, persistence, and tests.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 03-02-PLAN.md — Local AVFoundation capture, Vision pose analyzer, attention monitor coordinator, and tests.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 03-03-PLAN.md — Status-bar calibration, tuning, reset, visible attention states, and full Phase 3 verification.
+
 **UI hint**: yes
 
 ### Phase 4: IINA Adapter Spike and End-to-End Playback Control
@@ -119,6 +132,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 |-------|----------------|--------|-----------|
 | 1. Status-Bar Shell, Permission Trust, and Verification Baseline | 3/3 | Complete   | 2026-06-06 |
 | 2. Pure Attention State Machine and Playback Policy | 2/2 | Complete   | 2026-06-05 |
-| 3. Local Camera, Vision Signal, Calibration, and Tuning | 0/TBD | Not started | - |
+| 3. Local Camera, Vision Signal, Calibration, and Tuning | 0/3 | Planned | - |
 | 4. IINA Adapter Spike and End-to-End Playback Control | 0/TBD | Not started | - |
 | 5. End-to-End UX Hardening and Manual UAT | 0/TBD | Not started | - |
