@@ -26,13 +26,13 @@ Requirements for the first usable local release. Each maps to roadmap phases.
 ### Attention Detection
 
 - [ ] **ATTN-01**: GlanceHold uses AVFoundation camera capture and Apple Vision face/head-pose observations as the v1 attention signal.
-- [ ] **ATTN-02**: User can calibrate a neutral facing-screen pose from the status bar menu.
-- [ ] **ATTN-03**: If calibration fails because no stable face is detected, GlanceHold reports failure and preserves the previous valid calibration when one exists.
-- [ ] **ATTN-04**: User can recalibrate without restarting the app.
-- [ ] **ATTN-05**: User can adjust head-turn sensitivity or threshold from the status bar menu.
-- [ ] **ATTN-06**: User can adjust away delay and recovery delay from the status bar menu.
+- [x] **ATTN-02**: User can calibrate a neutral facing-screen pose from the status bar menu.
+- [x] **ATTN-03**: If calibration fails because no stable face is detected, GlanceHold reports failure and preserves the previous valid calibration when one exists.
+- [x] **ATTN-04**: User can recalibrate without restarting the app.
+- [x] **ATTN-05**: User can adjust head-turn sensitivity or threshold from the status bar menu.
+- [x] **ATTN-06**: User can adjust away delay and recovery delay from the status bar menu.
 - [x] **ATTN-07**: GlanceHold classifies attention through a debounced state machine rather than directly acting on single Vision frames.
-- [ ] **ATTN-08**: GlanceHold distinguishes at least Facing, Looking Away, No Face, and Recovering states internally and in user-visible status.
+- [x] **ATTN-08**: GlanceHold distinguishes at least Facing, Looking Away, No Face, and Recovering states internally and in user-visible status.
 
 ### IINA Playback
 
@@ -56,8 +56,8 @@ Requirements for the first usable local release. Each maps to roadmap phases.
 
 ### Preferences and Feedback
 
-- [ ] **PREF-01**: GlanceHold persists selected mode, sensitivity/threshold, away delay, recovery delay, and last valid scalar calibration data across launches.
-- [ ] **PREF-02**: GlanceHold exposes a clear reset/recalibration path for bad persisted calibration or settings.
+- [x] **PREF-01**: GlanceHold persists selected mode, sensitivity/threshold, away delay, recovery delay, and last valid scalar calibration data across launches.
+- [x] **PREF-02**: GlanceHold exposes a clear reset/recalibration path for bad persisted calibration or settings.
 - [ ] **PREF-03**: Status bar menu shows the last meaningful action, such as Held speed at 1x, Restored 2x, Paused by GlanceHold, Manual pause detected, or No action.
 
 ### Verification
@@ -122,13 +122,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PRIV-04 | Phase 3 | Pending |
 | PRIV-05 | Phase 3 | Pending |
 | ATTN-01 | Phase 3 | Pending |
-| ATTN-02 | Phase 3 | Pending |
-| ATTN-03 | Phase 3 | Pending |
-| ATTN-04 | Phase 3 | Pending |
-| ATTN-05 | Phase 3 | Pending |
-| ATTN-06 | Phase 3 | Pending |
+| ATTN-02 | Phase 3 | Complete |
+| ATTN-03 | Phase 3 | Complete |
+| ATTN-04 | Phase 3 | Complete |
+| ATTN-05 | Phase 3 | Complete |
+| ATTN-06 | Phase 3 | Complete |
 | ATTN-07 | Phase 2 | Complete |
-| ATTN-08 | Phase 3 | Pending |
+| ATTN-08 | Phase 3 | Complete |
 | IINA-01 | Phase 4 | Pending |
 | IINA-02 | Phase 4 | Pending |
 | IINA-03 | Phase 4 | Pending |
@@ -143,8 +143,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SAFE-04 | Phase 2 | Complete |
 | SAFE-05 | Phase 2 | Complete |
 | SAFE-06 | Phase 5 | Pending |
-| PREF-01 | Phase 3 | Pending |
-| PREF-02 | Phase 3 | Pending |
+| PREF-01 | Phase 3 | Complete |
+| PREF-02 | Phase 3 | Complete |
 | PREF-03 | Phase 5 | Pending |
 | VER-01 | Phase 2 | Complete |
 | VER-02 | Phase 2 | Complete |
