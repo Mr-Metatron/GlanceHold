@@ -19,13 +19,13 @@ Requirements for the first usable local release. Each maps to roadmap phases.
 
 - [ ] **PRIV-01**: User is prompted for camera permission only as part of an explicit monitoring/calibration action.
 - [x] **PRIV-02**: User can understand from app/menu copy that camera processing is local-only.
-- [ ] **PRIV-03**: GlanceHold does not upload, store, or persist camera frames, screenshots, face images, or video clips.
-- [ ] **PRIV-04**: If camera permission is denied or camera capture is unavailable, GlanceHold shows a recoverable status and sends no playback commands.
-- [ ] **PRIV-05**: Disabling or quitting GlanceHold stops camera capture.
+- [x] **PRIV-03**: GlanceHold does not upload, store, or persist camera frames, screenshots, face images, or video clips.
+- [x] **PRIV-04**: If camera permission is denied or camera capture is unavailable, GlanceHold shows a recoverable status and sends no playback commands.
+- [x] **PRIV-05**: Disabling or quitting GlanceHold stops camera capture.
 
 ### Attention Detection
 
-- [ ] **ATTN-01**: GlanceHold uses AVFoundation camera capture and Apple Vision face/head-pose observations as the v1 attention signal.
+- [x] **ATTN-01**: GlanceHold uses AVFoundation camera capture and Apple Vision face/head-pose observations as the v1 attention signal.
 - [x] **ATTN-02**: User can calibrate a neutral facing-screen pose from the status bar menu.
 - [x] **ATTN-03**: If calibration fails because no stable face is detected, GlanceHold reports failure and preserves the previous valid calibration when one exists.
 - [x] **ATTN-04**: User can recalibrate without restarting the app.
@@ -118,10 +118,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | APP-05 | Phase 1 | Complete |
 | PRIV-01 | Phase 1 | Pending |
 | PRIV-02 | Phase 1 | Complete |
-| PRIV-03 | Phase 3 | Pending |
-| PRIV-04 | Phase 3 | Pending |
-| PRIV-05 | Phase 3 | Pending |
-| ATTN-01 | Phase 3 | Pending |
+| PRIV-03 | Phase 3 | Complete |
+| PRIV-04 | Phase 3 | Complete |
+| PRIV-05 | Phase 3 | Complete |
+| ATTN-01 | Phase 3 | Complete |
 | ATTN-02 | Phase 3 | Complete |
 | ATTN-03 | Phase 3 | Complete |
 | ATTN-04 | Phase 3 | Complete |
