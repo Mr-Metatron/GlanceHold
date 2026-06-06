@@ -49,7 +49,11 @@ struct IINAPlaybackAdapter: IINAPlaybackAdapting {
             try await client.send(command: [.string("set_property"), .string("speed"), .double(1.0)])
         case let .restoreSpeed(speed):
             try await client.send(command: [.string("set_property"), .string("speed"), .double(speed)])
-        case .pause, .resume, .stopMonitoring:
+        case .pause:
+            try await client.send(command: [.string("set_property"), .string("pause"), .bool(true)])
+        case .resume:
+            try await client.send(command: [.string("set_property"), .string("pause"), .bool(false)])
+        case .stopMonitoring:
             return
         }
     }
