@@ -23,6 +23,8 @@
 		8D6E7A712F4C4D0E9A1B2C3D /* AttentionSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A702F4C4D0E9A1B2C3D /* AttentionSettings.swift */; };
 		8D6E7A732F4C4D0E9A1B2C3D /* CalibrationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A722F4C4D0E9A1B2C3D /* CalibrationModel.swift */; };
 		8D6E7A752F4C4D0E9A1B2C3D /* AttentionSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A742F4C4D0E9A1B2C3D /* AttentionSettingsStore.swift */; };
+		8D6E7A772F4C4D0E9A1B2C3D /* AttentionMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A762F4C4D0E9A1B2C3D /* AttentionMonitorTests.swift */; };
+		8D6E7A792F4C4D0E9A1B2C3D /* VisionAttentionAnalyzerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A782F4C4D0E9A1B2C3D /* VisionAttentionAnalyzerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +58,8 @@
 		8D6E7A702F4C4D0E9A1B2C3D /* AttentionSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttentionSettings.swift; sourceTree = "<group>"; };
 		8D6E7A722F4C4D0E9A1B2C3D /* CalibrationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationModel.swift; sourceTree = "<group>"; };
 		8D6E7A742F4C4D0E9A1B2C3D /* AttentionSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttentionSettingsStore.swift; sourceTree = "<group>"; };
+		8D6E7A762F4C4D0E9A1B2C3D /* AttentionMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttentionMonitorTests.swift; sourceTree = "<group>"; };
+		8D6E7A782F4C4D0E9A1B2C3D /* VisionAttentionAnalyzerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionAttentionAnalyzerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -122,6 +126,8 @@
 				8D6E7A682F4C4D0E9A1B2C3D /* PlaybackPolicyTests.swift */,
 				8D6E7A6C2F4C4D0E9A1B2C3D /* AttentionSettingsTests.swift */,
 				8D6E7A6E2F4C4D0E9A1B2C3D /* CalibrationModelTests.swift */,
+				8D6E7A762F4C4D0E9A1B2C3D /* AttentionMonitorTests.swift */,
+				8D6E7A782F4C4D0E9A1B2C3D /* VisionAttentionAnalyzerTests.swift */,
 			);
 			path = GlanceHoldTests;
 			sourceTree = "<group>";
@@ -247,6 +253,8 @@
 				8D6E7A692F4C4D0E9A1B2C3D /* PlaybackPolicyTests.swift in Sources */,
 				8D6E7A6D2F4C4D0E9A1B2C3D /* AttentionSettingsTests.swift in Sources */,
 				8D6E7A6F2F4C4D0E9A1B2C3D /* CalibrationModelTests.swift in Sources */,
+				8D6E7A772F4C4D0E9A1B2C3D /* AttentionMonitorTests.swift in Sources */,
+				8D6E7A792F4C4D0E9A1B2C3D /* VisionAttentionAnalyzerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
