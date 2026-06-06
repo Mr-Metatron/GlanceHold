@@ -198,11 +198,14 @@ struct GlanceHoldState: Equatable {
 
         switch permissionProvider.authorizationStatus() {
         case .granted:
-            return .readyAfterCalibration
+            return hasCalibration ? .readyAfterCalibration : .needsCalibration
         case .denied, .restricted:
             return .cameraPermissionDenied
         case .undetermined:
-            return await permissionProvider.requestAccess() ? .readyAfterCalibration : .cameraPermissionDenied
+            guard await permissionProvider.requestAccess() else {
+                return .cameraPermissionDenied
+            }
+            return hasCalibration ? .readyAfterCalibration : .needsCalibration
         }
     }
 

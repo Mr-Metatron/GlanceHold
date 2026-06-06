@@ -11,7 +11,7 @@ final class CameraPermissionClientTests: XCTestCase {
         await state.enableMonitoring(permissionProvider: provider)
 
         XCTAssertEqual(provider.requestCount, 1)
-        XCTAssertEqual(state.status.visibleTitle, "Ready After Calibration")
+        XCTAssertEqual(state.status.visibleTitle, "Needs Calibration")
         XCTAssertFalse(state.isMonitoringActive)
     }
 
@@ -50,12 +50,23 @@ final class CameraPermissionClientTests: XCTestCase {
 
     func testGrantedPermissionProceedsToReadyAfterCalibration() async {
         let provider = FakePermissionProvider(status: .granted, requestResult: true)
-        var state = GlanceHoldState()
+        var state = GlanceHoldState(settings: .defaults.withCalibration(permissionSnapshot()))
 
         await state.enableMonitoring(permissionProvider: provider)
 
         XCTAssertEqual(provider.requestCount, 0)
         XCTAssertEqual(state.status.visibleTitle, "Ready After Calibration")
+        XCTAssertFalse(state.isMonitoringActive)
+    }
+
+    func testGrantedPermissionWithoutCalibrationNeedsCalibration() async {
+        let provider = FakePermissionProvider(status: .granted, requestResult: true)
+        var state = GlanceHoldState()
+
+        await state.enableMonitoring(permissionProvider: provider)
+
+        XCTAssertEqual(provider.requestCount, 0)
+        XCTAssertEqual(state.status.visibleTitle, "Needs Calibration")
         XCTAssertFalse(state.isMonitoringActive)
     }
 
@@ -88,6 +99,14 @@ final class CameraPermissionClientTests: XCTestCase {
         XCTAssertEqual(GlanceHoldPrimaryAction.openCameraSettings.title, "Open Camera Settings...")
         XCTAssertTrue(GlanceHoldPrimaryAction.openCameraSettings.isEnabled)
     }
+}
+
+private func permissionSnapshot() -> CalibrationSnapshot {
+    CalibrationSnapshot(
+        neutralPose: PoseSample(yawDegrees: 0.0, pitchDegrees: 0.0, rollDegrees: 0.0, time: 0.0),
+        quality: .high,
+        createdAt: Date(timeIntervalSince1970: 1.0)
+    )
 }
 
 private final class FakePermissionProvider: CameraPermissionProviding {

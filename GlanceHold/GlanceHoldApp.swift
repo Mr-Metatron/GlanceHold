@@ -108,99 +108,102 @@ private struct GlanceHoldMenu: View {
     }
 
     var body: some View {
-        Text("Status: \(state.status.visibleTitle)")
-            .accessibilityLabel("Status: \(state.status.visibleTitle)")
+        Group {
+            Text("Status: \(state.status.visibleTitle)")
+                .accessibilityLabel("Status: \(state.status.visibleTitle)")
 
-        if state.status == .cameraPermissionNeeded {
-            Text(permissionExplanation)
-                .foregroundStyle(.secondary)
-        } else if !state.status.detailText.isEmpty {
-            Text(state.status.detailText)
-                .foregroundStyle(state.status == .cameraPermissionDenied ? .orange : .secondary)
-        }
-
-        Divider()
-
-        Button(primaryAction.title) {
-            performPrimaryAction(primaryAction)
-        }
-        .disabled(!primaryAction.isEnabled)
-
-        Divider()
-
-        Picker("Mode", selection: modeBinding) {
-            Text("Speed Control").tag(MonitoringMode.speedControl)
-            Text("Pause/Resume").tag(MonitoringMode.pauseResume)
-        }
-
-        Divider()
-
-        Text(GlanceHoldMenuCopy.tuningSectionTitle)
-            .foregroundStyle(.secondary)
-
-        Menu(GlanceHoldMenuCopy.sensitivityLabel) {
-            ForEach(AttentionSensitivity.allCases, id: \.self) { sensitivity in
-                Button(sensitivity.displayName) {
-                    updateSettings(state.settings.withSensitivity(sensitivity))
-                }
+            if state.status == .cameraPermissionNeeded {
+                Text(permissionExplanation)
+                    .foregroundStyle(.secondary)
+            } else if !state.status.detailText.isEmpty {
+                Text(state.status.detailText)
+                    .foregroundStyle(state.status == .cameraPermissionDenied ? .orange : .secondary)
             }
-        }
 
-        Menu(GlanceHoldMenuCopy.speedControlAwayDelayLabel) {
-            ForEach(delayChoices, id: \.self) { delay in
-                Button(formatDelay(delay)) {
-                    var settings = state.settings
-                    settings.speedControlAwayDelay = delay
-                    updateSettings(settings)
-                }
-            }
-        }
-
-        Menu(GlanceHoldMenuCopy.pauseResumeAwayDelayLabel) {
-            ForEach(delayChoices, id: \.self) { delay in
-                Button(formatDelay(delay)) {
-                    var settings = state.settings
-                    settings.pauseResumeAwayDelay = delay
-                    updateSettings(settings)
-                }
-            }
-        }
-
-        Menu(GlanceHoldMenuCopy.recoveryDelayLabel) {
-            ForEach(delayChoices, id: \.self) { delay in
-                Button(formatDelay(delay)) {
-                    var settings = state.settings
-                    settings.recoveryDelay = delay
-                    updateSettings(settings)
-                }
-            }
-        }
-
-        if state.hasCalibration {
             Divider()
 
-            Button(GlanceHoldPrimaryAction.recalibrate.title) {
-                startCalibration()
+            Button(primaryAction.title) {
+                performPrimaryAction(primaryAction)
+            }
+            .disabled(!primaryAction.isEnabled)
+
+            Divider()
+
+            Picker("Mode", selection: modeBinding) {
+                Text("Speed Control").tag(MonitoringMode.speedControl)
+                Text("Pause/Resume").tag(MonitoringMode.pauseResume)
             }
 
-            Button(GlanceHoldPrimaryAction.resetCalibration.title, role: .destructive) {
-                resetCalibrationWithConfirmation()
+            Divider()
+
+            Text(GlanceHoldMenuCopy.tuningSectionTitle)
+                .foregroundStyle(.secondary)
+
+            Menu(GlanceHoldMenuCopy.sensitivityLabel) {
+                ForEach(AttentionSensitivity.allCases, id: \.self) { sensitivity in
+                    Button(sensitivity.displayName) {
+                        updateSettings(state.settings.withSensitivity(sensitivity))
+                    }
+                }
+            }
+
+            Menu(GlanceHoldMenuCopy.speedControlAwayDelayLabel) {
+                ForEach(delayChoices, id: \.self) { delay in
+                    Button(formatDelay(delay)) {
+                        var settings = state.settings
+                        settings.speedControlAwayDelay = delay
+                        updateSettings(settings)
+                    }
+                }
+            }
+
+            Menu(GlanceHoldMenuCopy.pauseResumeAwayDelayLabel) {
+                ForEach(delayChoices, id: \.self) { delay in
+                    Button(formatDelay(delay)) {
+                        var settings = state.settings
+                        settings.pauseResumeAwayDelay = delay
+                        updateSettings(settings)
+                    }
+                }
+            }
+
+            Menu(GlanceHoldMenuCopy.recoveryDelayLabel) {
+                ForEach(delayChoices, id: \.self) { delay in
+                    Button(formatDelay(delay)) {
+                        var settings = state.settings
+                        settings.recoveryDelay = delay
+                        updateSettings(settings)
+                    }
+                }
+            }
+
+            if state.hasCalibration {
+                Divider()
+
+                Button(GlanceHoldPrimaryAction.recalibrate.title) {
+                    startCalibration()
+                }
+
+                Button(GlanceHoldPrimaryAction.resetCalibration.title, role: .destructive) {
+                    resetCalibrationWithConfirmation()
+                }
+            }
+
+            Text(GlanceHoldMenuCopy.privacyNote)
+                .foregroundStyle(.secondary)
+
+            Divider()
+
+            Button("About GlanceHold...") {
+                openWindow(id: "about")
+            }
+
+            Button("Quit GlanceHold") {
+                monitor.stopMonitoring()
+                NSApplication.shared.terminate(nil)
             }
         }
-
-        Text(GlanceHoldMenuCopy.privacyNote)
-            .foregroundStyle(.secondary)
-
-        Divider()
-
-        Button("About GlanceHold...") {
-            openWindow(id: "about")
-        }
-
-        Button("Quit GlanceHold") {
-            monitor.stopMonitoring()
-            NSApplication.shared.terminate(nil)
-        }
+        .onAppear(perform: installMonitorStateHandler)
     }
 
     private var modeBinding: Binding<MonitoringMode> {
@@ -259,9 +262,23 @@ private struct GlanceHoldMenu: View {
     }
 
     private func startCalibration() {
-        permissionRequestID = nil
-        monitor.startCalibration()
-        state.apply(monitorState: monitor.state)
+        let requestID = UUID()
+        permissionRequestID = requestID
+        state.status = .requestingCameraPermission
+
+        Task {
+            let result = await monitor.captureCalibrationSampleSet()
+            await MainActor.run {
+                guard permissionRequestID == requestID else {
+                    return
+                }
+
+                permissionRequestID = nil
+                handleCalibrationResult(result)
+                state.updateSettings(monitor.settings)
+                state.apply(monitorState: monitor.state)
+            }
+        }
     }
 
     private func updateSettings(_ settings: AttentionSettings) {
@@ -294,6 +311,19 @@ private struct GlanceHoldMenu: View {
         }
     }
 
+    private func handleCalibrationResult(_ result: CalibrationResult) {
+        guard case .needsReplacementConfirmation(let candidate, let existing) = result else {
+            return
+        }
+
+        let decision: CalibrationReplacementDecision = confirmMarginalReplacement() ? .useNew : .keepCurrent
+        do {
+            try monitor.applyCalibrationReplacement(candidate: candidate, existing: existing, decision: decision)
+        } catch {
+            state.status = .cameraUnavailable
+        }
+    }
+
     private func confirmMarginalReplacement() -> Bool {
         let alert = NSAlert()
         alert.messageText = "Recalibration recommended"
@@ -314,5 +344,14 @@ private struct GlanceHoldMenu: View {
         }
 
         NSWorkspace.shared.open(url)
+    }
+
+    private func installMonitorStateHandler() {
+        monitor.stateDidChange = { monitorState, settings in
+            Task { @MainActor in
+                state.updateSettings(settings)
+                state.apply(monitorState: monitorState)
+            }
+        }
     }
 }

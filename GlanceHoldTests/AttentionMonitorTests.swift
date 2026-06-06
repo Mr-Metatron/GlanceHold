@@ -44,6 +44,7 @@ final class AttentionMonitorTests: XCTestCase {
         await monitor.startMonitoring()
 
         XCTAssertEqual(capture.startCount, 1)
+        XCTAssertNil(capture.frameHandler)
         XCTAssertEqual(monitor.state, .cameraUnavailable)
     }
 
@@ -63,6 +64,7 @@ final class AttentionMonitorTests: XCTestCase {
 
         XCTAssertEqual(capture.startCount, 1)
         XCTAssertEqual(capture.stopCount, 1)
+        XCTAssertNil(capture.frameHandler)
         XCTAssertEqual(monitor.state, .off)
     }
 
@@ -115,6 +117,30 @@ final class AttentionMonitorTests: XCTestCase {
         XCTAssertEqual(result, .failed(previous: previous))
         XCTAssertEqual(store.load().calibration, previous)
         XCTAssertEqual(monitor.state, .calibrationFailed(previousKept: true))
+    }
+
+    func testMarginalReplacementDecisionPersistsChosenCalibration() async throws {
+        let existing = snapshot(.high)
+        let store = MonitorSettingsStore(settings: .defaults.withCalibration(existing))
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: store,
+            capture: FakeCameraFrameCapture(),
+            analyzer: FakeVisionAnalyzer()
+        )
+
+        let result = await monitor.startCalibration(samples: samples(spread: 2.0))
+
+        guard case .needsReplacementConfirmation(let candidate, let current) = result else {
+            return XCTFail("Expected marginal replacement confirmation")
+        }
+        XCTAssertEqual(current, existing)
+        XCTAssertEqual(store.load().calibration, existing)
+
+        try monitor.applyCalibrationReplacement(candidate: candidate, existing: current, decision: .useNew)
+
+        XCTAssertEqual(store.load().calibration, candidate)
+        XCTAssertEqual(monitor.state, .ready)
     }
 
     func testCalibrationSaveFailureLeavesMonitorUnavailable() async {
@@ -173,6 +199,26 @@ final class AttentionMonitorTests: XCTestCase {
         )
 
         XCTAssertEqual(calibrated.applySample(.ambiguous(time: 0.0)), .unavailable)
+    }
+
+    func testMonitorNotifiesWhenSamplesChangeVisibleState() {
+        let store = MonitorSettingsStore(settings: .defaults.withCalibration(snapshot(.high)))
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: store,
+            capture: FakeCameraFrameCapture(),
+            analyzer: FakeVisionAnalyzer()
+        )
+        var notifiedStates: [AttentionMonitorState] = []
+        monitor.stateDidChange = { state, _ in
+            notifiedStates.append(state)
+        }
+
+        _ = monitor.applySample(.pose(makePose(yaw: 0.0, pitch: 0.0, time: 0.0)))
+        _ = monitor.applySample(.pose(makePose(yaw: 30.0, pitch: 0.0, time: 0.1)))
+        _ = monitor.applySample(.pose(makePose(yaw: 30.0, pitch: 0.0, time: 0.9)))
+
+        XCTAssertEqual(notifiedStates, [.facing, .facing, .lookingAway])
     }
 
     func testSettingsUpdatesSaveImmediatelyAndSurviveReload() throws {
