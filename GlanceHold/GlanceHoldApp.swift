@@ -5,6 +5,7 @@ struct GlanceHoldApp: App {
     private let settingsStore: UserDefaultsAttentionSettingsStore
     private let monitor: AttentionMonitor
     @State private var glanceHoldState: GlanceHoldState
+    @State private var playbackCoordinator: PlaybackCoordinator
 
     init() {
         let settingsStore = UserDefaultsAttentionSettingsStore()
@@ -14,14 +15,22 @@ struct GlanceHoldApp: App {
             permissionProvider: CameraPermissionClient.live,
             settingsStore: settingsStore,
             capture: LiveCameraFrameCapture(),
-            analyzer: LiveVisionAttentionAnalyzer()
+            analyzer: AttentionAnalyzerFactory.live()
         )
         _glanceHoldState = State(initialValue: GlanceHoldState(mode: loadedSettings.mode, settings: loadedSettings))
+        _playbackCoordinator = State(initialValue: PlaybackCoordinator(
+            mode: loadedSettings.mode,
+            adapter: IINAPlaybackAdapter(client: MPVJSONIPCClient())
+        ))
     }
 
     var body: some Scene {
         MenuBarExtra("GlanceHold", systemImage: "display") {
-            GlanceHoldMenu(state: $glanceHoldState, monitor: monitor)
+            GlanceHoldMenu(
+                state: $glanceHoldState,
+                monitor: monitor,
+                playbackCoordinator: $playbackCoordinator
+            )
         }
 
         Window("About GlanceHold", id: "about") {
@@ -97,6 +106,7 @@ enum GlanceHoldPrimaryAction: Equatable {
 private struct GlanceHoldMenu: View {
     @Binding var state: GlanceHoldState
     let monitor: AttentionMonitor
+    @Binding var playbackCoordinator: PlaybackCoordinator
     @State private var permissionRequestID: UUID?
     @Environment(\.openWindow) private var openWindow
 
@@ -118,6 +128,16 @@ private struct GlanceHoldMenu: View {
             } else if !state.status.detailText.isEmpty {
                 Text(state.status.detailText)
                     .foregroundStyle(state.status == .cameraPermissionDenied ? .orange : .secondary)
+            }
+
+            Divider()
+
+            Text("IINA: \(state.playerStatus.visibleTitle)")
+                .accessibilityLabel("IINA: \(state.playerStatus.visibleTitle)")
+
+            if !state.playerStatus.detailText.isEmpty {
+                Text(state.playerStatus.detailText)
+                    .foregroundStyle(.secondary)
             }
 
             Divider()
@@ -200,6 +220,7 @@ private struct GlanceHoldMenu: View {
 
             Button("Quit GlanceHold") {
                 monitor.stopMonitoring()
+                playbackCoordinator.stopMonitoring()
                 NSApplication.shared.terminate(nil)
             }
         }
@@ -215,6 +236,7 @@ private struct GlanceHoldMenu: View {
                 var settings = state.settings
                 settings.mode = mode
                 updateSettings(settings)
+                replacePlaybackCoordinator(mode: mode)
             }
         )
     }
@@ -230,6 +252,7 @@ private struct GlanceHoldMenu: View {
         case .disable:
             permissionRequestID = nil
             monitor.stopMonitoring()
+            playbackCoordinator.stopMonitoring()
             state.disableMonitoring()
         case .wait:
             break
@@ -347,11 +370,61 @@ private struct GlanceHoldMenu: View {
     }
 
     private func installMonitorStateHandler() {
+        installPlaybackCoordinatorStateHandler()
+        let coordinator = playbackCoordinator
         monitor.stateDidChange = { monitorState, settings in
             Task { @MainActor in
                 state.updateSettings(settings)
                 state.apply(monitorState: monitorState)
             }
+
+            guard let attentionState = Self.playbackAttentionState(for: monitorState) else {
+                return
+            }
+
+            Task {
+                await coordinator.handleAttentionState(attentionState)
+            }
+        }
+    }
+
+    private func installPlaybackCoordinatorStateHandler() {
+        playbackCoordinator.stateDidChange = { coordinatorState in
+            Task { @MainActor in
+                state.apply(playerControlState: coordinatorState)
+            }
+        }
+    }
+
+    private func replacePlaybackCoordinator(mode: MonitoringMode) {
+        playbackCoordinator.stateDidChange = nil
+        playbackCoordinator.stopMonitoring()
+        playbackCoordinator = Self.makePlaybackCoordinator(mode: mode)
+        state.playerStatus = .setupNeeded
+        installMonitorStateHandler()
+    }
+
+    private static func makePlaybackCoordinator(mode: MonitoringMode) -> PlaybackCoordinator {
+        PlaybackCoordinator(
+            mode: mode,
+            adapter: IINAPlaybackAdapter(client: MPVJSONIPCClient())
+        )
+    }
+
+    private static func playbackAttentionState(for monitorState: AttentionMonitorState) -> DebouncedAttentionState? {
+        switch monitorState {
+        case .facing:
+            .facing
+        case .lookingAway:
+            .lookingAway
+        case .noFaceDetected:
+            .noFaceDetected
+        case .recovering:
+            .recovering
+        case .unavailable:
+            .unavailable
+        case .off, .needsCalibration, .calibrating, .ready, .cameraPermissionDenied, .cameraUnavailable, .calibrationFailed:
+            nil
         }
     }
 }

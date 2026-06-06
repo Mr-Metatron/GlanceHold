@@ -33,6 +33,11 @@ final class PlaybackCoordinator {
         self.state = .unavailable
     }
 
+    func stopMonitoring() {
+        resetPolicy()
+        state = .unavailable
+    }
+
     func handleAttentionState(_ state: DebouncedAttentionState) async {
         let snapshot = await adapter.snapshot()
         let isControllable = isPlayerControllable(snapshot)

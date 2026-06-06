@@ -14,6 +14,12 @@ protocol VisionAttentionAnalyzing {
     func analyze(_ frame: CapturedCameraFrame) -> VisionAttentionObservation
 }
 
+enum AttentionAnalyzerFactory {
+    static func live() -> VisionAttentionAnalyzing {
+        LiveVisionAttentionAnalyzer()
+    }
+}
+
 struct LiveVisionAttentionAnalyzer: VisionAttentionAnalyzing {
     func analyze(_ frame: CapturedCameraFrame) -> VisionAttentionObservation {
         let request = VNDetectFaceRectanglesRequest()
