@@ -25,6 +25,8 @@
 		8D6E7A752F4C4D0E9A1B2C3D /* AttentionSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A742F4C4D0E9A1B2C3D /* AttentionSettingsStore.swift */; };
 		8D6E7A772F4C4D0E9A1B2C3D /* AttentionMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A762F4C4D0E9A1B2C3D /* AttentionMonitorTests.swift */; };
 		8D6E7A792F4C4D0E9A1B2C3D /* VisionAttentionAnalyzerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A782F4C4D0E9A1B2C3D /* VisionAttentionAnalyzerTests.swift */; };
+		8D6E7A7B2F4C4D0E9A1B2C3D /* CameraFrameCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A7A2F4C4D0E9A1B2C3D /* CameraFrameCapture.swift */; };
+		8D6E7A7D2F4C4D0E9A1B2C3D /* VisionAttentionAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A7C2F4C4D0E9A1B2C3D /* VisionAttentionAnalyzer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -60,6 +62,8 @@
 		8D6E7A742F4C4D0E9A1B2C3D /* AttentionSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttentionSettingsStore.swift; sourceTree = "<group>"; };
 		8D6E7A762F4C4D0E9A1B2C3D /* AttentionMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttentionMonitorTests.swift; sourceTree = "<group>"; };
 		8D6E7A782F4C4D0E9A1B2C3D /* VisionAttentionAnalyzerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionAttentionAnalyzerTests.swift; sourceTree = "<group>"; };
+		8D6E7A7A2F4C4D0E9A1B2C3D /* CameraFrameCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraFrameCapture.swift; sourceTree = "<group>"; };
+		8D6E7A7C2F4C4D0E9A1B2C3D /* VisionAttentionAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionAttentionAnalyzer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -110,6 +114,8 @@
 				8D6E7A702F4C4D0E9A1B2C3D /* AttentionSettings.swift */,
 				8D6E7A722F4C4D0E9A1B2C3D /* CalibrationModel.swift */,
 				8D6E7A742F4C4D0E9A1B2C3D /* AttentionSettingsStore.swift */,
+				8D6E7A7A2F4C4D0E9A1B2C3D /* CameraFrameCapture.swift */,
+				8D6E7A7C2F4C4D0E9A1B2C3D /* VisionAttentionAnalyzer.swift */,
 				8D6E7A3E2F4C4D0E9A1B2C3D /* Assets.xcassets */,
 				8D6E7A402F4C4D0E9A1B2C3D /* Info.plist */,
 				8D6E7A412F4C4D0E9A1B2C3D /* GlanceHold.entitlements */,
@@ -239,6 +245,8 @@
 				8D6E7A712F4C4D0E9A1B2C3D /* AttentionSettings.swift in Sources */,
 				8D6E7A732F4C4D0E9A1B2C3D /* CalibrationModel.swift in Sources */,
 				8D6E7A752F4C4D0E9A1B2C3D /* AttentionSettingsStore.swift in Sources */,
+				8D6E7A7B2F4C4D0E9A1B2C3D /* CameraFrameCapture.swift in Sources */,
+				8D6E7A7D2F4C4D0E9A1B2C3D /* VisionAttentionAnalyzer.swift in Sources */,
 				8D6E7A3B2F4C4D0E9A1B2C3D /* GlanceHoldApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
