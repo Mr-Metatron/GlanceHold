@@ -58,6 +58,22 @@ final class IINAPlaybackAdapterTests: XCTestCase {
             [.string("set_property"), .string("speed"), .double(1.25)]
         ])
     }
+
+    func testPauseAndResumeMapToPausePropertyCommands() async throws {
+        let client = FakeMPVJSONIPCClient()
+        let adapter = IINAPlaybackAdapter(client: client)
+
+        try await adapter.execute(.pause)
+        XCTAssertEqual(client.commands, [
+            [.string("set_property"), .string("pause"), .bool(true)]
+        ])
+
+        try await adapter.execute(.resume)
+        XCTAssertEqual(client.commands, [
+            [.string("set_property"), .string("pause"), .bool(true)],
+            [.string("set_property"), .string("pause"), .bool(false)]
+        ])
+    }
 }
 
 private final class FakeMPVJSONIPCClient: MPVJSONIPCClienting {
