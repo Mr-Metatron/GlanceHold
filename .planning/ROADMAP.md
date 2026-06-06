@@ -105,11 +105,11 @@ Plans:
   4. In Pause/Resume mode, looking away or leaving frame pauses IINA, and returning resumes only when GlanceHold caused the pause.
   5. If IINA is closed, idle, disconnected, or not controllable, user-visible status reports that state and no playback command is sent.
 
-**Plans:** 4 plans
+**Plans:** 1/4 plans executed
 Plans:
 **Wave 1**
 
-- [ ] 04-01-PLAN.md — Direct mpv JSON IPC adapter/client speed slice with fake-transport tests.
+- [x] 04-01-PLAN.md — Direct mpv JSON IPC adapter/client speed slice with fake-transport tests.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -149,5 +149,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 1. Status-Bar Shell, Permission Trust, and Verification Baseline | 3/3 | Complete   | 2026-06-06 |
 | 2. Pure Attention State Machine and Playback Policy | 2/2 | Complete   | 2026-06-05 |
 | 3. Local Camera, Vision Signal, Calibration, and Tuning | 3/3 | Complete   | 2026-06-06 |
-| 4. IINA Adapter Spike and End-to-End Playback Control | 0/TBD | Not started | - |
+| 4. IINA Adapter Spike and End-to-End Playback Control | 1/4 | In Progress|  |
 | 5. End-to-End UX Hardening and Manual UAT | 0/TBD | Not started | - |
