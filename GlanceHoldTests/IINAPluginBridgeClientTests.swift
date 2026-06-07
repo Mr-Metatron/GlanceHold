@@ -13,6 +13,7 @@ final class IINAPluginBridgeClientTests: XCTestCase {
         let request = try XCTUnwrap(transport.sentMessages.first)
         XCTAssertEqual(request["id"] as? Int, 1)
         XCTAssertEqual(request["version"] as? Int, 1)
+        XCTAssertEqual(request["token"] as? String, IINAPluginBridgeClient.bridgeToken)
         XCTAssertEqual(request["type"] as? String, "snapshot")
     }
 
@@ -38,6 +39,7 @@ final class IINAPluginBridgeClientTests: XCTestCase {
         ])
         XCTAssertEqual(transport.sentMessages[0]["speed"] as? Double, 1.0)
         XCTAssertEqual(transport.sentMessages[1]["speed"] as? Double, 1.25)
+        XCTAssertTrue(transport.sentMessages.allSatisfy { $0["token"] as? String == IINAPluginBridgeClient.bridgeToken })
     }
 
     func testConnectionRefusedMapsToPluginNeeded() async throws {

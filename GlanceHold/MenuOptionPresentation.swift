@@ -46,6 +46,12 @@ struct TuningMenuPresentation: Equatable {
         abs(delay - selectedDelay) <= delaySelectionTolerance
     }
 
+    static func normalizedDelaySelection(_ selectedDelay: TimeInterval) -> TimeInterval {
+        delayChoices.first {
+            isSelected(delay: $0, selectedDelay: selectedDelay)
+        } ?? selectedDelay
+    }
+
     private static func delayOptions(selectedDelay: TimeInterval) -> [MenuOptionPresentation] {
         delayChoices.map { delay in
             MenuOptionPresentation(

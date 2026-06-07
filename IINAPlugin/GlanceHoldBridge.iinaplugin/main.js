@@ -1,6 +1,11 @@
 const { console, core, event, menu, mpv, ws } = iina;
 
 const protocolVersion = 1;
+const bridgeToken = "glancehold-iina-bridge-v1";
+const toggleMonitoringTitles = {
+  en: "Toggle GlanceHold Monitoring",
+  "zh-Hans": "切换 GlanceHold 监控"
+};
 const activeConnections = new Set();
 let lastBroadcastSnapshotKey = null;
 let pendingBroadcastTimer = null;
@@ -138,6 +143,10 @@ function executeBridgeCommand(request) {
   }
 }
 
+function isAuthorized(request) {
+  return typeof request.token === "string" && request.token === bridgeToken;
+}
+
 function handleMessage(conn, text) {
   let request;
   try {
@@ -148,6 +157,11 @@ function handleMessage(conn, text) {
   }
 
   const id = request.id;
+  if (!isAuthorized(request)) {
+    unavailable(conn, id, "unauthorized");
+    return;
+  }
+
   if (request.version !== protocolVersion) {
     unavailable(conn, id, "unsupported_version");
     return;
@@ -169,6 +183,15 @@ function handleMessage(conn, text) {
   } catch (error) {
     unavailable(conn, id, error.message || "unavailable");
   }
+}
+
+function preferredLanguage() {
+  const language = String(iina.language || iina.locale || "en");
+  return language.toLowerCase().startsWith("zh") ? "zh-Hans" : "en";
+}
+
+function localizedToggleMonitoringTitle() {
+  return toggleMonitoringTitles[preferredLanguage()] || toggleMonitoringTitles.en;
 }
 
 ws.createServer({ port: 47873 });
@@ -197,7 +220,7 @@ registerStatusEvent("mpv.speed.changed");
 registerStatusEvent("mpv.idle-active.changed");
 
 menu.addItem(menu.item(
-  "Toggle GlanceHold Monitoring",
+  localizedToggleMonitoringTitle(),
   broadcastToggleMonitoringRequested,
   { keyBinding: "Alt+g" }
 ));

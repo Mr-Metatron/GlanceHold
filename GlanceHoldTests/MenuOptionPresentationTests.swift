@@ -39,6 +39,11 @@ final class MenuOptionPresentationTests: XCTestCase {
         let presentation = TuningMenuPresentation(settings: settings)
 
         XCTAssertSingleSelection(presentation.speedControlAwayDelayOptions, expectedTitle: GlanceHoldStrings.delaySeconds(0.8))
+        XCTAssertEqual(TuningMenuPresentation.normalizedDelaySelection(settings.speedControlAwayDelay), 0.8)
+    }
+
+    func testDelaySelectionKeepsCustomValueOutsideTolerance() {
+        XCTAssertEqual(TuningMenuPresentation.normalizedDelaySelection(0.73), 0.73)
     }
 
     func testModeDisplayNamesRemainStableForCheckedModePicker() {

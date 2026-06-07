@@ -75,6 +75,15 @@ final class GlanceHoldLocalizationTests: XCTestCase {
         XCTAssertTrue(simplifiedChinese.contains("仅在本机处理"))
     }
 
+    func testIINAPluginUsesLocalizedShortcutLabelAndRejectsUnauthenticatedRequests() throws {
+        let source = try String(contentsOf: projectFileURL("IINAPlugin/GlanceHoldBridge.iinaplugin/main.js"), encoding: .utf8)
+
+        XCTAssertTrue(source.contains(#""zh-Hans": "切换 GlanceHold 监控""#))
+        XCTAssertTrue(source.contains("localizedToggleMonitoringTitle()"))
+        XCTAssertTrue(source.contains(#""unauthorized""#))
+        XCTAssertFalse(source.contains("menu.item(\n  \"Toggle GlanceHold Monitoring\""))
+    }
+
     private func localizationCatalog() throws -> [String: Any] {
         let data = try Data(contentsOf: projectFileURL("GlanceHold/Localizable.xcstrings"))
         let root = try JSONSerialization.jsonObject(with: data) as? [String: Any]

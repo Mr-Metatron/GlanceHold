@@ -2,7 +2,7 @@
 
 `GlanceHoldBridge.iinaplugin` is the local companion plugin used by GlanceHold v1 to control IINA from the sandboxed status-bar app.
 
-The bridge opens a local WebSocket server on `ws://127.0.0.1:47873`, accepts only four request intents, and pushes read-only player status changes to connected GlanceHold clients.
+The bridge opens a local WebSocket server on `ws://127.0.0.1:47873`, accepts only authenticated GlanceHold protocol requests for four intents, and pushes read-only player status changes to connected GlanceHold clients.
 
 - `snapshot`
 - `setSpeed`
@@ -15,9 +15,11 @@ Server-pushed messages use the same protocol version and do not carry a request 
 {"version":1,"type":"statusChanged","snapshot":{"state":"playing","speed":2.0}}
 ```
 
+App-to-plugin requests carry the protocol version, request `id`, and bridge token. Requests without the expected token are rejected before any playback command is considered.
+
 The pushed stream is for menu/status freshness only. It does not trigger playback commands by itself. GlanceHold's Swift playback policy remains responsible for deciding when to hold speed, restore speed, pause, or resume.
 
-The plugin also adds `Toggle GlanceHold Monitoring` to IINA's Plugin menu with the Option-G key binding (`Alt+g`). This does not send playback commands. It broadcasts one id-less local event to connected GlanceHold clients:
+The plugin also adds a localized `Toggle GlanceHold Monitoring` / `切换 GlanceHold 监控` item to IINA's Plugin menu with the Option-G key binding (`Alt+g`). This does not send playback commands. It broadcasts one id-less local event to connected GlanceHold clients:
 
 ```json
 {"version":1,"type":"toggleMonitoringRequested"}

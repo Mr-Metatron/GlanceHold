@@ -124,6 +124,7 @@ private struct GlanceHoldMenu: View {
     @Environment(\.openWindow) private var openWindow
 
     private let playbackFallbackRefreshIntervalNanoseconds: UInt64 = 10_000_000_000
+    private let monitoringToggleReconnectIntervalNanoseconds: UInt64 = 10_000_000_000
 
     private var primaryAction: GlanceHoldPrimaryAction {
         GlanceHoldPrimaryAction.resolve(for: state.status, hasCalibration: state.hasCalibration)
@@ -265,7 +266,7 @@ private struct GlanceHoldMenu: View {
     private var speedControlAwayDelayBinding: Binding<Double> {
         Binding(
             get: {
-                state.settings.speedControlAwayDelay
+                TuningMenuPresentation.normalizedDelaySelection(state.settings.speedControlAwayDelay)
             },
             set: { delay in
                 var settings = state.settings
@@ -278,7 +279,7 @@ private struct GlanceHoldMenu: View {
     private var pauseResumeAwayDelayBinding: Binding<Double> {
         Binding(
             get: {
-                state.settings.pauseResumeAwayDelay
+                TuningMenuPresentation.normalizedDelaySelection(state.settings.pauseResumeAwayDelay)
             },
             set: { delay in
                 var settings = state.settings
@@ -291,7 +292,7 @@ private struct GlanceHoldMenu: View {
     private var recoveryDelayBinding: Binding<Double> {
         Binding(
             get: {
-                state.settings.recoveryDelay
+                TuningMenuPresentation.normalizedDelaySelection(state.settings.recoveryDelay)
             },
             set: { delay in
                 var settings = state.settings
@@ -512,14 +513,22 @@ private struct GlanceHoldMenu: View {
         }
 
         monitoringToggleRequestTask = Task {
-            for await _ in bridgeClient.monitoringToggleRequests() {
+            while !Task.isCancelled {
+                for await _ in bridgeClient.monitoringToggleRequests() {
+                    if Task.isCancelled {
+                        return
+                    }
+
+                    await MainActor.run {
+                        performMonitoringToggleRequest()
+                    }
+                }
+
                 if Task.isCancelled {
                     return
                 }
 
-                await MainActor.run {
-                    performMonitoringToggleRequest()
-                }
+                try? await Task.sleep(nanoseconds: monitoringToggleReconnectIntervalNanoseconds)
             }
         }
     }

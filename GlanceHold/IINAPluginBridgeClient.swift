@@ -42,6 +42,7 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
     private struct Request: Encodable {
         var id: Int
         var version: Int
+        var token: String
         var type: String
         var command: String?
         var speed: Double?
@@ -74,6 +75,7 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
     }
 
     private static let protocolVersion = 1
+    static let bridgeToken = "glancehold-iina-bridge-v1"
 
     private let transport: IINAPluginBridgeTransporting
     private let timeout: TimeInterval
@@ -105,6 +107,7 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
         let request = Request(
             id: nextID(),
             version: Self.protocolVersion,
+            token: Self.bridgeToken,
             type: "snapshot",
             command: nil,
             speed: nil
@@ -227,13 +230,13 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
         let id = nextID()
         switch intent {
         case .holdSpeedAtOne:
-            return Request(id: id, version: Self.protocolVersion, type: "command", command: "setSpeed", speed: 1.0)
+            return Request(id: id, version: Self.protocolVersion, token: Self.bridgeToken, type: "command", command: "setSpeed", speed: 1.0)
         case let .restoreSpeed(speed):
-            return Request(id: id, version: Self.protocolVersion, type: "command", command: "setSpeed", speed: speed)
+            return Request(id: id, version: Self.protocolVersion, token: Self.bridgeToken, type: "command", command: "setSpeed", speed: speed)
         case .pause:
-            return Request(id: id, version: Self.protocolVersion, type: "command", command: "pause", speed: nil)
+            return Request(id: id, version: Self.protocolVersion, token: Self.bridgeToken, type: "command", command: "pause", speed: nil)
         case .resume:
-            return Request(id: id, version: Self.protocolVersion, type: "command", command: "resume", speed: nil)
+            return Request(id: id, version: Self.protocolVersion, token: Self.bridgeToken, type: "command", command: "resume", speed: nil)
         case .stopMonitoring:
             return nil
         }
