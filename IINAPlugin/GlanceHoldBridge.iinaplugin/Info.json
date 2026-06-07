@@ -2,5 +2,10 @@
   "name": "GlanceHold Bridge",
   "identifier": "com.metatron.GlanceHoldBridge",
   "version": "0.1.0",
+  "description": "Local WebSocket bridge for GlanceHold playback control.",
+  "author": {
+    "name": "Metatron"
+  },
+  "permissions": ["network-request"],
   "entry": "main.js"
 }
