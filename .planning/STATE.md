@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Phase 5 UI-SPEC approved
-last_updated: "2026-06-07T11:25:32.900Z"
+status: in_progress
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-06-07T11:58:38.173Z"
 last_activity: 2026-06-07 -- Phase 5 shortcut scope changed from macOS global hotkey to IINA plugin menu/key binding bridge
 progress:
   total_phases: 6
   completed_phases: 4
-  total_plans: 18
-  completed_plans: 18
+  total_plans: 22
+  completed_plans: 19
   percent: 67
 ---
 
@@ -25,19 +25,19 @@ See: .planning/PROJECT.md (updated 2026-06-05)
 
 ## Current Position
 
-Phase: 05 (control-polish-iina-shortcut-and-i18n) — READY
-Plan: not planned yet
-Status: Phase 4 is complete; Phase 5 is the next open roadmap phase; Phase 6 now holds final hardening and manual UAT
+Phase: 05 (control-polish-iina-shortcut-and-i18n) — IN PROGRESS
+Plan: 05-02 next
+Status: Phase 5 menu selected-state polish is complete; next is the IINA plugin monitoring shortcut slice.
 Last activity: 2026-06-07 -- Phase 5 shortcut scope changed from macOS global hotkey to IINA plugin menu/key binding bridge
 
-Plan execution: [██████████] 100%
+Plan execution: [█████████░] 19/22 plans complete
 Phase progress: [███████░░░] 4/6 phases complete
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 18 of 18
+- Total plans completed: 19 of 22
 - Average duration: N/A
 - Total execution time: 0.0 hours
 
@@ -49,10 +49,11 @@ Phase progress: [███████░░░] 4/6 phases complete
 | 02 | 2 | - | - |
 | 03 | 3 | 27 min | 9 min |
 | 04 | 10 | live-iterated | - |
+| 05 | 1/4 | 8 min | 8 min |
 
 **Recent Trend:**
 
-- Last 5 completed plans: 04-06, 04-07, 04-08, 04-09, 04-10
+- Last 5 completed plans: 04-07, 04-08, 04-09, 04-10, 05-01
 - Trend: steady
 
 *Updated after each plan completion*
@@ -71,6 +72,7 @@ Phase progress: [███████░░░] 4/6 phases complete
 | Phase 04 P08 | 63min | 4 tasks | 11 files |
 | Phase 04 P09 | 11 min | 5 tasks | 8 files |
 | Phase 04 P10 | 5 min | 4 tasks | 10 files |
+| Phase 05 P01 | 8 min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -99,7 +101,7 @@ None yet.
 ### Blockers/Concerns
 
 - [Phase 3]: Vision threshold tuning and pose sign/orientation require empirical checks on the target Mac/camera setup.
-- [Phase 5]: Next phase should add checked sensitivity/tuning menu state, an IINA plugin monitoring shortcut, and full English/Chinese localization.
+- [Phase 5]: Remaining work is the IINA plugin monitoring shortcut, English/Simplified Chinese localization, and integrated lightweight verification.
 - [Phase 6]: Final hardening should cover disable/quit flows, last-action feedback, final manual checklist coverage, localization sanity, shortcut toggle sanity, and build verification.
 
 ### Quick Tasks Completed
@@ -123,6 +125,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-07T11:25:32.892Z
-Stopped at: Phase 5 UI-SPEC approved
-Resume file: .planning/phases/05-control-polish-iina-shortcut-and-i18n/05-UI-SPEC.md
+Last session: 2026-06-07T11:58:37.914Z
+Stopped at: Completed 05-01-PLAN.md
+Resume file: None

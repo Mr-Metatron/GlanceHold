@@ -59,7 +59,7 @@ Requirements for the first usable local release. Each maps to roadmap phases.
 - [x] **PREF-01**: GlanceHold persists selected mode, sensitivity/threshold, away delay, recovery delay, and last valid scalar calibration data across launches.
 - [x] **PREF-02**: GlanceHold exposes a clear reset/recalibration path for bad persisted calibration or settings.
 - [ ] **PREF-03**: Status bar menu shows the last meaningful action, such as Held speed at 1x, Restored 2x, Paused by GlanceHold, Manual pause detected, or No action.
-- [ ] **PREF-04**: Sensitivity and tuning menus visibly indicate the currently selected option, matching the existing checked mode-selection behavior.
+- [x] **PREF-04**: Sensitivity and tuning menus visibly indicate the currently selected option, matching the existing checked mode-selection behavior.
 
 ### IINA Plugin Convenience and Localization
 
@@ -152,7 +152,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PREF-01 | Phase 3 | Complete |
 | PREF-02 | Phase 3 | Complete |
 | PREF-03 | Phase 6 | Pending |
-| PREF-04 | Phase 5 | Pending |
+| PREF-04 | Phase 5 | Complete |
 | CONV-02 | Phase 5 | Pending |
 | I18N-01 | Phase 5 | Pending |
 | I18N-02 | Phase 5 | Pending |
