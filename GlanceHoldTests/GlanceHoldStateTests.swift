@@ -27,6 +27,17 @@ final class GlanceHoldStateTests: XCTestCase {
         XCTAssertFalse(state.isMonitoringActive)
     }
 
+    func testManualPlaybackTakeoverStopReturnsPrimaryActionToEnableMonitoring() {
+        var state = GlanceHoldState(status: .facing, playerStatus: .playing)
+
+        state.stopMonitoringAfterManualPlayerTakeover()
+
+        XCTAssertEqual(state.status, .off)
+        XCTAssertFalse(state.isMonitoringActive)
+        XCTAssertEqual(GlanceHoldPrimaryAction.resolve(for: state.status, hasCalibration: true), .enable)
+        XCTAssertEqual(state.playerStatus, .playing)
+    }
+
     func testModeSelectionReportsExactVisibleModeNames() {
         var state = GlanceHoldState()
 
