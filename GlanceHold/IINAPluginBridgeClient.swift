@@ -9,8 +9,18 @@ enum IINAPluginBridgeClientError: Error, Equatable {
 }
 
 protocol IINAPluginBridgeTransporting {
-    func roundTrip(_ message: String, timeout: TimeInterval) async throws -> String
+    func roundTrip(
+        _ message: String,
+        timeout: TimeInterval,
+        ignoring shouldIgnore: @escaping (String) -> Bool
+    ) async throws -> String
     func messages(timeout: TimeInterval) -> AsyncThrowingStream<String, Error>
+}
+
+extension IINAPluginBridgeTransporting {
+    func roundTrip(_ message: String, timeout: TimeInterval) async throws -> String {
+        try await roundTrip(message, timeout: timeout, ignoring: { _ in false })
+    }
 }
 
 protocol IINAPluginBridgeClienting {
@@ -183,7 +193,11 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
 
         let responseText: String
         do {
-            responseText = try await transport.roundTrip(message, timeout: timeout)
+            responseText = try await transport.roundTrip(
+                message,
+                timeout: timeout,
+                ignoring: shouldIgnoreRequestPathMessage(_:)
+            )
         } catch let error as IINAPluginBridgeClientError {
             throw error
         } catch {
@@ -208,6 +222,15 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
         }
 
         return response
+    }
+
+    private func shouldIgnoreRequestPathMessage(_ message: String) -> Bool {
+        guard let data = message.data(using: .utf8),
+              let event = try? decoder.decode(StatusChanged.self, from: data) else {
+            return false
+        }
+
+        return event.version == Self.protocolVersion && event.type == "statusChanged"
     }
 
     private func nextID() -> Int {
@@ -236,7 +259,11 @@ struct URLSessionIINAPluginBridgeTransport: IINAPluginBridgeTransporting {
         self.session = session
     }
 
-    func roundTrip(_ message: String, timeout: TimeInterval) async throws -> String {
+    func roundTrip(
+        _ message: String,
+        timeout: TimeInterval,
+        ignoring shouldIgnore: @escaping (String) -> Bool
+    ) async throws -> String {
         let task = session.webSocketTask(with: url)
         task.resume()
         defer {
@@ -247,7 +274,13 @@ struct URLSessionIINAPluginBridgeTransport: IINAPluginBridgeTransporting {
             return try await withThrowingTaskGroup(of: String.self) { group in
                 group.addTask {
                     try await send(message, using: task)
-                    return try await receive(from: task)
+                    while true {
+                        let response = try await receive(from: task)
+                        if shouldIgnore(response) {
+                            continue
+                        }
+                        return response
+                    }
                 }
                 group.addTask {
                     try await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))

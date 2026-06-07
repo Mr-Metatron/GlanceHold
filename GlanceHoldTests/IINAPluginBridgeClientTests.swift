@@ -130,7 +130,11 @@ final class FakeIINAPluginBridgeTransport: IINAPluginBridgeTransporting {
         self.error = error
     }
 
-    func roundTrip(_ message: String, timeout: TimeInterval) async throws -> String {
+    func roundTrip(
+        _ message: String,
+        timeout: TimeInterval,
+        ignoring shouldIgnore: @escaping (String) -> Bool
+    ) async throws -> String {
         let data = try XCTUnwrap(message.data(using: .utf8))
         let object = try XCTUnwrap(try JSONSerialization.jsonObject(with: data) as? [String: Any])
         sentMessages.append(object)
@@ -139,7 +143,15 @@ final class FakeIINAPluginBridgeTransport: IINAPluginBridgeTransporting {
             throw error
         }
 
-        return responses.isEmpty ? #"{"id":1,"version":1,"ok":true}"# : responses.removeFirst()
+        while !responses.isEmpty {
+            let response = responses.removeFirst()
+            if shouldIgnore(response) {
+                continue
+            }
+            return response
+        }
+
+        return #"{"id":1,"version":1,"ok":true}"#
     }
 
     func messages(timeout: TimeInterval) -> AsyncThrowingStream<String, Error> {
