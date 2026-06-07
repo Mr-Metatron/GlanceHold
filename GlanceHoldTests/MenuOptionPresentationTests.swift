@@ -5,19 +5,31 @@ final class MenuOptionPresentationTests: XCTestCase {
     func testDefaultTuningParentLabelsIncludeCurrentValues() {
         let presentation = TuningMenuPresentation(settings: .defaults)
 
-        XCTAssertEqual(presentation.sensitivityTitle, "Head Turn Sensitivity: Balanced")
-        XCTAssertEqual(presentation.speedControlAwayDelayTitle, "Speed Control Away Delay: 0.8s")
-        XCTAssertEqual(presentation.pauseResumeAwayDelayTitle, "Pause/Resume Away Delay: 1.2s")
-        XCTAssertEqual(presentation.recoveryDelayTitle, "Recovery Delay: 0.6s")
+        XCTAssertEqual(
+            presentation.sensitivityTitle,
+            "\(GlanceHoldStrings.text(.tuningSensitivity)): \(GlanceHoldStrings.text(.sensitivityBalanced))"
+        )
+        XCTAssertEqual(
+            presentation.speedControlAwayDelayTitle,
+            "\(GlanceHoldStrings.text(.tuningSpeedControlAwayDelay)): \(GlanceHoldStrings.delaySeconds(0.8))"
+        )
+        XCTAssertEqual(
+            presentation.pauseResumeAwayDelayTitle,
+            "\(GlanceHoldStrings.text(.tuningPauseResumeAwayDelay)): \(GlanceHoldStrings.delaySeconds(1.2))"
+        )
+        XCTAssertEqual(
+            presentation.recoveryDelayTitle,
+            "\(GlanceHoldStrings.text(.tuningRecoveryDelay)): \(GlanceHoldStrings.delaySeconds(0.6))"
+        )
     }
 
     func testDefaultTuningOptionsMarkExactlyOneSelectedValuePerGroup() {
         let presentation = TuningMenuPresentation(settings: .defaults)
 
-        XCTAssertSingleSelection(presentation.sensitivityOptions, expectedTitle: "Balanced")
-        XCTAssertSingleSelection(presentation.speedControlAwayDelayOptions, expectedTitle: "0.8s")
-        XCTAssertSingleSelection(presentation.pauseResumeAwayDelayOptions, expectedTitle: "1.2s")
-        XCTAssertSingleSelection(presentation.recoveryDelayOptions, expectedTitle: "0.6s")
+        XCTAssertSingleSelection(presentation.sensitivityOptions, expectedTitle: GlanceHoldStrings.text(.sensitivityBalanced))
+        XCTAssertSingleSelection(presentation.speedControlAwayDelayOptions, expectedTitle: GlanceHoldStrings.delaySeconds(0.8))
+        XCTAssertSingleSelection(presentation.pauseResumeAwayDelayOptions, expectedTitle: GlanceHoldStrings.delaySeconds(1.2))
+        XCTAssertSingleSelection(presentation.recoveryDelayOptions, expectedTitle: GlanceHoldStrings.delaySeconds(0.6))
     }
 
     func testDelaySelectionUsesToleranceForPersistedScalarValues() {
@@ -26,12 +38,12 @@ final class MenuOptionPresentationTests: XCTestCase {
 
         let presentation = TuningMenuPresentation(settings: settings)
 
-        XCTAssertSingleSelection(presentation.speedControlAwayDelayOptions, expectedTitle: "0.8s")
+        XCTAssertSingleSelection(presentation.speedControlAwayDelayOptions, expectedTitle: GlanceHoldStrings.delaySeconds(0.8))
     }
 
     func testModeDisplayNamesRemainStableForCheckedModePicker() {
-        XCTAssertEqual(MonitoringMode.speedControl.displayName, "Speed Control")
-        XCTAssertEqual(MonitoringMode.pauseResume.displayName, "Pause/Resume")
+        XCTAssertEqual(MonitoringMode.speedControl.displayName, GlanceHoldStrings.text(.modeSpeedControl))
+        XCTAssertEqual(MonitoringMode.pauseResume.displayName, GlanceHoldStrings.text(.modePauseResume))
     }
 
     private func XCTAssertSingleSelection(

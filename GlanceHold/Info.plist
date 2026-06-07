@@ -23,7 +23,7 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>GlanceHold uses the camera locally to detect whether you are facing the screen.</string>
+	<string>GlanceHold uses the camera to detect whether you are facing the screen. Camera frames are processed only on this Mac and are not saved or uploaded.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 </dict>

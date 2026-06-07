@@ -3,17 +3,17 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("GlanceHold")
+            Text(GlanceHoldStrings.text(.aboutTitle))
                 .font(.title3)
                 .fontWeight(.semibold)
 
-            Text("Local camera attention signal")
+            Text(GlanceHoldStrings.text(.aboutSubtitle))
                 .font(.headline)
 
-            Text("Calibrate your facing-screen pose before monitoring can use camera signals. Camera access starts only after you choose calibration or monitoring.")
+            Text(GlanceHoldStrings.text(.aboutCalibrationBody))
                 .foregroundStyle(.secondary)
 
-            Text("Camera stays on this Mac. Frames are not saved or uploaded.")
+            Text(GlanceHoldStrings.text(.aboutPrivacyBody))
                 .foregroundStyle(.secondary)
         }
         .frame(minWidth: 420, minHeight: 260)

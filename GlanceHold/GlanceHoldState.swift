@@ -7,9 +7,9 @@ enum MonitoringMode: String, CaseIterable, Equatable, Hashable, Codable {
     var displayName: String {
         switch self {
         case .speedControl:
-            "Speed Control"
+            GlanceHoldStrings.text(.modeSpeedControl)
         case .pauseResume:
-            "Pause/Resume"
+            GlanceHoldStrings.text(.modePauseResume)
         }
     }
 }
@@ -33,20 +33,20 @@ enum MonitoringStatus: Equatable {
 
     static var visibleVocabulary: [String] {
         [
-            "Off",
-            "Camera Permission Needed",
-            "Camera Permission Denied",
-            "Camera Unavailable",
-            "Needs Calibration",
-            "Calibrating Facing Pose",
-            "Calibration Failed",
-            "Requesting Camera Permission",
-            "Ready After Calibration",
-            "Facing",
-            "Looking Away",
-            "No Face Detected",
-            "Recovering",
-            ["I", "INA Unavailable"].joined()
+            off.visibleTitle,
+            cameraPermissionNeeded.visibleTitle,
+            cameraPermissionDenied.visibleTitle,
+            cameraUnavailable.visibleTitle,
+            needsCalibration.visibleTitle,
+            calibratingFacingPose.visibleTitle,
+            calibrationFailed(previousKept: false).visibleTitle,
+            requestingCameraPermission.visibleTitle,
+            readyAfterCalibration.visibleTitle,
+            facing.visibleTitle,
+            lookingAway.visibleTitle,
+            noFaceDetected.visibleTitle,
+            recovering.visibleTitle,
+            iinaUnavailable.visibleTitle
         ]
     }
 
@@ -82,33 +82,33 @@ enum MonitoringStatus: Equatable {
     var visibleTitle: String {
         switch self {
         case .off:
-            "Off"
+            GlanceHoldStrings.text(.monitoringOffTitle)
         case .cameraPermissionNeeded:
-            "Camera Permission Needed"
+            GlanceHoldStrings.text(.monitoringCameraPermissionNeededTitle)
         case .cameraPermissionDenied:
-            "Camera Permission Denied"
+            GlanceHoldStrings.text(.monitoringCameraPermissionDeniedTitle)
         case .requestingCameraPermission:
-            "Requesting Camera Permission"
+            GlanceHoldStrings.text(.monitoringRequestingCameraPermissionTitle)
         case .cameraUnavailable:
-            "Camera Unavailable"
+            GlanceHoldStrings.text(.monitoringCameraUnavailableTitle)
         case .needsCalibration:
-            "Needs Calibration"
+            GlanceHoldStrings.text(.monitoringNeedsCalibrationTitle)
         case .calibratingFacingPose:
-            "Calibrating Facing Pose"
+            GlanceHoldStrings.text(.monitoringCalibratingFacingPoseTitle)
         case .calibrationFailed:
-            "Calibration Failed"
+            GlanceHoldStrings.text(.monitoringCalibrationFailedTitle)
         case .readyAfterCalibration, .readyAfterMarginalCalibration:
-            "Ready After Calibration"
+            GlanceHoldStrings.text(.monitoringReadyAfterCalibrationTitle)
         case .facing:
-            "Facing"
+            GlanceHoldStrings.text(.monitoringFacingTitle)
         case .lookingAway:
-            "Looking Away"
+            GlanceHoldStrings.text(.monitoringLookingAwayTitle)
         case .noFaceDetected:
-            "No Face Detected"
+            GlanceHoldStrings.text(.monitoringNoFaceDetectedTitle)
         case .recovering:
-            "Recovering"
+            GlanceHoldStrings.text(.monitoringRecoveringTitle)
         case .iinaUnavailable:
-            ["I", "INA Unavailable"].joined()
+            GlanceHoldStrings.text(.monitoringIINAUnavailableTitle)
         }
     }
 
@@ -117,19 +117,19 @@ enum MonitoringStatus: Equatable {
         case .cameraPermissionNeeded, .needsCalibration:
             GlanceHoldMenuCopy.calibrationNeededBody
         case .cameraPermissionDenied:
-            "Camera permission is denied. Allow camera access in System Settings, then enable monitoring again."
+            GlanceHoldStrings.text(.monitoringCameraPermissionDeniedDetail)
         case .cameraUnavailable:
-            "Camera is unavailable. Check camera access or close other apps using the camera, then try again."
+            GlanceHoldStrings.text(.monitoringCameraUnavailableDetail)
         case .calibratingFacingPose:
-            "Face the screen steadily while GlanceHold calibrates your facing pose."
+            GlanceHoldStrings.text(.monitoringCalibratingFacingPoseDetail)
         case .calibrationFailed(let previousKept):
             previousKept
-                ? "Calibration failed because no stable face was detected. Your previous calibration was kept."
-                : "Calibration failed because no stable face was detected. Try again while facing the screen."
+                ? GlanceHoldStrings.text(.monitoringCalibrationFailedPreviousKeptDetail)
+                : GlanceHoldStrings.text(.monitoringCalibrationFailedRetryDetail)
         case .readyAfterMarginalCalibration:
-            "Recalibration recommended. Monitoring can continue with the current calibration."
+            GlanceHoldStrings.text(.monitoringReadyAfterMarginalCalibrationDetail)
         case .iinaUnavailable:
-            "Monitoring cannot start yet because \(["I", "INA"].joined()) is unavailable."
+            GlanceHoldStrings.text(.monitoringIINAUnavailableDetail)
         default:
             ""
         }
@@ -146,12 +146,12 @@ enum PlayerControlStatus: Equatable {
 
     static var visibleVocabulary: [String] {
         [
-            "IINA Unavailable",
-            "IINA Bridge Waiting",
-            "IINA Idle",
-            "IINA Paused",
-            "IINA Playing",
-            "IINA Not Controllable"
+            unavailable.visibleTitle,
+            setupNeeded.visibleTitle,
+            idle.visibleTitle,
+            paused.visibleTitle,
+            playing.visibleTitle,
+            notControllable.visibleTitle
         ]
     }
 
@@ -187,30 +187,30 @@ enum PlayerControlStatus: Equatable {
     var visibleTitle: String {
         switch self {
         case .unavailable:
-            "IINA Unavailable"
+            GlanceHoldStrings.text(.playerUnavailableTitle)
         case .setupNeeded:
-            "IINA Bridge Waiting"
+            GlanceHoldStrings.text(.playerSetupNeededTitle)
         case .idle:
-            "IINA Idle"
+            GlanceHoldStrings.text(.playerIdleTitle)
         case .paused:
-            "IINA Paused"
+            GlanceHoldStrings.text(.playerPausedTitle)
         case .playing:
-            "IINA Playing"
+            GlanceHoldStrings.text(.playerPlayingTitle)
         case .notControllable:
-            "IINA Not Controllable"
+            GlanceHoldStrings.text(.playerNotControllableTitle)
         }
     }
 
     var detailText: String {
         switch self {
         case .unavailable:
-            "Attention monitoring can continue while playback control waits for controllable IINA state."
+            GlanceHoldStrings.text(.playerUnavailableDetail)
         case .setupNeeded:
-            "Install or enable the GlanceHold IINA plugin. Start IINA or load a video before playback control can connect."
+            GlanceHoldStrings.text(.playerSetupNeededDetail)
         case .idle:
-            "IINA is open without active playback. No playback command will be sent."
+            GlanceHoldStrings.text(.playerIdleDetail)
         case .notControllable:
-            "IINA playback state is readable but not safe to control. No playback command will be sent."
+            GlanceHoldStrings.text(.playerNotControllableDetail)
         case .paused, .playing:
             ""
         }
@@ -218,17 +218,17 @@ enum PlayerControlStatus: Equatable {
 }
 
 enum GlanceHoldMenuCopy {
-    static let tuningSectionTitle = "Tuning"
-    static let sensitivityLabel = "Head Turn Sensitivity"
-    static let speedControlAwayDelayLabel = "Speed Control Away Delay"
-    static let pauseResumeAwayDelayLabel = "Pause/Resume Away Delay"
-    static let recoveryDelayLabel = "Recovery Delay"
-    static let calibrationNeededBody = "Calibrate your facing-screen pose before monitoring can use camera signals. Camera access starts only after you choose calibration or monitoring."
-    static let privacyNote = "Camera stays on this Mac. Frames are not saved or uploaded."
-    static let marginalReplacementPrompt = "The new calibration is usable but less stable than the current one. Keep the current calibration or use the new one?"
-    static let keepCurrentCalibrationButton = "Keep Current Calibration"
-    static let useNewCalibrationButton = "Use New Calibration"
-    static let resetConfirmationMessage = "Reset Calibration: confirm before removing saved calibration; after reset, monitoring returns to Calibration Needed."
+    static var tuningSectionTitle: String { GlanceHoldStrings.text(.tuningSection) }
+    static var sensitivityLabel: String { GlanceHoldStrings.text(.tuningSensitivity) }
+    static var speedControlAwayDelayLabel: String { GlanceHoldStrings.text(.tuningSpeedControlAwayDelay) }
+    static var pauseResumeAwayDelayLabel: String { GlanceHoldStrings.text(.tuningPauseResumeAwayDelay) }
+    static var recoveryDelayLabel: String { GlanceHoldStrings.text(.tuningRecoveryDelay) }
+    static var calibrationNeededBody: String { GlanceHoldStrings.text(.monitoringCalibrationNeededDetail) }
+    static var privacyNote: String { GlanceHoldStrings.text(.privacyNote) }
+    static var marginalReplacementPrompt: String { GlanceHoldStrings.text(.alertMarginalReplacementPrompt) }
+    static var keepCurrentCalibrationButton: String { GlanceHoldStrings.text(.alertKeepCurrentCalibration) }
+    static var useNewCalibrationButton: String { GlanceHoldStrings.text(.alertUseNewCalibration) }
+    static var resetConfirmationMessage: String { GlanceHoldStrings.text(.alertResetConfirmationMessage) }
 }
 
 struct GlanceHoldState: Equatable {

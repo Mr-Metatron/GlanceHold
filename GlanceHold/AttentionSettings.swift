@@ -8,11 +8,11 @@ enum AttentionSensitivity: String, CaseIterable, Equatable, Codable {
     var displayName: String {
         switch self {
         case .relaxed:
-            "Relaxed"
+            GlanceHoldStrings.text(.sensitivityRelaxed)
         case .balanced:
-            "Balanced"
+            GlanceHoldStrings.text(.sensitivityBalanced)
         case .strict:
-            "Strict"
+            GlanceHoldStrings.text(.sensitivityStrict)
         }
     }
 

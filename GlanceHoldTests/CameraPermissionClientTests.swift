@@ -11,7 +11,7 @@ final class CameraPermissionClientTests: XCTestCase {
         await state.enableMonitoring(permissionProvider: provider)
 
         XCTAssertEqual(provider.requestCount, 1)
-        XCTAssertEqual(state.status.visibleTitle, "Needs Calibration")
+        XCTAssertEqual(state.status.visibleTitle, GlanceHoldStrings.text(.monitoringNeedsCalibrationTitle))
         XCTAssertFalse(state.isMonitoringActive)
     }
 
@@ -22,7 +22,7 @@ final class CameraPermissionClientTests: XCTestCase {
         await state.enableMonitoring(permissionProvider: provider)
 
         XCTAssertEqual(provider.requestCount, 0)
-        XCTAssertEqual(state.status.visibleTitle, "Camera Permission Denied")
+        XCTAssertEqual(state.status.visibleTitle, GlanceHoldStrings.text(.monitoringCameraPermissionDeniedTitle))
         XCTAssertFalse(state.isMonitoringActive)
     }
 
@@ -33,7 +33,7 @@ final class CameraPermissionClientTests: XCTestCase {
         await state.enableMonitoring(permissionProvider: provider)
 
         XCTAssertEqual(provider.requestCount, 0)
-        XCTAssertEqual(state.status.visibleTitle, "Camera Permission Denied")
+        XCTAssertEqual(state.status.visibleTitle, GlanceHoldStrings.text(.monitoringCameraPermissionDeniedTitle))
         XCTAssertFalse(state.isMonitoringActive)
     }
 
@@ -44,7 +44,7 @@ final class CameraPermissionClientTests: XCTestCase {
         await state.enableMonitoring(permissionProvider: provider)
 
         XCTAssertEqual(provider.requestCount, 1)
-        XCTAssertEqual(state.status.visibleTitle, "Camera Permission Denied")
+        XCTAssertEqual(state.status.visibleTitle, GlanceHoldStrings.text(.monitoringCameraPermissionDeniedTitle))
         XCTAssertFalse(state.isMonitoringActive)
     }
 
@@ -55,7 +55,7 @@ final class CameraPermissionClientTests: XCTestCase {
         await state.enableMonitoring(permissionProvider: provider)
 
         XCTAssertEqual(provider.requestCount, 0)
-        XCTAssertEqual(state.status.visibleTitle, "Ready After Calibration")
+        XCTAssertEqual(state.status.visibleTitle, GlanceHoldStrings.text(.monitoringReadyAfterCalibrationTitle))
         XCTAssertFalse(state.isMonitoringActive)
     }
 
@@ -66,7 +66,7 @@ final class CameraPermissionClientTests: XCTestCase {
         await state.enableMonitoring(permissionProvider: provider)
 
         XCTAssertEqual(provider.requestCount, 0)
-        XCTAssertEqual(state.status.visibleTitle, "Needs Calibration")
+        XCTAssertEqual(state.status.visibleTitle, GlanceHoldStrings.text(.monitoringNeedsCalibrationTitle))
         XCTAssertFalse(state.isMonitoringActive)
     }
 
@@ -94,9 +94,9 @@ final class CameraPermissionClientTests: XCTestCase {
         XCTAssertEqual(GlanceHoldPrimaryAction.resolve(for: .cameraPermissionDenied), .openCameraSettings)
         XCTAssertEqual(GlanceHoldPrimaryAction.resolve(for: .facing), .disable)
 
-        XCTAssertEqual(GlanceHoldPrimaryAction.wait.title, "Requesting Camera Permission...")
+        XCTAssertEqual(GlanceHoldPrimaryAction.wait.title, GlanceHoldStrings.text(.actionWaitingCameraPermission))
         XCTAssertFalse(GlanceHoldPrimaryAction.wait.isEnabled)
-        XCTAssertEqual(GlanceHoldPrimaryAction.openCameraSettings.title, "Open Camera Settings...")
+        XCTAssertEqual(GlanceHoldPrimaryAction.openCameraSettings.title, GlanceHoldStrings.text(.actionOpenCameraSettings))
         XCTAssertTrue(GlanceHoldPrimaryAction.openCameraSettings.isEnabled)
     }
 }

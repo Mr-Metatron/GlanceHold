@@ -27,19 +27,19 @@ final class AttentionSettingsTests: XCTestCase {
 
     func testMenuFacingTuningLabelsAndSensitivityNamesAreStable() {
         XCTAssertEqual(AttentionSensitivity.allCases.map(\.displayName), [
-            "Relaxed",
-            "Balanced",
-            "Strict"
+            GlanceHoldStrings.text(.sensitivityRelaxed),
+            GlanceHoldStrings.text(.sensitivityBalanced),
+            GlanceHoldStrings.text(.sensitivityStrict)
         ])
-        XCTAssertEqual(GlanceHoldMenuCopy.sensitivityLabel, "Head Turn Sensitivity")
-        XCTAssertEqual(GlanceHoldMenuCopy.speedControlAwayDelayLabel, "Speed Control Away Delay")
-        XCTAssertEqual(GlanceHoldMenuCopy.pauseResumeAwayDelayLabel, "Pause/Resume Away Delay")
-        XCTAssertEqual(GlanceHoldMenuCopy.recoveryDelayLabel, "Recovery Delay")
+        XCTAssertEqual(GlanceHoldMenuCopy.sensitivityLabel, GlanceHoldStrings.text(.tuningSensitivity))
+        XCTAssertEqual(GlanceHoldMenuCopy.speedControlAwayDelayLabel, GlanceHoldStrings.text(.tuningSpeedControlAwayDelay))
+        XCTAssertEqual(GlanceHoldMenuCopy.pauseResumeAwayDelayLabel, GlanceHoldStrings.text(.tuningPauseResumeAwayDelay))
+        XCTAssertEqual(GlanceHoldMenuCopy.recoveryDelayLabel, GlanceHoldStrings.text(.tuningRecoveryDelay))
     }
 
     func testCompactDelayLabelsUseOneDecimalSecondSuffix() {
-        XCTAssertEqual(TuningMenuPresentation.formatDelay(0.8), "0.8s")
-        XCTAssertEqual(TuningMenuPresentation.formatDelay(1.2), "1.2s")
+        XCTAssertEqual(TuningMenuPresentation.formatDelay(0.8), GlanceHoldStrings.delaySeconds(0.8))
+        XCTAssertEqual(TuningMenuPresentation.formatDelay(1.2), GlanceHoldStrings.delaySeconds(1.2))
     }
 
     func testStoreRoundTripsScalarSettingsAndResetClearsCalibration() throws {

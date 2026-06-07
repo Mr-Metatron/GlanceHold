@@ -147,8 +147,14 @@ final class AttentionMonitorTests: XCTestCase {
 
         XCTAssertEqual(result, .failed(previous: nil))
         XCTAssertEqual(monitor.state, .calibrationFailed(previousKept: false))
-        XCTAssertEqual(MonitoringStatus(monitorState: monitor.state).visibleTitle, "Calibration Failed")
-        XCTAssertTrue(MonitoringStatus(monitorState: monitor.state).detailText.contains("Try again"))
+        XCTAssertEqual(
+            MonitoringStatus(monitorState: monitor.state).visibleTitle,
+            GlanceHoldStrings.text(.monitoringCalibrationFailedTitle)
+        )
+        XCTAssertEqual(
+            MonitoringStatus(monitorState: monitor.state).detailText,
+            GlanceHoldStrings.text(.monitoringCalibrationFailedRetryDetail)
+        )
     }
 
     func testCameraBackedCalibrationAcceptsStableWindowAfterNoisyStartup() async {

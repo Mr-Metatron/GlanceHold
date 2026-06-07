@@ -5,7 +5,7 @@ final class GlanceHoldStateTests: XCTestCase {
     func testNewStateReportsOffVisibleStatusText() {
         let state = GlanceHoldState()
 
-        XCTAssertEqual(state.status.visibleTitle, "Off")
+        XCTAssertEqual(state.status.visibleTitle, GlanceHoldStrings.text(.monitoringOffTitle))
         XCTAssertNil(state.playerStatus)
     }
 
@@ -14,7 +14,7 @@ final class GlanceHoldStateTests: XCTestCase {
 
         state.enableMonitoring()
 
-        XCTAssertEqual(state.status.visibleTitle, "Camera Permission Needed")
+        XCTAssertEqual(state.status.visibleTitle, GlanceHoldStrings.text(.monitoringCameraPermissionNeededTitle))
         XCTAssertFalse(state.isMonitoringActive)
     }
 
@@ -23,7 +23,7 @@ final class GlanceHoldStateTests: XCTestCase {
 
         state.disableMonitoring()
 
-        XCTAssertEqual(state.status.visibleTitle, "Off")
+        XCTAssertEqual(state.status.visibleTitle, GlanceHoldStrings.text(.monitoringOffTitle))
         XCTAssertFalse(state.isMonitoringActive)
     }
 
@@ -42,18 +42,18 @@ final class GlanceHoldStateTests: XCTestCase {
         var state = GlanceHoldState()
 
         state.selectMode(.speedControl)
-        XCTAssertEqual(state.mode.displayName, "Speed Control")
+        XCTAssertEqual(state.mode.displayName, GlanceHoldStrings.text(.modeSpeedControl))
 
         state.selectMode(.pauseResume)
-        XCTAssertEqual(state.mode.displayName, "Pause/Resume")
+        XCTAssertEqual(state.mode.displayName, GlanceHoldStrings.text(.modePauseResume))
     }
 
     func testModeVocabularyIncludesRequiredPhrases() {
         let phrases = MonitoringMode.allCases.map(\.displayName)
 
         XCTAssertEqual(phrases, [
-            "Speed Control",
-            "Pause/Resume"
+            GlanceHoldStrings.text(.modeSpeedControl),
+            GlanceHoldStrings.text(.modePauseResume)
         ])
     }
 
@@ -61,20 +61,20 @@ final class GlanceHoldStateTests: XCTestCase {
         let phrases = MonitoringStatus.visibleVocabulary
 
         XCTAssertEqual(phrases, [
-            "Off",
-            "Camera Permission Needed",
-            "Camera Permission Denied",
-            "Camera Unavailable",
-            "Needs Calibration",
-            "Calibrating Facing Pose",
-            "Calibration Failed",
-            "Requesting Camera Permission",
-            "Ready After Calibration",
-            "Facing",
-            "Looking Away",
-            "No Face Detected",
-            "Recovering",
-            ["I", "INA Unavailable"].joined()
+            GlanceHoldStrings.text(.monitoringOffTitle),
+            GlanceHoldStrings.text(.monitoringCameraPermissionNeededTitle),
+            GlanceHoldStrings.text(.monitoringCameraPermissionDeniedTitle),
+            GlanceHoldStrings.text(.monitoringCameraUnavailableTitle),
+            GlanceHoldStrings.text(.monitoringNeedsCalibrationTitle),
+            GlanceHoldStrings.text(.monitoringCalibratingFacingPoseTitle),
+            GlanceHoldStrings.text(.monitoringCalibrationFailedTitle),
+            GlanceHoldStrings.text(.monitoringRequestingCameraPermissionTitle),
+            GlanceHoldStrings.text(.monitoringReadyAfterCalibrationTitle),
+            GlanceHoldStrings.text(.monitoringFacingTitle),
+            GlanceHoldStrings.text(.monitoringLookingAwayTitle),
+            GlanceHoldStrings.text(.monitoringNoFaceDetectedTitle),
+            GlanceHoldStrings.text(.monitoringRecoveringTitle),
+            GlanceHoldStrings.text(.monitoringIINAUnavailableTitle)
         ])
     }
 
@@ -82,47 +82,46 @@ final class GlanceHoldStateTests: XCTestCase {
         let phrases = PlayerControlStatus.visibleVocabulary
 
         XCTAssertEqual(phrases, [
-            "IINA Unavailable",
-            "IINA Bridge Waiting",
-            "IINA Idle",
-            "IINA Paused",
-            "IINA Playing",
-            "IINA Not Controllable"
+            GlanceHoldStrings.text(.playerUnavailableTitle),
+            GlanceHoldStrings.text(.playerSetupNeededTitle),
+            GlanceHoldStrings.text(.playerIdleTitle),
+            GlanceHoldStrings.text(.playerPausedTitle),
+            GlanceHoldStrings.text(.playerPlayingTitle),
+            GlanceHoldStrings.text(.playerNotControllableTitle)
         ])
     }
 
     func testAttentionStatusAndPlayerStatusCanCoexist() {
         let state = GlanceHoldState(status: .facing, playerStatus: .unavailable)
 
-        XCTAssertEqual(state.status.visibleTitle, "Facing")
-        XCTAssertEqual(state.playerStatus?.visibleTitle, "IINA Unavailable")
+        XCTAssertEqual(state.status.visibleTitle, GlanceHoldStrings.text(.monitoringFacingTitle))
+        XCTAssertEqual(state.playerStatus?.visibleTitle, GlanceHoldStrings.text(.playerUnavailableTitle))
         XCTAssertTrue(state.isMonitoringActive)
     }
 
     func testIINAUnavailableDetailExplainsMonitoringCanContinue() {
         XCTAssertEqual(
             PlayerControlStatus.unavailable.detailText,
-            "Attention monitoring can continue while playback control waits for controllable IINA state."
+            GlanceHoldStrings.text(.playerUnavailableDetail)
         )
     }
 
     func testSetupNeededStatusUsesNeutralBridgeWaitingCopy() {
-        XCTAssertEqual(PlayerControlStatus.setupNeeded.visibleTitle, "IINA Bridge Waiting")
-        XCTAssertTrue(PlayerControlStatus.setupNeeded.detailText.contains("IINA plugin"))
-        XCTAssertTrue(PlayerControlStatus.setupNeeded.detailText.contains("Start IINA"))
-        XCTAssertTrue(PlayerControlStatus.setupNeeded.detailText.contains("load a video"))
+        XCTAssertEqual(PlayerControlStatus.setupNeeded.visibleTitle, GlanceHoldStrings.text(.playerSetupNeededTitle))
+        XCTAssertEqual(PlayerControlStatus.setupNeeded.detailText, GlanceHoldStrings.text(.playerSetupNeededDetail))
+        XCTAssertFalse(PlayerControlStatus.setupNeeded.detailText.isEmpty)
     }
 
     func testPhase3StatusTitlesAreExact() {
-        XCTAssertEqual(MonitoringStatus.cameraUnavailable.visibleTitle, "Camera Unavailable")
-        XCTAssertEqual(MonitoringStatus.needsCalibration.visibleTitle, "Needs Calibration")
-        XCTAssertEqual(MonitoringStatus.calibratingFacingPose.visibleTitle, "Calibrating Facing Pose")
-        XCTAssertEqual(MonitoringStatus.calibrationFailed(previousKept: true).visibleTitle, "Calibration Failed")
-        XCTAssertEqual(MonitoringStatus.readyAfterCalibration.visibleTitle, "Ready After Calibration")
-        XCTAssertEqual(MonitoringStatus.facing.visibleTitle, "Facing")
-        XCTAssertEqual(MonitoringStatus.lookingAway.visibleTitle, "Looking Away")
-        XCTAssertEqual(MonitoringStatus.noFaceDetected.visibleTitle, "No Face Detected")
-        XCTAssertEqual(MonitoringStatus.recovering.visibleTitle, "Recovering")
+        XCTAssertEqual(MonitoringStatus.cameraUnavailable.visibleTitle, GlanceHoldStrings.text(.monitoringCameraUnavailableTitle))
+        XCTAssertEqual(MonitoringStatus.needsCalibration.visibleTitle, GlanceHoldStrings.text(.monitoringNeedsCalibrationTitle))
+        XCTAssertEqual(MonitoringStatus.calibratingFacingPose.visibleTitle, GlanceHoldStrings.text(.monitoringCalibratingFacingPoseTitle))
+        XCTAssertEqual(MonitoringStatus.calibrationFailed(previousKept: true).visibleTitle, GlanceHoldStrings.text(.monitoringCalibrationFailedTitle))
+        XCTAssertEqual(MonitoringStatus.readyAfterCalibration.visibleTitle, GlanceHoldStrings.text(.monitoringReadyAfterCalibrationTitle))
+        XCTAssertEqual(MonitoringStatus.facing.visibleTitle, GlanceHoldStrings.text(.monitoringFacingTitle))
+        XCTAssertEqual(MonitoringStatus.lookingAway.visibleTitle, GlanceHoldStrings.text(.monitoringLookingAwayTitle))
+        XCTAssertEqual(MonitoringStatus.noFaceDetected.visibleTitle, GlanceHoldStrings.text(.monitoringNoFaceDetectedTitle))
+        XCTAssertEqual(MonitoringStatus.recovering.visibleTitle, GlanceHoldStrings.text(.monitoringRecoveringTitle))
     }
 
     func testPendingAndFailureStatusesAreNotMonitoringActive() {
@@ -137,27 +136,27 @@ final class GlanceHoldStateTests: XCTestCase {
     func testPhase3DetailCopyIsStable() {
         XCTAssertEqual(
             MonitoringStatus.cameraPermissionDenied.detailText,
-            "Camera permission is denied. Allow camera access in System Settings, then enable monitoring again."
+            GlanceHoldStrings.text(.monitoringCameraPermissionDeniedDetail)
         )
         XCTAssertEqual(
             MonitoringStatus.cameraUnavailable.detailText,
-            "Camera is unavailable. Check camera access or close other apps using the camera, then try again."
+            GlanceHoldStrings.text(.monitoringCameraUnavailableDetail)
         )
         XCTAssertEqual(
             MonitoringStatus.calibrationFailed(previousKept: true).detailText,
-            "Calibration failed because no stable face was detected. Your previous calibration was kept."
+            GlanceHoldStrings.text(.monitoringCalibrationFailedPreviousKeptDetail)
         )
         XCTAssertEqual(
             MonitoringStatus.calibrationFailed(previousKept: false).detailText,
-            "Calibration failed because no stable face was detected. Try again while facing the screen."
+            GlanceHoldStrings.text(.monitoringCalibrationFailedRetryDetail)
         )
         XCTAssertEqual(
             MonitoringStatus.readyAfterMarginalCalibration.detailText,
-            "Recalibration recommended. Monitoring can continue with the current calibration."
+            GlanceHoldStrings.text(.monitoringReadyAfterMarginalCalibrationDetail)
         )
         XCTAssertEqual(
             MonitoringStatus.needsCalibration.detailText,
-            "Calibrate your facing-screen pose before monitoring can use camera signals. Camera access starts only after you choose calibration or monitoring."
+            GlanceHoldStrings.text(.monitoringCalibrationNeededDetail)
         )
     }
 
@@ -169,21 +168,21 @@ final class GlanceHoldStateTests: XCTestCase {
         XCTAssertEqual(GlanceHoldPrimaryAction.resolve(for: .cameraPermissionDenied, hasCalibration: false), .openCameraSettings)
         XCTAssertEqual(GlanceHoldPrimaryAction.resolve(for: .calibratingFacingPose, hasCalibration: false), .wait)
 
-        XCTAssertEqual(GlanceHoldPrimaryAction.calibrate.title, "Calibrate Facing Pose")
-        XCTAssertEqual(GlanceHoldPrimaryAction.recalibrate.title, "Recalibrate Facing Pose")
-        XCTAssertEqual(GlanceHoldPrimaryAction.resetCalibration.title, "Reset Calibration")
+        XCTAssertEqual(GlanceHoldPrimaryAction.calibrate.title, GlanceHoldStrings.text(.actionCalibrate))
+        XCTAssertEqual(GlanceHoldPrimaryAction.recalibrate.title, GlanceHoldStrings.text(.actionRecalibrate))
+        XCTAssertEqual(GlanceHoldPrimaryAction.resetCalibration.title, GlanceHoldStrings.text(.actionResetCalibration))
     }
 
     func testMenuCopyIncludesTuningCalibrationPrivacyAndConfirmationVocabulary() {
-        XCTAssertEqual(GlanceHoldMenuCopy.tuningSectionTitle, "Tuning")
-        XCTAssertEqual(GlanceHoldMenuCopy.sensitivityLabel, "Head Turn Sensitivity")
-        XCTAssertEqual(GlanceHoldMenuCopy.speedControlAwayDelayLabel, "Speed Control Away Delay")
-        XCTAssertEqual(GlanceHoldMenuCopy.pauseResumeAwayDelayLabel, "Pause/Resume Away Delay")
-        XCTAssertEqual(GlanceHoldMenuCopy.recoveryDelayLabel, "Recovery Delay")
-        XCTAssertEqual(GlanceHoldMenuCopy.privacyNote, "Camera stays on this Mac. Frames are not saved or uploaded.")
-        XCTAssertEqual(GlanceHoldMenuCopy.marginalReplacementPrompt, "The new calibration is usable but less stable than the current one. Keep the current calibration or use the new one?")
-        XCTAssertEqual(GlanceHoldMenuCopy.keepCurrentCalibrationButton, "Keep Current Calibration")
-        XCTAssertEqual(GlanceHoldMenuCopy.useNewCalibrationButton, "Use New Calibration")
+        XCTAssertEqual(GlanceHoldMenuCopy.tuningSectionTitle, GlanceHoldStrings.text(.tuningSection))
+        XCTAssertEqual(GlanceHoldMenuCopy.sensitivityLabel, GlanceHoldStrings.text(.tuningSensitivity))
+        XCTAssertEqual(GlanceHoldMenuCopy.speedControlAwayDelayLabel, GlanceHoldStrings.text(.tuningSpeedControlAwayDelay))
+        XCTAssertEqual(GlanceHoldMenuCopy.pauseResumeAwayDelayLabel, GlanceHoldStrings.text(.tuningPauseResumeAwayDelay))
+        XCTAssertEqual(GlanceHoldMenuCopy.recoveryDelayLabel, GlanceHoldStrings.text(.tuningRecoveryDelay))
+        XCTAssertEqual(GlanceHoldMenuCopy.privacyNote, GlanceHoldStrings.text(.privacyNote))
+        XCTAssertEqual(GlanceHoldMenuCopy.marginalReplacementPrompt, GlanceHoldStrings.text(.alertMarginalReplacementPrompt))
+        XCTAssertEqual(GlanceHoldMenuCopy.keepCurrentCalibrationButton, GlanceHoldStrings.text(.alertKeepCurrentCalibration))
+        XCTAssertEqual(GlanceHoldMenuCopy.useNewCalibrationButton, GlanceHoldStrings.text(.alertUseNewCalibration))
     }
 
     func testMonitorStatesMapToVisibleStatusVocabulary() {

@@ -28,7 +28,7 @@ struct GlanceHoldApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra("GlanceHold", systemImage: "display") {
+        MenuBarExtra(GlanceHoldStrings.text(.appName), systemImage: "display") {
             GlanceHoldMenu(
                 state: $glanceHoldState,
                 monitor: monitor,
@@ -37,7 +37,7 @@ struct GlanceHoldApp: App {
             )
         }
 
-        Window("About GlanceHold", id: "about") {
+        Window(GlanceHoldStrings.text(.aboutWindowTitle), id: "about") {
             ContentView()
         }
         .defaultSize(width: 420, height: 260)
@@ -86,19 +86,19 @@ enum GlanceHoldPrimaryAction: Equatable {
     var title: String {
         switch self {
         case .calibrate:
-            "Calibrate Facing Pose"
+            GlanceHoldStrings.text(.actionCalibrate)
         case .recalibrate:
-            "Recalibrate Facing Pose"
+            GlanceHoldStrings.text(.actionRecalibrate)
         case .resetCalibration:
-            "Reset Calibration"
+            GlanceHoldStrings.text(.actionResetCalibration)
         case .enable:
-            "Enable Monitoring"
+            GlanceHoldStrings.text(.actionEnableMonitoring)
         case .disable:
-            "Disable Monitoring"
+            GlanceHoldStrings.text(.actionDisableMonitoring)
         case .wait:
-            "Requesting Camera Permission..."
+            GlanceHoldStrings.text(.actionWaitingCameraPermission)
         case .openCameraSettings:
-            "Open Camera Settings..."
+            GlanceHoldStrings.text(.actionOpenCameraSettings)
         }
     }
 
@@ -123,7 +123,6 @@ private struct GlanceHoldMenu: View {
     @State private var monitoringToggleRequestTask: Task<Void, Never>?
     @Environment(\.openWindow) private var openWindow
 
-    private let permissionExplanation = "GlanceHold uses the camera only on this Mac to tell whether you are facing the screen. Frames are not saved or uploaded."
     private let playbackFallbackRefreshIntervalNanoseconds: UInt64 = 10_000_000_000
 
     private var primaryAction: GlanceHoldPrimaryAction {
@@ -136,11 +135,11 @@ private struct GlanceHoldMenu: View {
 
     var body: some View {
         Group {
-            Text("Status: \(state.status.visibleTitle)")
-                .accessibilityLabel("Status: \(state.status.visibleTitle)")
+            Text(GlanceHoldStrings.format(.menuStatusFormat, state.status.visibleTitle))
+                .accessibilityLabel(GlanceHoldStrings.format(.accessibilityStatusFormat, state.status.visibleTitle))
 
             if state.status == .cameraPermissionNeeded {
-                Text(permissionExplanation)
+                Text(GlanceHoldStrings.text(.privacyPermissionExplanation))
                     .foregroundStyle(.secondary)
             } else if !state.status.detailText.isEmpty {
                 Text(state.status.detailText)
@@ -150,8 +149,8 @@ private struct GlanceHoldMenu: View {
             Divider()
 
             if let playerStatus = state.playerStatus {
-                Text("IINA: \(playerStatus.visibleTitle)")
-                    .accessibilityLabel("IINA: \(playerStatus.visibleTitle)")
+                Text(GlanceHoldStrings.format(.menuPlayerFormat, playerStatus.visibleTitle))
+                    .accessibilityLabel(GlanceHoldStrings.format(.accessibilityPlayerFormat, playerStatus.visibleTitle))
 
                 if !playerStatus.detailText.isEmpty {
                     Text(playerStatus.detailText)
@@ -168,9 +167,9 @@ private struct GlanceHoldMenu: View {
 
             Divider()
 
-            Picker("Mode", selection: modeBinding) {
-                Text("Speed Control").tag(MonitoringMode.speedControl)
-                Text("Pause/Resume").tag(MonitoringMode.pauseResume)
+            Picker(GlanceHoldStrings.text(.menuMode), selection: modeBinding) {
+                Text(MonitoringMode.speedControl.displayName).tag(MonitoringMode.speedControl)
+                Text(MonitoringMode.pauseResume.displayName).tag(MonitoringMode.pauseResume)
             }
 
             Divider()
@@ -219,11 +218,11 @@ private struct GlanceHoldMenu: View {
 
             Divider()
 
-            Button("About GlanceHold...") {
+            Button(GlanceHoldStrings.text(.menuAbout)) {
                 openWindow(id: "about")
             }
 
-            Button("Quit GlanceHold") {
+            Button(GlanceHoldStrings.text(.menuQuit)) {
                 stopPlaybackStatusUpdates()
                 stopMonitoringToggleRequestHandling()
                 monitor.stopMonitoring()
@@ -381,7 +380,7 @@ private struct GlanceHoldMenu: View {
         alert.messageText = GlanceHoldPrimaryAction.resetCalibration.title
         alert.informativeText = GlanceHoldMenuCopy.resetConfirmationMessage
         alert.alertStyle = .warning
-        alert.addButton(withTitle: "Cancel")
+        alert.addButton(withTitle: GlanceHoldStrings.text(.alertCancel))
         alert.addButton(withTitle: GlanceHoldPrimaryAction.resetCalibration.title)
 
         guard alert.runModal() == .alertSecondButtonReturn else {
@@ -412,7 +411,7 @@ private struct GlanceHoldMenu: View {
 
     private func confirmMarginalReplacement() -> Bool {
         let alert = NSAlert()
-        alert.messageText = "Recalibration recommended"
+        alert.messageText = GlanceHoldStrings.text(.alertRecalibrationRecommended)
         alert.informativeText = GlanceHoldMenuCopy.marginalReplacementPrompt
         alert.alertStyle = .informational
         alert.addButton(withTitle: GlanceHoldMenuCopy.keepCurrentCalibrationButton)

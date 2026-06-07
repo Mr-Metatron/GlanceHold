@@ -39,7 +39,7 @@ struct TuningMenuPresentation: Equatable {
     }
 
     static func formatDelay(_ delay: TimeInterval) -> String {
-        String(format: "%.1fs", delay)
+        GlanceHoldStrings.delaySeconds(delay)
     }
 
     static func isSelected(delay: TimeInterval, selectedDelay: TimeInterval) -> Bool {
