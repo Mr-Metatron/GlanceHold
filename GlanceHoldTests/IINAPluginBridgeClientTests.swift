@@ -87,6 +87,18 @@ final class IINAPluginBridgeClientTests: XCTestCase {
         XCTAssertEqual(transport.sentMessages.count, 1)
     }
 
+    func testStatusChangedWithRequestIDIsStillTreatedAsResponse() async throws {
+        let transport = FakeIINAPluginBridgeTransport(responses: [
+            #"{"id":1,"version":1,"type":"statusChanged","ok":true,"snapshot":{"state":"playing","speed":1.75}}"#
+        ])
+        let client = IINAPluginBridgeClient(transport: transport)
+
+        let status = await client.status()
+
+        XCTAssertEqual(status, .playing(speed: 1.75))
+        XCTAssertEqual(transport.sentMessages.count, 1)
+    }
+
     func testMalformedProtocolAndFailedCommandMapToUnavailable() async throws {
         let malformed = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: ["not json"]))
         await XCTAssertEqualAsync(await malformed.status(), .unavailable)

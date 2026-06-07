@@ -47,6 +47,7 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
     }
 
     private struct StatusChanged: Decodable {
+        var id: Int?
         var version: Int
         var type: String
         var snapshot: Snapshot
@@ -230,7 +231,7 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
             return false
         }
 
-        return event.version == Self.protocolVersion && event.type == "statusChanged"
+        return event.id == nil && event.version == Self.protocolVersion && event.type == "statusChanged"
     }
 
     private func nextID() -> Int {
