@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Phase 4 04-07 bridge waiting copy gap closed; Phase 4 UAT retest remains
-last_updated: "2026-06-07T06:04:48Z"
-last_activity: 2026-06-07 -- Completed 04-07 bridge waiting copy gap closure
+stopped_at: Phase 4 verification is human_needed; resume 04-UAT live IINA retest
+last_updated: "2026-06-07T06:24:30Z"
+last_activity: 2026-06-07 -- Phase 4 verification recorded human_needed after 04-07 gap closure
 progress:
   total_phases: 5
   completed_phases: 3
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-06-05)
 
 Phase: 04 (iina-adapter-spike-and-end-to-end-playback-control) — VERIFYING
 Plan: 04-07
-Status: 04-07 bridge waiting copy gap closed; ready to resume Phase 4 UAT from step 1
-Last activity: 2026-06-07 -- Completed 04-07 bridge waiting copy gap closure
+Status: Verification is human_needed; ready to resume Phase 4 UAT from step 1
+Last activity: 2026-06-07 -- Phase 4 verification recorded human_needed after 04-07 gap closure
 
 Progress: [██████████] 100%
 
@@ -86,7 +86,7 @@ None yet.
 ### Blockers/Concerns
 
 - [Phase 3]: Vision threshold tuning and pose sign/orientation require empirical checks on the target Mac/camera setup.
-- [Phase 4]: 04-07 bridge-waiting copy gap is code-fixed; broader Phase 4 UAT retest and closeout still need final verification.
+- [Phase 4]: Verification is human_needed after 04-07; 15 live IINA UAT checks remain before Phase 4 can be marked complete.
 
 ### Quick Tasks Completed
 
@@ -109,6 +109,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-07T06:04:48Z
-Stopped at: Phase 4 04-07 bridge waiting copy gap closed; Phase 4 UAT retest remains
+Last session: 2026-06-07T06:24:30Z
+Stopped at: Phase 4 verification is human_needed; resume 04-UAT live IINA retest
 Resume file: .planning/phases/04-iina-adapter-spike-and-end-to-end-playback-control/04-UAT.md
