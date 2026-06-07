@@ -108,10 +108,13 @@ private struct GlanceHoldMenu: View {
     let monitor: AttentionMonitor
     @Binding var playbackCoordinator: PlaybackCoordinator
     @State private var permissionRequestID: UUID?
+    @State private var playbackStatusStreamTask: Task<Void, Never>?
+    @State private var playbackFallbackRefreshTask: Task<Void, Never>?
     @Environment(\.openWindow) private var openWindow
 
     private let permissionExplanation = "GlanceHold uses the camera only on this Mac to tell whether you are facing the screen. Frames are not saved or uploaded."
     private let delayChoices: [TimeInterval] = [0.5, 0.8, 1.0, 1.2, 1.5, 2.0]
+    private let playbackFallbackRefreshIntervalNanoseconds: UInt64 = 10_000_000_000
 
     private var primaryAction: GlanceHoldPrimaryAction {
         GlanceHoldPrimaryAction.resolve(for: state.status, hasCalibration: state.hasCalibration)
@@ -221,12 +224,16 @@ private struct GlanceHoldMenu: View {
             }
 
             Button("Quit GlanceHold") {
+                stopPlaybackStatusUpdates()
                 monitor.stopMonitoring()
                 playbackCoordinator.stopMonitoring()
                 NSApplication.shared.terminate(nil)
             }
         }
-        .onAppear(perform: installMonitorStateHandler)
+        .onAppear {
+            installMonitorStateHandler()
+            startPlaybackStatusUpdates()
+        }
     }
 
     private var modeBinding: Binding<MonitoringMode> {
@@ -405,12 +412,48 @@ private struct GlanceHoldMenu: View {
         }
     }
 
+    private func startPlaybackStatusUpdates() {
+        guard playbackStatusStreamTask == nil else {
+            return
+        }
+
+        let coordinator = playbackCoordinator
+        playbackStatusStreamTask = Task {
+            while !Task.isCancelled {
+                await coordinator.observePlayerStatusUpdates()
+                try? await Task.sleep(nanoseconds: playbackFallbackRefreshIntervalNanoseconds)
+                if Task.isCancelled {
+                    return
+                }
+            }
+        }
+
+        playbackFallbackRefreshTask = Task {
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: playbackFallbackRefreshIntervalNanoseconds)
+                if Task.isCancelled {
+                    return
+                }
+                await coordinator.refreshPlayerState()
+            }
+        }
+    }
+
+    private func stopPlaybackStatusUpdates() {
+        playbackStatusStreamTask?.cancel()
+        playbackFallbackRefreshTask?.cancel()
+        playbackStatusStreamTask = nil
+        playbackFallbackRefreshTask = nil
+    }
+
     private func replacePlaybackCoordinator(mode: MonitoringMode) {
+        stopPlaybackStatusUpdates()
         playbackCoordinator.stateDidChange = nil
         playbackCoordinator.stopMonitoring()
         playbackCoordinator = Self.makePlaybackCoordinator(mode: mode)
         state.playerStatus = nil
         installMonitorStateHandler()
+        startPlaybackStatusUpdates()
     }
 
     private static func makePlaybackCoordinator(mode: MonitoringMode) -> PlaybackCoordinator {
