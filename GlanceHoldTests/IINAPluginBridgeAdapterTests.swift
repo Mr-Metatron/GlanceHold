@@ -12,11 +12,17 @@ final class IINAPluginBridgeAdapterTests: XCTestCase {
         ])
         let adapter = IINAPluginBridgeAdapter(client: client)
 
-        XCTAssertEqual(await adapter.snapshot(), .playing(speed: 1.5))
-        XCTAssertEqual(await adapter.snapshot(), .paused(speed: 1.25))
-        XCTAssertEqual(await adapter.snapshot(), .idle)
-        XCTAssertEqual(await adapter.snapshot(), .setupNeeded)
-        XCTAssertEqual(await adapter.snapshot(), .playerUnavailable)
+        let playing = await adapter.snapshot()
+        let paused = await adapter.snapshot()
+        let idle = await adapter.snapshot()
+        let setupNeeded = await adapter.snapshot()
+        let unavailable = await adapter.snapshot()
+
+        XCTAssertEqual(playing, .playing(speed: 1.5))
+        XCTAssertEqual(paused, .paused(speed: 1.25))
+        XCTAssertEqual(idle, .idle)
+        XCTAssertEqual(setupNeeded, .setupNeeded)
+        XCTAssertEqual(unavailable, .playerUnavailable)
     }
 }
 

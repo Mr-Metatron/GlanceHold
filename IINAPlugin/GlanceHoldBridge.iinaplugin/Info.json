@@ -1,0 +1,6 @@
+{
+  "name": "GlanceHold Bridge",
+  "identifier": "com.metatron.GlanceHoldBridge",
+  "version": "0.1.0",
+  "entry": "main.js"
+}
