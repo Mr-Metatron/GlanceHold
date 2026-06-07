@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Completed 05-03-PLAN.md
-last_updated: "2026-06-07T12:19:53.000Z"
-last_activity: 2026-06-07 -- Completed Phase 5 English/Simplified Chinese localization
+stopped_at: Completed Phase 5
+last_updated: "2026-06-07T12:22:48.000Z"
+last_activity: 2026-06-07 -- Completed Phase 5 integrated verification with human-needed handoff for live checks
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 22
-  completed_plans: 21
-  percent: 67
+  completed_plans: 22
+  percent: 83
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-05)
 
 **Core value:** 当用户注意力离开屏幕时，GlanceHold 能可靠、克制地替用户处理视频速度或播放状态，并在用户回来时恢复到合适状态，且不误恢复用户手动暂停的视频。
-**Current focus:** Phase 05 — control polish, IINA shortcut, and i18n
+**Current focus:** Phase 06 — end-to-end UX hardening and manual UAT
 
 ## Current Position
 
-Phase: 05 (control-polish-iina-shortcut-and-i18n) — IN PROGRESS
-Plan: 05-04 next
-Status: Phase 5 menu polish, IINA plugin monitoring shortcut, and English/Simplified Chinese localization are complete; next is integrated verification and lightweight human-check handoff.
-Last activity: 2026-06-07 -- Completed Phase 5 English/Simplified Chinese localization
+Phase: 06 (end-to-end-ux-hardening-and-manual-uat) — NEXT
+Plan: Phase 6 planning next
+Status: Phase 5 is complete. Integrated automated verification passed; live IINA shortcut/menu/localization check is recorded as `human-needed` for Phase 6 manual retest.
+Last activity: 2026-06-07 -- Completed Phase 5 integrated verification with human-needed handoff for live checks
 
-Plan execution: [██████████] 21/22 plans complete
-Phase progress: [███████░░░] 4/6 phases complete
+Plan execution: [██████████] 22/22 plans complete
+Phase progress: [████████░░] 5/6 phases complete
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 21 of 22
+- Total plans completed: 22 of 22
 - Average duration: N/A
 - Total execution time: 0.0 hours
 
@@ -49,11 +49,11 @@ Phase progress: [███████░░░] 4/6 phases complete
 | 02 | 2 | - | - |
 | 03 | 3 | 27 min | 9 min |
 | 04 | 10 | live-iterated | - |
-| 05 | 3/4 | 28 min | 9 min |
+| 05 | 4/4 | 34 min | 9 min |
 
 **Recent Trend:**
 
-- Last 5 completed plans: 04-09, 04-10, 05-01, 05-02, 05-03
+- Last 5 completed plans: 04-10, 05-01, 05-02, 05-03, 05-04
 - Trend: steady
 
 *Updated after each plan completion*
@@ -75,6 +75,7 @@ Phase progress: [███████░░░] 4/6 phases complete
 | Phase 05 P01 | 8 min | 2 tasks | 5 files |
 | Phase 05 P02 | 11 min | 2 tasks | 9 files |
 | Phase 05 P03 | 9 min | 2 tasks | 17 files |
+| Phase 05 P04 | 6 min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -103,7 +104,7 @@ None yet.
 ### Blockers/Concerns
 
 - [Phase 3]: Vision threshold tuning and pose sign/orientation require empirical checks on the target Mac/camera setup.
-- [Phase 5]: Remaining work is integrated lightweight verification.
+- [Phase 5]: Live IINA shortcut/menu/localization check is recorded as `human-needed` in `05-LIVE-CHECKLIST.md` and should be retested in Phase 6.
 - [Phase 6]: Final hardening should cover disable/quit flows, last-action feedback, final manual checklist coverage, localization sanity, shortcut toggle sanity, and build verification.
 
 ### Quick Tasks Completed
@@ -127,6 +128,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-07T12:19:53.000Z
-Stopped at: Completed 05-03-PLAN.md
+Last session: 2026-06-07T12:22:48.000Z
+Stopped at: Completed Phase 5
 Resume file: None

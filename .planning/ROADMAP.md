@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Pure Attention State Machine and Playback Policy** - The trust-critical attention debounce and playback ownership rules are deterministic and test-covered before side effects exist. (completed 2026-06-05)
 - [x] **Phase 3: Local Camera, Vision Signal, Calibration, and Tuning** - Users can calibrate and tune a local Vision-based attention signal that drives visible attention states. (completed 2026-06-06)
 - [x] **Phase 4: IINA Adapter Spike and End-to-End Playback Control** - GlanceHold controls real IINA playback for speed and pause modes through a validated adapter. (completed 2026-06-07)
-- [ ] **Phase 5: Control Polish, IINA Shortcut, and i18n** - Users can tune, toggle, and read GlanceHold more comfortably through checked menu controls, an IINA plugin monitoring shortcut, and English/Chinese localization.
+- [x] **Phase 5: Control Polish, IINA Shortcut, and i18n** - Users can tune, toggle, and read GlanceHold more comfortably through checked menu controls, an IINA plugin monitoring shortcut, and English/Chinese localization. (completed 2026-06-07)
 - [ ] **Phase 6: End-to-End UX Hardening and Manual UAT** - The MVP is safe to use across real camera/player failures, disable/quit flows, and manual acceptance checks.
 
 ## Phase Details
@@ -161,7 +161,7 @@ Plans:
   3. User-facing status-bar menu text, actions, status details, and alerts are routed through localization resources rather than scattered hard-coded strings.
   4. English and Simplified Chinese localizations cover the v1 status-bar app surface, including monitoring status, IINA/player status, calibration/reset prompts, tuning labels, and shortcut copy.
 
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 Plans:
 **Wave 1**
 
@@ -177,7 +177,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion; has lightweight human check)*
 
-- [ ] 05-04-PLAN.md — Integrated verification, plugin syntax check, and live-check handoff.
+- [x] 05-04-PLAN.md — Integrated verification, plugin syntax check, and live-check handoff.
 **UI hint**: yes
 
 ### Phase 6: End-to-End UX Hardening and Manual UAT
@@ -207,5 +207,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 2. Pure Attention State Machine and Playback Policy | 2/2 | Complete   | 2026-06-05 |
 | 3. Local Camera, Vision Signal, Calibration, and Tuning | 3/3 | Complete   | 2026-06-06 |
 | 4. IINA Adapter Spike and End-to-End Playback Control | 10/10 | Complete   | 2026-06-07 |
-| 5. Control Polish, IINA Shortcut, and i18n | 3/4 | In Progress|  |
+| 5. Control Polish, IINA Shortcut, and i18n | 4/4 | Complete   | 2026-06-07 |
 | 6. End-to-End UX Hardening and Manual UAT | 0/TBD | Not started | - |
