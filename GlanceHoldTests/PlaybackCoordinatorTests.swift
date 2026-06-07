@@ -68,6 +68,32 @@ final class PlaybackCoordinatorTests: XCTestCase {
         XCTAssertEqual(adapter.commands, [])
     }
 
+    func testRepeatedRefreshUpdatesPausedToPlayingWithoutPlaybackCommand() async {
+        let adapter = FakeIINAPlaybackAdapter(snapshots: [.paused(speed: 2.0), .playing(speed: 2.0)])
+        let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+
+        await coordinator.refreshPlayerState()
+        await coordinator.refreshPlayerState()
+
+        XCTAssertEqual(adapter.snapshotReadCount, 2)
+        XCTAssertTrue(coordinator.state.isPlayerControllable)
+        XCTAssertEqual(coordinator.state.playerSnapshot, .playing(speed: 2.0))
+        XCTAssertEqual(adapter.commands, [])
+    }
+
+    func testPushedSnapshotUpdatesPausedToPlayingWithoutPlaybackCommand() async {
+        let adapter = FakeIINAPlaybackAdapter(snapshots: [])
+        let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+
+        coordinator.applyPushedPlayerSnapshot(.paused(speed: 2.0))
+        coordinator.applyPushedPlayerSnapshot(.playing(speed: 2.0))
+
+        XCTAssertEqual(adapter.snapshotReadCount, 0)
+        XCTAssertTrue(coordinator.state.isPlayerControllable)
+        XCTAssertEqual(coordinator.state.playerSnapshot, .playing(speed: 2.0))
+        XCTAssertEqual(adapter.commands, [])
+    }
+
     func testPauseModeAwaySendsPause() async {
         let adapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5), .paused(speed: 1.5)])
         let coordinator = PlaybackCoordinator(mode: .pauseResume, adapter: adapter)
@@ -127,6 +153,45 @@ final class PlaybackCoordinatorTests: XCTestCase {
         XCTAssertEqual(pauseAdapter.commands, [.pause])
         XCTAssertEqual(pauseCoordinator.state.stoppedReason, .manualPlayerTakeover)
         assertNoRestoreOrResume(pauseAdapter.commands)
+    }
+
+    func testRefreshPreservesManualTakeoverStopReason() async {
+        let adapter = FakeIINAPlaybackAdapter(
+            snapshots: [
+                .playing(speed: 1.75),
+                .playing(speed: 1.0),
+                PlayerSnapshot(playbackState: .playing, speed: 1.25, manualAction: .speedChanged),
+                .playing(speed: 1.25)
+            ]
+        )
+        let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+
+        await coordinator.handleAttentionState(.lookingAway)
+        await coordinator.handleAttentionState(.facing)
+        await coordinator.refreshPlayerState()
+
+        XCTAssertEqual(coordinator.state.stoppedReason, .manualPlayerTakeover)
+        XCTAssertFalse(coordinator.state.isPlayerControllable)
+        assertNoRestoreOrResume(adapter.commands)
+    }
+
+    func testPushedSnapshotPreservesManualTakeoverStopReason() async {
+        let adapter = FakeIINAPlaybackAdapter(
+            snapshots: [
+                .playing(speed: 1.75),
+                .playing(speed: 1.0),
+                PlayerSnapshot(playbackState: .playing, speed: 1.25, manualAction: .speedChanged)
+            ]
+        )
+        let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+
+        await coordinator.handleAttentionState(.lookingAway)
+        await coordinator.handleAttentionState(.facing)
+        coordinator.applyPushedPlayerSnapshot(.playing(speed: 1.25))
+
+        XCTAssertEqual(coordinator.state.stoppedReason, .manualPlayerTakeover)
+        XCTAssertFalse(coordinator.state.isPlayerControllable)
+        assertNoRestoreOrResume(adapter.commands)
     }
 
     func testCommandFailureSuppressesFurtherCommandsUntilValidSnapshot() async {

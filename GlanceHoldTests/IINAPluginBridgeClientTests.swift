@@ -49,6 +49,31 @@ final class IINAPluginBridgeClientTests: XCTestCase {
         XCTAssertEqual(status, .setupNeeded)
     }
 
+    func testStatusChangedMessageWithoutRequestIDDecodesAsPushedStatus() async throws {
+        let transport = FakeIINAPluginBridgeTransport(streamMessages: [
+            #"{"version":1,"type":"statusChanged","snapshot":{"state":"playing","speed":2.0}}"#
+        ])
+        let client = IINAPluginBridgeClient(transport: transport)
+
+        var iterator = client.statusUpdates().makeAsyncIterator()
+        let status = await iterator.next()
+
+        XCTAssertEqual(status, .playing(speed: 2.0))
+        XCTAssertEqual(transport.sentMessages.count, 0)
+    }
+
+    func testStatusChangedMessageDoesNotSatisfySnapshotRequest() async throws {
+        let transport = FakeIINAPluginBridgeTransport(responses: [
+            #"{"version":1,"type":"statusChanged","snapshot":{"state":"playing","speed":2.0}}"#
+        ])
+        let client = IINAPluginBridgeClient(transport: transport)
+
+        let status = await client.status()
+
+        XCTAssertEqual(status, .unavailable)
+        XCTAssertEqual(transport.sentMessages.count, 1)
+    }
+
     func testMalformedProtocolAndFailedCommandMapToUnavailable() async throws {
         let malformed = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: ["not json"]))
         await XCTAssertEqualAsync(await malformed.status(), .unavailable)
@@ -78,11 +103,17 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
 final class FakeIINAPluginBridgeTransport: IINAPluginBridgeTransporting {
     private var responses: [String]
+    private var streamMessages: [String]
     private let error: IINAPluginBridgeClientError?
     private(set) var sentMessages: [[String: Any]] = []
 
-    init(responses: [String] = [], error: IINAPluginBridgeClientError? = nil) {
+    init(
+        responses: [String] = [],
+        streamMessages: [String] = [],
+        error: IINAPluginBridgeClientError? = nil
+    ) {
         self.responses = responses
+        self.streamMessages = streamMessages
         self.error = error
     }
 
@@ -96,6 +127,20 @@ final class FakeIINAPluginBridgeTransport: IINAPluginBridgeTransporting {
         }
 
         return responses.isEmpty ? #"{"id":1,"version":1,"ok":true}"# : responses.removeFirst()
+    }
+
+    func messages(timeout: TimeInterval) -> AsyncThrowingStream<String, Error> {
+        AsyncThrowingStream { continuation in
+            if let error {
+                continuation.finish(throwing: error)
+                return
+            }
+
+            for message in streamMessages {
+                continuation.yield(message)
+            }
+            continuation.finish()
+        }
     }
 }
 
