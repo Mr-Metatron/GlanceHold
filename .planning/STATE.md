@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: human_needed
-stopped_at: Completed 04-09-PLAN.md; Phase 4 UAT Test 3 ready for live retest
-last_updated: "2026-06-07T09:05:53Z"
-last_activity: 2026-06-07 -- Phase 4 04-09 robust calibration fix complete; UAT ready to resume at Test 3
+status: gap_planned
+stopped_at: Phase 4 UAT complete; 04-10 manual pause monitoring gap closure plan ready for execution
+last_updated: "2026-06-07T09:39:23Z"
+last_activity: 2026-06-07 -- Phase 4 UAT complete with 14 passed and 1 minor manual pause monitoring issue; 04-10 gap closure planned
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 17
+  total_plans: 18
   completed_plans: 17
   percent: 60
 ---
@@ -25,18 +25,18 @@ See: .planning/PROJECT.md (updated 2026-06-05)
 
 ## Current Position
 
-Phase: 04 (iina-adapter-spike-and-end-to-end-playback-control) — HUMAN NEEDED
-Plan: 9 of 9
-Status: 04-09 complete; Phase 4 UAT ready to resume at Test 3
-Last activity: 2026-06-07 -- Phase 4 04-09 robust calibration fix complete; UAT ready for retest
+Phase: 04 (iina-adapter-spike-and-end-to-end-playback-control) — GAP PLANNED
+Plan: 10 of 10
+Status: UAT complete with 14/15 checks passing; 04-10 manual pause monitoring gap closure ready for execution
+Last activity: 2026-06-07 -- Phase 4 UAT complete with one minor manual pause monitoring issue and a focused gap closure plan
 
-Progress: [██████████] 100%
+Progress: [█████████░] 94%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 17
+- Total plans completed: 17 of 18
 - Average duration: N/A
 - Total execution time: 0.0 hours
 
@@ -51,7 +51,7 @@ Progress: [██████████] 100%
 
 **Recent Trend:**
 
-- Last 5 plans: 04-05, 04-06, 04-07, 04-08, 04-09
+- Last 5 completed plans: 04-05, 04-06, 04-07, 04-08, 04-09
 - Trend: steady
 
 *Updated after each plan completion*
@@ -88,7 +88,7 @@ None yet.
 ### Blockers/Concerns
 
 - [Phase 3]: Vision threshold tuning and pose sign/orientation require empirical checks on the target Mac/camera setup.
-- [Phase 4]: 04-09 fixed the repeated Calibration Failed live retest blocker in code and automated tests. Live UAT must resume at Test 3 before Phase 4 can close.
+- [Phase 4]: UAT is complete with 14 passing checks and 1 minor issue. 04-10 is planned to stop camera monitoring after Pause/Resume manual pause/takeover before Phase 4 can close.
 
 ### Quick Tasks Completed
 
@@ -111,6 +111,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-07T09:05:53Z
-Stopped at: Completed 04-09-PLAN.md; Phase 4 UAT Test 3 ready for live retest
-Resume file: .planning/phases/04-iina-adapter-spike-and-end-to-end-playback-control/04-UAT.md
+Last session: 2026-06-07T09:39:23Z
+Stopped at: Phase 4 UAT complete; 04-10 manual pause monitoring gap closure plan ready
+Resume file: .planning/phases/04-iina-adapter-spike-and-end-to-end-playback-control/04-10-PLAN.md
