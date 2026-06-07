@@ -103,6 +103,11 @@ enum GlanceHoldPrimaryAction: Equatable {
     }
 }
 
+private enum MonitoringStopSource {
+    case userRequested
+    case manualPlayerTakeover
+}
+
 private struct GlanceHoldMenu: View {
     @Binding var state: GlanceHoldState
     let monitor: AttentionMonitor
@@ -259,10 +264,7 @@ private struct GlanceHoldMenu: View {
         case .enable:
             enableMonitoring()
         case .disable:
-            permissionRequestID = nil
-            monitor.stopMonitoring()
-            playbackCoordinator.stopMonitoring()
-            state.disableMonitoring()
+            stopMonitoring(source: .userRequested)
         case .wait:
             break
         case .openCameraSettings:
@@ -378,6 +380,19 @@ private struct GlanceHoldMenu: View {
         NSWorkspace.shared.open(url)
     }
 
+    private func stopMonitoring(source: MonitoringStopSource) {
+        permissionRequestID = nil
+        monitor.stopMonitoring()
+        playbackCoordinator.stopMonitoring()
+
+        switch source {
+        case .userRequested:
+            state.disableMonitoring()
+        case .manualPlayerTakeover:
+            state.stopMonitoringAfterManualPlayerTakeover()
+        }
+    }
+
     private func installMonitorStateHandler() {
         installPlaybackCoordinatorStateHandler()
         let coordinator = playbackCoordinator
@@ -402,6 +417,11 @@ private struct GlanceHoldMenu: View {
         playbackCoordinator.stateDidChange = { coordinatorState in
             Task { @MainActor in
                 state.apply(playerControlState: coordinatorState)
+            }
+        }
+        playbackCoordinator.stopMonitoringRequested = { _ in
+            Task { @MainActor in
+                stopMonitoring(source: .manualPlayerTakeover)
             }
         }
     }
@@ -449,6 +469,7 @@ private struct GlanceHoldMenu: View {
     private func replacePlaybackCoordinator(mode: MonitoringMode) {
         stopPlaybackStatusUpdates()
         playbackCoordinator.stateDidChange = nil
+        playbackCoordinator.stopMonitoringRequested = nil
         playbackCoordinator.stopMonitoring()
         playbackCoordinator = Self.makePlaybackCoordinator(mode: mode)
         state.playerStatus = nil

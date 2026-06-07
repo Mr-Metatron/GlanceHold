@@ -116,6 +116,29 @@ struct PlaybackPolicy: Equatable {
         }
     }
 
+    mutating func applyObservedPlayerSnapshot(
+        _ player: PlayerSnapshot,
+        monitoringActive: Bool
+    ) -> PlaybackPolicyResult {
+        guard state.stoppedReason == nil else {
+            return result([])
+        }
+
+        if let takeoverResult = handleManualTakeoverIfNeeded(player: player) {
+            return takeoverResult
+        }
+
+        guard monitoringActive, state.mode == .pauseResume, !state.pauseOwnedByGlanceHold else {
+            return result([])
+        }
+
+        guard player.playbackState == .paused, player.speed != nil else {
+            return result([])
+        }
+
+        return stopMonitoringForManualTakeover()
+    }
+
     private mutating func applySpeedControl(
         attention: DebouncedAttentionState,
         player: PlayerSnapshot

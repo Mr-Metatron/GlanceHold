@@ -21,6 +21,7 @@ final class PlaybackCoordinator {
     private let adapter: IINAPlaybackAdapting
     private var policy: PlaybackPolicy
     private var suppressCommandsUntilValidSnapshot = false
+    private var monitoringSessionActive = false
 
     private(set) var state: PlaybackCoordinatorState {
         didSet {
@@ -29,6 +30,7 @@ final class PlaybackCoordinator {
     }
 
     var stateDidChange: ((PlaybackCoordinatorState) -> Void)?
+    var stopMonitoringRequested: ((StopMonitoringReason) -> Void)?
 
     init(mode: MonitoringMode, adapter: IINAPlaybackAdapting) {
         self.mode = mode
@@ -38,6 +40,7 @@ final class PlaybackCoordinator {
     }
 
     func stopMonitoring() {
+        monitoringSessionActive = false
         resetPolicy()
         state = .unavailable
     }
@@ -61,8 +64,19 @@ final class PlaybackCoordinator {
     }
 
     func handleAttentionState(_ state: DebouncedAttentionState) async {
+        monitoringSessionActive = true
         let snapshot = await adapter.snapshot()
         let isControllable = isPlayerControllable(snapshot)
+
+        if self.state.stoppedReason != nil {
+            applyReadOnlyPlayerSnapshot(snapshot)
+            return
+        }
+
+        if isControllable, applyObservedPlayerSnapshotForManualStopIfNeeded(snapshot, monitoringActive: true) {
+            return
+        }
+
         updateState(snapshot: snapshot, isPlayerControllable: isControllable)
 
         guard isControllable else {
@@ -80,12 +94,7 @@ final class PlaybackCoordinator {
         }
 
         if case let .stopMonitoring(reason) = intent {
-            resetPolicy()
-            self.state = PlaybackCoordinatorState(
-                isPlayerControllable: false,
-                playerSnapshot: snapshot,
-                stoppedReason: reason
-            )
+            handleStopMonitoring(reason: reason, snapshot: snapshot)
             return
         }
 
@@ -156,10 +165,39 @@ final class PlaybackCoordinator {
             return
         }
 
+        if isControllable, applyObservedPlayerSnapshotForManualStopIfNeeded(snapshot, monitoringActive: monitoringSessionActive) {
+            return
+        }
+
         if isControllable {
             suppressCommandsUntilValidSnapshot = false
         }
         updateState(snapshot: snapshot, isPlayerControllable: isControllable)
+    }
+
+    @discardableResult
+    private func applyObservedPlayerSnapshotForManualStopIfNeeded(
+        _ snapshot: PlayerSnapshot,
+        monitoringActive: Bool
+    ) -> Bool {
+        let result = policy.applyObservedPlayerSnapshot(snapshot, monitoringActive: monitoringActive)
+        guard case let .stopMonitoring(reason)? = result.intents.first else {
+            return false
+        }
+
+        handleStopMonitoring(reason: reason, snapshot: snapshot)
+        return true
+    }
+
+    private func handleStopMonitoring(reason: StopMonitoringReason, snapshot: PlayerSnapshot) {
+        monitoringSessionActive = false
+        resetPolicy()
+        state = PlaybackCoordinatorState(
+            isPlayerControllable: false,
+            playerSnapshot: snapshot,
+            stoppedReason: reason
+        )
+        stopMonitoringRequested?(reason)
     }
 
     private func updateState(snapshot: PlayerSnapshot, isPlayerControllable: Bool) {

@@ -310,6 +310,10 @@ struct GlanceHoldState: Equatable {
         status = .off
     }
 
+    mutating func stopMonitoringAfterManualPlayerTakeover() {
+        status = .off
+    }
+
     mutating func selectMode(_ mode: MonitoringMode) {
         self.mode = mode
     }
