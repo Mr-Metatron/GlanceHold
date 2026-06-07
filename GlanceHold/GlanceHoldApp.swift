@@ -118,11 +118,14 @@ private struct GlanceHoldMenu: View {
     @Environment(\.openWindow) private var openWindow
 
     private let permissionExplanation = "GlanceHold uses the camera only on this Mac to tell whether you are facing the screen. Frames are not saved or uploaded."
-    private let delayChoices: [TimeInterval] = [0.5, 0.8, 1.0, 1.2, 1.5, 2.0]
     private let playbackFallbackRefreshIntervalNanoseconds: UInt64 = 10_000_000_000
 
     private var primaryAction: GlanceHoldPrimaryAction {
         GlanceHoldPrimaryAction.resolve(for: state.status, hasCalibration: state.hasCalibration)
+    }
+
+    private var tuningPresentation: TuningMenuPresentation {
+        TuningMenuPresentation(settings: state.settings)
     }
 
     var body: some View {
@@ -169,41 +172,27 @@ private struct GlanceHoldMenu: View {
             Text(GlanceHoldMenuCopy.tuningSectionTitle)
                 .foregroundStyle(.secondary)
 
-            Menu(GlanceHoldMenuCopy.sensitivityLabel) {
+            Picker(tuningPresentation.sensitivityTitle, selection: sensitivityBinding) {
                 ForEach(AttentionSensitivity.allCases, id: \.self) { sensitivity in
-                    Button(sensitivity.displayName) {
-                        updateSettings(state.settings.withSensitivity(sensitivity))
-                    }
+                    Text(sensitivity.displayName).tag(sensitivity)
                 }
             }
 
-            Menu(GlanceHoldMenuCopy.speedControlAwayDelayLabel) {
-                ForEach(delayChoices, id: \.self) { delay in
-                    Button(formatDelay(delay)) {
-                        var settings = state.settings
-                        settings.speedControlAwayDelay = delay
-                        updateSettings(settings)
-                    }
+            Picker(tuningPresentation.speedControlAwayDelayTitle, selection: speedControlAwayDelayBinding) {
+                ForEach(tuningPresentation.speedControlAwayDelayOptions) { option in
+                    Text(option.title).tag(option.value)
                 }
             }
 
-            Menu(GlanceHoldMenuCopy.pauseResumeAwayDelayLabel) {
-                ForEach(delayChoices, id: \.self) { delay in
-                    Button(formatDelay(delay)) {
-                        var settings = state.settings
-                        settings.pauseResumeAwayDelay = delay
-                        updateSettings(settings)
-                    }
+            Picker(tuningPresentation.pauseResumeAwayDelayTitle, selection: pauseResumeAwayDelayBinding) {
+                ForEach(tuningPresentation.pauseResumeAwayDelayOptions) { option in
+                    Text(option.title).tag(option.value)
                 }
             }
 
-            Menu(GlanceHoldMenuCopy.recoveryDelayLabel) {
-                ForEach(delayChoices, id: \.self) { delay in
-                    Button(formatDelay(delay)) {
-                        var settings = state.settings
-                        settings.recoveryDelay = delay
-                        updateSettings(settings)
-                    }
+            Picker(tuningPresentation.recoveryDelayTitle, selection: recoveryDelayBinding) {
+                ForEach(tuningPresentation.recoveryDelayOptions) { option in
+                    Text(option.title).tag(option.value)
                 }
             }
 
@@ -251,6 +240,56 @@ private struct GlanceHoldMenu: View {
                 settings.mode = mode
                 updateSettings(settings)
                 replacePlaybackCoordinator(mode: mode)
+            }
+        )
+    }
+
+    private var sensitivityBinding: Binding<AttentionSensitivity> {
+        Binding(
+            get: {
+                state.settings.sensitivity
+            },
+            set: { sensitivity in
+                updateSettings(state.settings.withSensitivity(sensitivity))
+            }
+        )
+    }
+
+    private var speedControlAwayDelayBinding: Binding<Double> {
+        Binding(
+            get: {
+                state.settings.speedControlAwayDelay
+            },
+            set: { delay in
+                var settings = state.settings
+                settings.speedControlAwayDelay = delay
+                updateSettings(settings)
+            }
+        )
+    }
+
+    private var pauseResumeAwayDelayBinding: Binding<Double> {
+        Binding(
+            get: {
+                state.settings.pauseResumeAwayDelay
+            },
+            set: { delay in
+                var settings = state.settings
+                settings.pauseResumeAwayDelay = delay
+                updateSettings(settings)
+            }
+        )
+    }
+
+    private var recoveryDelayBinding: Binding<Double> {
+        Binding(
+            get: {
+                state.settings.recoveryDelay
+            },
+            set: { delay in
+                var settings = state.settings
+                settings.recoveryDelay = delay
+                updateSettings(settings)
             }
         )
     }
@@ -366,10 +405,6 @@ private struct GlanceHoldMenu: View {
         alert.addButton(withTitle: GlanceHoldMenuCopy.keepCurrentCalibrationButton)
         alert.addButton(withTitle: GlanceHoldMenuCopy.useNewCalibrationButton)
         return alert.runModal() == .alertSecondButtonReturn
-    }
-
-    private func formatDelay(_ delay: TimeInterval) -> String {
-        String(format: "%.1f seconds", delay)
     }
 
     private func openCameraSettings() {
