@@ -62,6 +62,20 @@ final class IINAPluginBridgeClientTests: XCTestCase {
         XCTAssertEqual(transport.sentMessages.count, 0)
     }
 
+    func testToggleMonitoringRequestedMessageDecodesAsEventStreamWithoutCommand() async throws {
+        let transport = FakeIINAPluginBridgeTransport(streamMessages: [
+            #"{"version":1,"type":"toggleMonitoringRequested"}"#
+        ])
+        let client = IINAPluginBridgeClient(transport: transport)
+
+        var iterator = client.monitoringToggleRequests().makeAsyncIterator()
+        let request = await iterator.next()
+
+        XCTAssertNotNil(request)
+        XCTAssertNil(await iterator.next())
+        XCTAssertEqual(transport.sentMessages.count, 0)
+    }
+
     func testStatusChangedMessageDoesNotSatisfySnapshotRequest() async throws {
         let transport = FakeIINAPluginBridgeTransport(responses: [
             #"{"version":1,"type":"statusChanged","snapshot":{"state":"playing","speed":2.0}}"#
@@ -85,6 +99,37 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
         XCTAssertEqual(status, .playing(speed: 1.25))
         XCTAssertEqual(transport.sentMessages.count, 1)
+    }
+
+    func testToggleMonitoringRequestedBeforeSnapshotResponseDoesNotPoisonRequest() async throws {
+        let transport = FakeIINAPluginBridgeTransport(responses: [
+            #"{"version":1,"type":"toggleMonitoringRequested"}"#,
+            #"{"id":1,"version":1,"ok":true,"snapshot":{"state":"playing","speed":1.25}}"#
+        ])
+        let client = IINAPluginBridgeClient(transport: transport)
+
+        let status = await client.status()
+
+        XCTAssertEqual(status, .playing(speed: 1.25))
+        XCTAssertEqual(transport.sentMessages.count, 1)
+    }
+
+    func testToggleMonitoringRequestedStrictlyIgnoresUnsupportedShapes() async throws {
+        let transport = FakeIINAPluginBridgeTransport(streamMessages: [
+            #"{"version":2,"type":"toggleMonitoringRequested"}"#,
+            #"{"id":7,"version":1,"type":"toggleMonitoringRequested"}"#,
+            #"{"version":1,"type":"unknownEvent"}"#,
+            #"not json"#,
+            #"{"version":1,"type":"toggleMonitoringRequested"}"#
+        ])
+        let client = IINAPluginBridgeClient(transport: transport)
+
+        var iterator = client.monitoringToggleRequests().makeAsyncIterator()
+        let request = await iterator.next()
+
+        XCTAssertNotNil(request)
+        XCTAssertNil(await iterator.next())
+        XCTAssertEqual(transport.sentMessages.count, 0)
     }
 
     func testStatusChangedWithRequestIDIsStillTreatedAsResponse() async throws {

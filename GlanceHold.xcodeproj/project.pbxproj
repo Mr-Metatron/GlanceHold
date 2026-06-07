@@ -40,6 +40,7 @@
 		8D6E7A932F4C4D0E9A1B2C3D /* IINAPluginBridgeAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A922F4C4D0E9A1B2C3D /* IINAPluginBridgeAdapter.swift */; };
 		8D6E7A952F4C4D0E9A1B2C3D /* MenuOptionPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A942F4C4D0E9A1B2C3D /* MenuOptionPresentationTests.swift */; };
 		8D6E7A972F4C4D0E9A1B2C3D /* MenuOptionPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A962F4C4D0E9A1B2C3D /* MenuOptionPresentation.swift */; };
+		8D6E7A992F4C4D0E9A1B2C3D /* MonitoringToggleControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A982F4C4D0E9A1B2C3D /* MonitoringToggleControllerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -90,6 +91,7 @@
 		8D6E7A922F4C4D0E9A1B2C3D /* IINAPluginBridgeAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IINAPluginBridgeAdapter.swift; sourceTree = "<group>"; };
 		8D6E7A942F4C4D0E9A1B2C3D /* MenuOptionPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuOptionPresentationTests.swift; sourceTree = "<group>"; };
 		8D6E7A962F4C4D0E9A1B2C3D /* MenuOptionPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuOptionPresentation.swift; sourceTree = "<group>"; };
+		8D6E7A982F4C4D0E9A1B2C3D /* MonitoringToggleControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitoringToggleControllerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -173,6 +175,7 @@
 				8D6E7A8E2F4C4D0E9A1B2C3D /* IINAPluginBridgeAdapterTests.swift */,
 				8D6E7A882F4C4D0E9A1B2C3D /* PlaybackCoordinatorTests.swift */,
 				8D6E7A942F4C4D0E9A1B2C3D /* MenuOptionPresentationTests.swift */,
+				8D6E7A982F4C4D0E9A1B2C3D /* MonitoringToggleControllerTests.swift */,
 			);
 			path = GlanceHoldTests;
 			sourceTree = "<group>";
@@ -315,6 +318,7 @@
 				8D6E7A8F2F4C4D0E9A1B2C3D /* IINAPluginBridgeAdapterTests.swift in Sources */,
 				8D6E7A892F4C4D0E9A1B2C3D /* PlaybackCoordinatorTests.swift in Sources */,
 				8D6E7A952F4C4D0E9A1B2C3D /* MenuOptionPresentationTests.swift in Sources */,
+				8D6E7A992F4C4D0E9A1B2C3D /* MonitoringToggleControllerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
