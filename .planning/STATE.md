@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Phase 4 Goal metadata repaired; phase closeout validation remains
-last_updated: "2026-06-07T05:43:36Z"
-last_activity: 2026-06-07 -- Quick task 260607-j1k repaired Phase 4 MVP goal format
+status: verifying
+stopped_at: Phase 4 04-07 bridge waiting copy gap closed; Phase 4 UAT retest remains
+last_updated: "2026-06-07T06:04:48Z"
+last_activity: 2026-06-07 -- Completed 04-07 bridge waiting copy gap closure
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 14
-  completed_plans: 14
+  total_plans: 15
+  completed_plans: 15
   percent: 60
 ---
 
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-06-05)
 
 ## Current Position
 
-Phase: 04 (iina-adapter-spike-and-end-to-end-playback-control) — EXECUTING
-Plan: 04-06
-Status: Phase 4 MVP goal format repaired; ready for Phase 4 closeout verification
-Last activity: 2026-06-07 -- Quick task 260607-j1k repaired Phase 4 MVP goal format
+Phase: 04 (iina-adapter-spike-and-end-to-end-playback-control) — VERIFYING
+Plan: 04-07
+Status: 04-07 bridge waiting copy gap closed; ready to resume Phase 4 UAT from step 1
+Last activity: 2026-06-07 -- Completed 04-07 bridge waiting copy gap closure
 
 Progress: [██████████] 100%
 
@@ -36,7 +36,7 @@ Progress: [██████████] 100%
 
 **Velocity:**
 
-- Total plans completed: 11
+- Total plans completed: 15
 - Average duration: N/A
 - Total execution time: 0.0 hours
 
@@ -47,11 +47,11 @@ Progress: [██████████] 100%
 | 01 | 3 | - | - |
 | 02 | 2 | - | - |
 | 03 | 3 | 27 min | 9 min |
-| 04 | 3 | 27 min | 9 min |
+| 04 | 7 | live-iterated | - |
 
 **Recent Trend:**
 
-- Last 5 plans: 03-02, 03-03, 04-01, 04-02, 04-03
+- Last 5 plans: 04-03, 04-04, 04-05, 04-06, 04-07
 - Trend: steady
 
 *Updated after each plan completion*
@@ -66,6 +66,7 @@ Progress: [██████████] 100%
 | Phase 04 P01 | 17min | 3 tasks | 5 files |
 | Phase 04 P02 | 4min | 2 tasks | 3 files |
 | Phase 04 P03 | 6min | 2 tasks | 3 files |
+| Phase 04 P07 | 9min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -85,7 +86,7 @@ None yet.
 ### Blockers/Concerns
 
 - [Phase 3]: Vision threshold tuning and pose sign/orientation require empirical checks on the target Mac/camera setup.
-- [Phase 4]: 04-06 push-first status freshness is approved; broader Phase 4 closeout still needs final checklist/verification pass.
+- [Phase 4]: 04-07 bridge-waiting copy gap is code-fixed; broader Phase 4 UAT retest and closeout still need final verification.
 
 ### Quick Tasks Completed
 
@@ -108,6 +109,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-07T03:35:37.415Z
-Stopped at: Phase 4 04-06 pushed IINA status stream approved; phase closeout validation remains
-Resume file: .planning/phases/04-iina-adapter-spike-and-end-to-end-playback-control/04-CONTEXT.md
+Last session: 2026-06-07T06:04:48Z
+Stopped at: Phase 4 04-07 bridge waiting copy gap closed; Phase 4 UAT retest remains
+Resume file: .planning/phases/04-iina-adapter-spike-and-end-to-end-playback-control/04-UAT.md
