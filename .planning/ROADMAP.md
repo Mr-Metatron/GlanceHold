@@ -105,7 +105,7 @@ Plans:
   4. In Pause/Resume mode, looking away or leaving frame pauses IINA, and returning resumes only when GlanceHold caused the pause.
   5. If IINA is closed, idle, disconnected, or not controllable, user-visible status reports that state and no playback command is sent.
 
-**Plans:** 4/5 plans executed
+**Plans:** 5/6 plans executed
 Plans:
 **Wave 1**
 
@@ -125,7 +125,11 @@ Plans:
 
 **Wave 5** *(blocked on Wave 4 completion; has plugin bridge live checkpoint)*
 
-- [ ] 04-05-PLAN.md — Bundled IINA plugin bridge fallback, primary runtime adapter, plugin-aware menu status, and normal-user live validation.
+- [x] 04-05-PLAN.md — Bundled IINA plugin bridge fallback, primary runtime adapter, plugin-aware menu status, and normal-user live validation.
+
+**Wave 6** *(blocked on Wave 5 completion; has pushed-status live checkpoint)*
+
+- [ ] 04-06-PLAN.md — Push-first IINA plugin status stream, Swift subscription handling, and low-frequency fallback.
 
 ### Phase 5: End-to-End UX Hardening and Manual UAT
 
@@ -153,5 +157,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 1. Status-Bar Shell, Permission Trust, and Verification Baseline | 3/3 | Complete   | 2026-06-06 |
 | 2. Pure Attention State Machine and Playback Policy | 2/2 | Complete   | 2026-06-05 |
 | 3. Local Camera, Vision Signal, Calibration, and Tuning | 3/3 | Complete   | 2026-06-06 |
-| 4. IINA Adapter Spike and End-to-End Playback Control | 4/5 | In Progress|  |
+| 4. IINA Adapter Spike and End-to-End Playback Control | 5/6 | In Progress|  |
 | 5. End-to-End UX Hardening and Manual UAT | 0/TBD | Not started | - |
