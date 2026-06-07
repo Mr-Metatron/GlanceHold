@@ -25,6 +25,40 @@ final class CalibrationModelTests: XCTestCase {
         XCTAssertEqual(snapshot.quality, .marginal)
     }
 
+    func testNoisyStartupCalibrationAcceptsBestStableWindow() {
+        let samples = [
+            pose(yaw: -10.0, pitch: 5.0, roll: 1.0, time: 0.0),
+            pose(yaw: 8.0, pitch: -4.0, roll: -1.0, time: 0.1),
+            pose(yaw: 0.2, pitch: -0.1, roll: 0.1, time: 0.2),
+            pose(yaw: 0.4, pitch: 0.0, roll: -0.1, time: 0.3),
+            pose(yaw: 0.3, pitch: 0.1, roll: 0.0, time: 0.4)
+        ]
+
+        let result = CalibrationModel.evaluate(samples: samples, existing: nil)
+
+        guard case let .accepted(snapshot) = result else {
+            return XCTFail("Expected noisy startup samples to use the stable window, got \(result)")
+        }
+
+        XCTAssertEqual(snapshot.quality, .high)
+        XCTAssertEqual(snapshot.neutralPose.yawDegrees, 0.3, accuracy: 0.001)
+        XCTAssertEqual(snapshot.neutralPose.pitchDegrees, 0.0, accuracy: 0.001)
+        XCTAssertEqual(snapshot.neutralPose.rollDegrees, 0.0, accuracy: 0.001)
+        XCTAssertEqual(snapshot.neutralPose.time, 0.4, accuracy: 0.001)
+    }
+
+    func testCalibrationFailsWhenNoStableContiguousWindowExists() {
+        let samples = [
+            pose(yaw: -10.0, pitch: 4.0, time: 0.0),
+            pose(yaw: -3.0, pitch: -4.0, time: 0.1),
+            pose(yaw: 4.0, pitch: 4.0, time: 0.2),
+            pose(yaw: 11.0, pitch: -4.0, time: 0.3),
+            pose(yaw: 18.0, pitch: 4.0, time: 0.4)
+        ]
+
+        XCTAssertEqual(CalibrationModel.evaluate(samples: samples, existing: nil), .failed(previous: nil))
+    }
+
     func testFailedCalibrationPreservesPreviousCalibration() {
         let previous = snapshot(quality: .high)
         let result = CalibrationModel.evaluate(samples: [], existing: previous)

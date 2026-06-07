@@ -151,6 +151,82 @@ final class AttentionMonitorTests: XCTestCase {
         XCTAssertTrue(MonitoringStatus(monitorState: monitor.state).detailText.contains("Try again"))
     }
 
+    func testCameraBackedCalibrationAcceptsStableWindowAfterNoisyStartup() async {
+        let capture = FakeCameraFrameCapture()
+        let store = MonitorSettingsStore()
+        let analyzer = SequencedVisionAnalyzer(observations: [
+            .pose(makePose(yaw: -10.0, pitch: 5.0, roll: 1.0, time: 0.0)),
+            .pose(makePose(yaw: 8.0, pitch: -4.0, roll: -1.0, time: 0.1)),
+            .pose(makePose(yaw: 0.2, pitch: -0.1, roll: 0.1, time: 0.2)),
+            .pose(makePose(yaw: 0.4, pitch: 0.0, roll: -0.1, time: 0.3)),
+            .pose(makePose(yaw: 0.3, pitch: 0.1, roll: 0.0, time: 0.4))
+        ])
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: store,
+            capture: capture,
+            analyzer: analyzer
+        )
+
+        let resultTask = Task {
+            await monitor.captureCalibrationSampleSet(
+                targetSampleCount: 5,
+                maximumFrameCount: 5
+            )
+        }
+
+        await capture.waitForFrameHandler()
+        for time in stride(from: 0.0, through: 0.4, by: 0.1) {
+            capture.emitFrame(time: time)
+        }
+
+        let result = await resultTask.value
+
+        guard case let .accepted(snapshot) = result else {
+            return XCTFail("Expected camera-backed calibration to accept the stable window")
+        }
+
+        XCTAssertEqual(snapshot.quality, .high)
+        XCTAssertEqual(store.load().calibration, snapshot)
+        XCTAssertEqual(monitor.state, .ready)
+        XCTAssertEqual(capture.stopCount, 1)
+    }
+
+    func testCameraBackedCalibrationFailsWhenNoStableWindowExists() async {
+        let capture = FakeCameraFrameCapture()
+        let analyzer = SequencedVisionAnalyzer(observations: [
+            .pose(makePose(yaw: -10.0, pitch: 4.0, time: 0.0)),
+            .pose(makePose(yaw: -3.0, pitch: -4.0, time: 0.1)),
+            .pose(makePose(yaw: 4.0, pitch: 4.0, time: 0.2)),
+            .pose(makePose(yaw: 11.0, pitch: -4.0, time: 0.3)),
+            .pose(makePose(yaw: 18.0, pitch: 4.0, time: 0.4))
+        ])
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: MonitorSettingsStore(),
+            capture: capture,
+            analyzer: analyzer
+        )
+
+        let resultTask = Task {
+            await monitor.captureCalibrationSampleSet(
+                targetSampleCount: 5,
+                maximumFrameCount: 5
+            )
+        }
+
+        await capture.waitForFrameHandler()
+        for time in stride(from: 0.0, through: 0.4, by: 0.1) {
+            capture.emitFrame(time: time)
+        }
+
+        let result = await resultTask.value
+
+        XCTAssertEqual(result, .failed(previous: nil))
+        XCTAssertEqual(monitor.state, .calibrationFailed(previousKept: false))
+        XCTAssertEqual(capture.stopCount, 1)
+    }
+
     func testMarginalReplacementDecisionPersistsChosenCalibration() async throws {
         let existing = snapshot(.high)
         let store = MonitorSettingsStore(settings: .defaults.withCalibration(existing))
