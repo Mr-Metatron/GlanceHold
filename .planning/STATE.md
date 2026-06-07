@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Phase 4 UAT blockers diagnosed; 04-08 gap closure planned
-last_updated: "2026-06-07T06:44:57Z"
-last_activity: 2026-06-07 -- Phase 4 UAT blockers diagnosed and 04-08 planned
+status: human_needed
+stopped_at: Phase 4 04-08 blocker fixes complete; resume 04-UAT Test 3 live retest
+last_updated: "2026-06-07T07:59:51Z"
+last_activity: 2026-06-07 -- Phase 4 04-08 blocker fixes and review hardening complete; UAT ready for retest
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 16
-  completed_plans: 15
+  completed_plans: 16
   percent: 60
 ---
 
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-06-05)
 
 ## Current Position
 
-Phase: 04 (iina-adapter-spike-and-end-to-end-playback-control) — EXECUTING
-Plan: 04-08
-Status: UAT blockers diagnosed; ready to execute calibration and IINA status gap closure
-Last activity: 2026-06-07 -- Phase 4 UAT blockers diagnosed and 04-08 planned
+Phase: 04 (iina-adapter-spike-and-end-to-end-playback-control) — HUMAN NEEDED
+Plan: 8 of 8
+Status: 04-08 complete; Phase 4 UAT ready to resume at Test 3
+Last activity: 2026-06-07 -- Phase 4 04-08 blocker fixes and review hardening complete; UAT ready for retest
 
 Progress: [██████████] 100%
 
@@ -36,7 +36,7 @@ Progress: [██████████] 100%
 
 **Velocity:**
 
-- Total plans completed: 15
+- Total plans completed: 16
 - Average duration: N/A
 - Total execution time: 0.0 hours
 
@@ -47,11 +47,11 @@ Progress: [██████████] 100%
 | 01 | 3 | - | - |
 | 02 | 2 | - | - |
 | 03 | 3 | 27 min | 9 min |
-| 04 | 7 | live-iterated | - |
+| 04 | 8 | live-iterated | - |
 
 **Recent Trend:**
 
-- Last 5 plans: 04-03, 04-04, 04-05, 04-06, 04-07
+- Last 5 plans: 04-04, 04-05, 04-06, 04-07, 04-08
 - Trend: steady
 
 *Updated after each plan completion*
@@ -67,6 +67,7 @@ Progress: [██████████] 100%
 | Phase 04 P02 | 4min | 2 tasks | 3 files |
 | Phase 04 P03 | 6min | 2 tasks | 3 files |
 | Phase 04 P07 | 9min | 3 tasks | 5 files |
+| Phase 04 P08 | 63min | 4 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -86,7 +87,7 @@ None yet.
 ### Blockers/Concerns
 
 - [Phase 3]: Vision threshold tuning and pose sign/orientation require empirical checks on the target Mac/camera setup.
-- [Phase 4]: UAT Test 3 found two blockers: first-time calibration falls back to `Needs Calibration`, and IINA status drifts from playing to unavailable. 04-08 is planned to close both before UAT resumes.
+- [Phase 4]: 04-08 fixed the Test 3 calibration feedback and IINA status drift blockers in code and automated tests. Live UAT must resume at Test 3 before Phase 4 can close.
 
 ### Quick Tasks Completed
 
@@ -109,6 +110,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-07T06:24:30Z
-Stopped at: Phase 4 UAT blockers diagnosed; execute 04-08 before resuming 04-UAT Test 3
+Last session: 2026-06-07T07:59:51Z
+Stopped at: Phase 4 04-08 blocker fixes complete; resume 04-UAT Test 3 live retest
 Resume file: .planning/phases/04-iina-adapter-spike-and-end-to-end-playback-control/04-UAT.md
