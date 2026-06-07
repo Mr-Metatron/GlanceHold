@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: pending_retest
-stopped_at: Completed 04-10 gap closure; Phase 4 Test 7 pending live retest
-last_updated: "2026-06-07T09:51:46.053Z"
-last_activity: 2026-06-07 -- 04-10 automated gap closure complete; Phase 4 Test 7 pending live retest
+status: phase_complete
+stopped_at: Phase 4 complete; ready for Phase 5 planning/execution
+last_updated: "2026-06-07T10:01:45.000Z"
+last_activity: 2026-06-07 -- Phase 4 closed after 04-10 live Test 7 retest passed
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 18
   completed_plans: 18
-  percent: 60
+  percent: 80
 ---
 
 # Project State
@@ -21,17 +21,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-05)
 
 **Core value:** 当用户注意力离开屏幕时，GlanceHold 能可靠、克制地替用户处理视频速度或播放状态，并在用户回来时恢复到合适状态，且不误恢复用户手动暂停的视频。
-**Current focus:** Phase 04 — iina-adapter-spike-and-end-to-end-playback-control
+**Current focus:** Phase 05 — end-to-end UX hardening and manual UAT
 
 ## Current Position
 
-Phase: 04 (iina-adapter-spike-and-end-to-end-playback-control) — PENDING RETEST
-Plan: 10 of 10
-Status: 04-10 automated gap closure complete; only UAT Test 7 live retest remains
-Last activity: 2026-06-07 -- Focused and full XCTest passed after manual pause monitoring fix
+Phase: 05 (end-to-end-ux-hardening-and-manual-uat) — READY
+Plan: not planned yet
+Status: Phase 4 is complete; Phase 5 is the next open roadmap phase
+Last activity: 2026-06-07 -- Phase 4 live UAT Test 7 passed after 04-10 manual pause monitoring fix
 
 Plan execution: [██████████] 100%
-Phase progress: [█████████░] pending live Test 7 retest
+Phase progress: [██████████] Phase 4 complete
 
 ## Performance Metrics
 
@@ -48,7 +48,7 @@ Phase progress: [█████████░] pending live Test 7 retest
 | 01 | 3 | - | - |
 | 02 | 2 | - | - |
 | 03 | 3 | 27 min | 9 min |
-| 04 | 9 | live-iterated | - |
+| 04 | 10 | live-iterated | - |
 
 **Recent Trend:**
 
@@ -90,7 +90,7 @@ None yet.
 ### Blockers/Concerns
 
 - [Phase 3]: Vision threshold tuning and pose sign/orientation require empirical checks on the target Mac/camera setup.
-- [Phase 4]: 04-10 automated gap closure is complete with focused and full XCTest passing. Phase 4 can close after live UAT Test 7 confirms manual pause stops camera monitoring, leaves IINA paused, and returns the primary action to `Enable Monitoring`.
+- [Phase 5]: Next phase should harden disable/quit flows, last-action feedback, final manual checklist coverage, and build verification.
 
 ### Quick Tasks Completed
 
@@ -113,6 +113,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-07T09:51:46.048Z
-Stopped at: Completed 04-10 gap closure; Phase 4 Test 7 pending live retest
-Resume file: .planning/phases/04-iina-adapter-spike-and-end-to-end-playback-control/04-UAT.md
+Last session: 2026-06-07T10:01:45.000Z
+Stopped at: Phase 4 complete; ready for Phase 5 planning/execution
+Resume file: .planning/ROADMAP.md

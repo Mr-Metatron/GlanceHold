@@ -36,11 +36,11 @@ Requirements for the first usable local release. Each maps to roadmap phases.
 
 ### IINA Playback
 
-- [ ] **IINA-01**: GlanceHold can detect whether IINA is available and whether a playable item is idle, paused, or playing.
-- [ ] **IINA-02**: GlanceHold can read the current IINA playback speed before it intervenes.
-- [ ] **IINA-03**: In Speed Control mode, when the user looks away or leaves frame beyond the configured delay, GlanceHold sets IINA playback speed to 1x.
-- [ ] **IINA-04**: In Speed Control mode, when the user returns and recovery delay passes, GlanceHold restores the playback speed captured before its intervention.
-- [ ] **IINA-05**: Speed restoration supports arbitrary original speeds such as 1.25x, 1.5x, and 2x, not only a hard-coded 2x value.
+- [x] **IINA-01**: GlanceHold can detect whether IINA is available and whether a playable item is idle, paused, or playing.
+- [x] **IINA-02**: GlanceHold can read the current IINA playback speed before it intervenes.
+- [x] **IINA-03**: In Speed Control mode, when the user looks away or leaves frame beyond the configured delay, GlanceHold sets IINA playback speed to 1x.
+- [x] **IINA-04**: In Speed Control mode, when the user returns and recovery delay passes, GlanceHold restores the playback speed captured before its intervention.
+- [x] **IINA-05**: Speed restoration supports arbitrary original speeds such as 1.25x, 1.5x, and 2x, not only a hard-coded 2x value.
 - [x] **IINA-06**: In Pause/Resume mode, when the user looks away or leaves frame beyond the configured delay, GlanceHold pauses IINA.
 - [x] **IINA-07**: In Pause/Resume mode, when the user returns and recovery delay passes, GlanceHold resumes IINA only if GlanceHold caused the pause.
 - [x] **IINA-08**: If IINA is closed, idle, disconnected, or not controllable, GlanceHold shows an unavailable/idle status and sends no playback command.
@@ -129,11 +129,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ATTN-06 | Phase 3 | Complete |
 | ATTN-07 | Phase 2 | Complete |
 | ATTN-08 | Phase 3 | Complete |
-| IINA-01 | Phase 4 | Pending |
-| IINA-02 | Phase 4 | Pending |
-| IINA-03 | Phase 4 | Pending |
-| IINA-04 | Phase 4 | Pending |
-| IINA-05 | Phase 4 | Pending |
+| IINA-01 | Phase 4 | Complete |
+| IINA-02 | Phase 4 | Complete |
+| IINA-03 | Phase 4 | Complete |
+| IINA-04 | Phase 4 | Complete |
+| IINA-05 | Phase 4 | Complete |
 | IINA-06 | Phase 4 | Complete |
 | IINA-07 | Phase 4 | Complete |
 | IINA-08 | Phase 4 | Complete |
@@ -158,4 +158,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-06-05*
-*Last updated: 2026-06-07 after 04-10 Pause/Resume manual pause gap closure*
+*Last updated: 2026-06-07 after Phase 4 live UAT closeout*
