@@ -105,7 +105,7 @@ Plans:
   4. In Pause/Resume mode, looking away or leaving frame pauses IINA, and returning resumes only when GlanceHold caused the pause.
   5. If IINA is closed, idle, disconnected, or not controllable, user-visible status reports that state and no playback command is sent.
 
-**Plans:** 8/8 plans complete
+**Plans:** 9/9 plans complete
 Plans:
 **Wave 1**
 
@@ -139,6 +139,10 @@ Plans:
 
 - [x] 04-08-PLAN.md — Repair live calibration failure feedback/sample tolerance and IINA status fallback drift.
 
+**Wave 9** *(gap closure for Phase 4 live calibration retest blocker)*
+
+- [x] 04-09-PLAN.md — Robust stable-window calibration and bounded sampling for repeated `Calibration Failed` live retest.
+
 ### Phase 5: End-to-End UX Hardening and Manual UAT
 
 **Goal:** The GlanceHold MVP is safe and clear enough for manual daily use across real camera, calibration, IINA, disable, and quit scenarios.
@@ -165,5 +169,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 1. Status-Bar Shell, Permission Trust, and Verification Baseline | 3/3 | Complete   | 2026-06-06 |
 | 2. Pure Attention State Machine and Playback Policy | 2/2 | Complete   | 2026-06-05 |
 | 3. Local Camera, Vision Signal, Calibration, and Tuning | 3/3 | Complete   | 2026-06-06 |
-| 4. IINA Adapter Spike and End-to-End Playback Control | 8/8 | Human Needed|  |
+| 4. IINA Adapter Spike and End-to-End Playback Control | 9/9 | Human Needed | - |
 | 5. End-to-End UX Hardening and Manual UAT | 0/TBD | Not started | - |
