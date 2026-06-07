@@ -20,7 +20,7 @@ struct GlanceHoldApp: App {
         _glanceHoldState = State(initialValue: GlanceHoldState(mode: loadedSettings.mode, settings: loadedSettings))
         _playbackCoordinator = State(initialValue: PlaybackCoordinator(
             mode: loadedSettings.mode,
-            adapter: IINAPlaybackAdapter(client: MPVJSONIPCClient())
+            adapter: IINAPluginBridgeAdapter(client: IINAPluginBridgeClient(url: URL(string: "ws://127.0.0.1:47873")!))
         ))
     }
 
@@ -416,7 +416,7 @@ private struct GlanceHoldMenu: View {
     private static func makePlaybackCoordinator(mode: MonitoringMode) -> PlaybackCoordinator {
         PlaybackCoordinator(
             mode: mode,
-            adapter: IINAPlaybackAdapter(client: MPVJSONIPCClient())
+            adapter: IINAPluginBridgeAdapter(client: IINAPluginBridgeClient(url: URL(string: "ws://127.0.0.1:47873")!))
         )
     }
 

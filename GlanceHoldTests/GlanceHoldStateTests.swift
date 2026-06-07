@@ -72,7 +72,7 @@ final class GlanceHoldStateTests: XCTestCase {
 
         XCTAssertEqual(phrases, [
             "IINA Unavailable",
-            "IINA Setup Needed",
+            "IINA Plugin Needed",
             "IINA Idle",
             "IINA Paused",
             "IINA Playing",
