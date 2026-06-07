@@ -372,6 +372,7 @@ private struct GlanceHoldMenu: View {
     private func installMonitorStateHandler() {
         installPlaybackCoordinatorStateHandler()
         let coordinator = playbackCoordinator
+        refreshPlaybackCoordinator(coordinator)
         monitor.stateDidChange = { monitorState, settings in
             Task { @MainActor in
                 state.updateSettings(settings)
@@ -393,6 +394,12 @@ private struct GlanceHoldMenu: View {
             Task { @MainActor in
                 state.apply(playerControlState: coordinatorState)
             }
+        }
+    }
+
+    private func refreshPlaybackCoordinator(_ coordinator: PlaybackCoordinator) {
+        Task {
+            await coordinator.refreshPlayerState()
         }
     }
 

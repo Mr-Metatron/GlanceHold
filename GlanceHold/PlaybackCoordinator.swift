@@ -38,6 +38,15 @@ final class PlaybackCoordinator {
         state = .unavailable
     }
 
+    func refreshPlayerState() async {
+        let snapshot = await adapter.snapshot()
+        let isControllable = isPlayerControllable(snapshot)
+        if isControllable {
+            suppressCommandsUntilValidSnapshot = false
+        }
+        updateState(snapshot: snapshot, isPlayerControllable: isControllable)
+    }
+
     func handleAttentionState(_ state: DebouncedAttentionState) async {
         let snapshot = await adapter.snapshot()
         let isControllable = isPlayerControllable(snapshot)
