@@ -63,7 +63,7 @@ Requirements for the first usable local release. Each maps to roadmap phases.
 
 ### IINA Plugin Convenience and Localization
 
-- [ ] **CONV-02**: User can start or stop monitoring from IINA through a GlanceHold plugin menu item/key binding without bypassing permission, calibration, manual pause, or playback ownership safety rules.
+- [x] **CONV-02**: User can start or stop monitoring from IINA through a GlanceHold plugin menu item/key binding without bypassing permission, calibration, manual pause, or playback ownership safety rules.
 - [ ] **I18N-01**: User-facing app strings are routed through localization resources rather than scattered hard-coded Swift literals.
 - [ ] **I18N-02**: English and Simplified Chinese localizations cover the v1 status-bar app surface, including actions, statuses, detail text, tuning labels, alerts, and shortcut copy.
 
@@ -153,7 +153,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PREF-02 | Phase 3 | Complete |
 | PREF-03 | Phase 6 | Pending |
 | PREF-04 | Phase 5 | Complete |
-| CONV-02 | Phase 5 | Pending |
+| CONV-02 | Phase 5 | Complete |
 | I18N-01 | Phase 5 | Pending |
 | I18N-02 | Phase 5 | Pending |
 | VER-01 | Phase 2 | Complete |
@@ -168,4 +168,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-06-05*
-*Last updated: 2026-06-07 after Phase 5/6 roadmap split*
+*Last updated: 2026-06-07 after Phase 5 05-02 IINA plugin monitoring shortcut*
