@@ -41,9 +41,9 @@ Requirements for the first usable local release. Each maps to roadmap phases.
 - [ ] **IINA-03**: In Speed Control mode, when the user looks away or leaves frame beyond the configured delay, GlanceHold sets IINA playback speed to 1x.
 - [ ] **IINA-04**: In Speed Control mode, when the user returns and recovery delay passes, GlanceHold restores the playback speed captured before its intervention.
 - [ ] **IINA-05**: Speed restoration supports arbitrary original speeds such as 1.25x, 1.5x, and 2x, not only a hard-coded 2x value.
-- [ ] **IINA-06**: In Pause/Resume mode, when the user looks away or leaves frame beyond the configured delay, GlanceHold pauses IINA.
-- [ ] **IINA-07**: In Pause/Resume mode, when the user returns and recovery delay passes, GlanceHold resumes IINA only if GlanceHold caused the pause.
-- [ ] **IINA-08**: If IINA is closed, idle, disconnected, or not controllable, GlanceHold shows an unavailable/idle status and sends no playback command.
+- [x] **IINA-06**: In Pause/Resume mode, when the user looks away or leaves frame beyond the configured delay, GlanceHold pauses IINA.
+- [x] **IINA-07**: In Pause/Resume mode, when the user returns and recovery delay passes, GlanceHold resumes IINA only if GlanceHold caused the pause.
+- [x] **IINA-08**: If IINA is closed, idle, disconnected, or not controllable, GlanceHold shows an unavailable/idle status and sends no playback command.
 
 ### Safety and Ownership
 
@@ -134,9 +134,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | IINA-03 | Phase 4 | Pending |
 | IINA-04 | Phase 4 | Pending |
 | IINA-05 | Phase 4 | Pending |
-| IINA-06 | Phase 4 | Pending |
-| IINA-07 | Phase 4 | Pending |
-| IINA-08 | Phase 4 | Pending |
+| IINA-06 | Phase 4 | Complete |
+| IINA-07 | Phase 4 | Complete |
+| IINA-08 | Phase 4 | Complete |
 | SAFE-01 | Phase 2 | Complete |
 | SAFE-02 | Phase 2 | Complete |
 | SAFE-03 | Phase 2 | Complete |
@@ -158,4 +158,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-06-05*
-*Last updated: 2026-06-05 after roadmap creation*
+*Last updated: 2026-06-07 after 04-10 Pause/Resume manual pause gap closure*

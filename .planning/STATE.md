@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: gap_planned
-stopped_at: Phase 4 UAT complete; 04-10 manual pause monitoring gap closure plan ready for execution
-last_updated: "2026-06-07T09:39:23Z"
-last_activity: 2026-06-07 -- Phase 4 UAT complete with 14 passed and 1 minor manual pause monitoring issue; 04-10 gap closure planned
+status: pending_retest
+stopped_at: Completed 04-10 gap closure; Phase 4 Test 7 pending live retest
+last_updated: "2026-06-07T09:51:46.053Z"
+last_activity: 2026-06-07 -- 04-10 automated gap closure complete; Phase 4 Test 7 pending live retest
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 18
-  completed_plans: 17
+  completed_plans: 18
   percent: 60
 ---
 
@@ -25,18 +25,19 @@ See: .planning/PROJECT.md (updated 2026-06-05)
 
 ## Current Position
 
-Phase: 04 (iina-adapter-spike-and-end-to-end-playback-control) — GAP PLANNED
+Phase: 04 (iina-adapter-spike-and-end-to-end-playback-control) — PENDING RETEST
 Plan: 10 of 10
-Status: UAT complete with 14/15 checks passing; 04-10 manual pause monitoring gap closure ready for execution
-Last activity: 2026-06-07 -- Phase 4 UAT complete with one minor manual pause monitoring issue and a focused gap closure plan
+Status: 04-10 automated gap closure complete; only UAT Test 7 live retest remains
+Last activity: 2026-06-07 -- Focused and full XCTest passed after manual pause monitoring fix
 
-Progress: [█████████░] 94%
+Plan execution: [██████████] 100%
+Phase progress: [█████████░] pending live Test 7 retest
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 17 of 18
+- Total plans completed: 18 of 18
 - Average duration: N/A
 - Total execution time: 0.0 hours
 
@@ -51,7 +52,7 @@ Progress: [█████████░] 94%
 
 **Recent Trend:**
 
-- Last 5 completed plans: 04-05, 04-06, 04-07, 04-08, 04-09
+- Last 5 completed plans: 04-06, 04-07, 04-08, 04-09, 04-10
 - Trend: steady
 
 *Updated after each plan completion*
@@ -69,6 +70,7 @@ Progress: [█████████░] 94%
 | Phase 04 P07 | 9min | 3 tasks | 5 files |
 | Phase 04 P08 | 63min | 4 tasks | 11 files |
 | Phase 04 P09 | 11 min | 5 tasks | 8 files |
+| Phase 04 P10 | 5 min | 4 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -88,7 +90,7 @@ None yet.
 ### Blockers/Concerns
 
 - [Phase 3]: Vision threshold tuning and pose sign/orientation require empirical checks on the target Mac/camera setup.
-- [Phase 4]: UAT is complete with 14 passing checks and 1 minor issue. 04-10 is planned to stop camera monitoring after Pause/Resume manual pause/takeover before Phase 4 can close.
+- [Phase 4]: 04-10 automated gap closure is complete with focused and full XCTest passing. Phase 4 can close after live UAT Test 7 confirms manual pause stops camera monitoring, leaves IINA paused, and returns the primary action to `Enable Monitoring`.
 
 ### Quick Tasks Completed
 
@@ -111,6 +113,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-07T09:39:23Z
-Stopped at: Phase 4 UAT complete; 04-10 manual pause monitoring gap closure plan ready
-Resume file: .planning/phases/04-iina-adapter-spike-and-end-to-end-playback-control/04-10-PLAN.md
+Last session: 2026-06-07T09:51:46.048Z
+Stopped at: Completed 04-10 gap closure; Phase 4 Test 7 pending live retest
+Resume file: .planning/phases/04-iina-adapter-spike-and-end-to-end-playback-control/04-UAT.md
