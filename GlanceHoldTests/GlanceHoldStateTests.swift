@@ -95,6 +95,11 @@ final class GlanceHoldStateTests: XCTestCase {
         )
     }
 
+    func testPluginNeededStatusUsesExplicitPluginCopy() {
+        XCTAssertEqual(PlayerControlStatus.setupNeeded.visibleTitle, "IINA Plugin Needed")
+        XCTAssertTrue(PlayerControlStatus.setupNeeded.detailText.contains("IINA plugin"))
+    }
+
     func testPhase3StatusTitlesAreExact() {
         XCTAssertEqual(MonitoringStatus.cameraUnavailable.visibleTitle, "Camera Unavailable")
         XCTAssertEqual(MonitoringStatus.needsCalibration.visibleTitle, "Needs Calibration")
