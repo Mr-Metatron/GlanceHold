@@ -178,8 +178,12 @@ final class AttentionMonitor {
 
         let timeoutTask = Task {
             let timeout = UInt64(max(0.0, maximumCaptureDuration) * 1_000_000_000)
-            try? await Task.sleep(nanoseconds: timeout)
-            streamContinuation?.yield(.timeout)
+            do {
+                try await Task.sleep(nanoseconds: timeout)
+                streamContinuation?.yield(.timeout)
+            } catch {
+                return
+            }
         }
 
         do {
@@ -198,12 +202,12 @@ final class AttentionMonitor {
         defer {
             timeoutTask.cancel()
             streamContinuation?.finish()
-            clearActiveCapture(sessionID: sessionID)
         }
 
         for await event in stream {
             guard activeSessionID == sessionID else {
                 endReason = .sessionCancelled
+                clearActiveCapture(sessionID: sessionID)
                 return .failed(previous: settings.calibration)
             }
 
@@ -234,6 +238,7 @@ final class AttentionMonitor {
             }
         }
 
+        clearActiveCapture(sessionID: sessionID)
         return await finishCalibration(samples: poseSamples, captureMetrics: metrics, endReason: endReason)
     }
 
