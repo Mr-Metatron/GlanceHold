@@ -187,5 +187,6 @@ final class GlanceHoldStateTests: XCTestCase {
         XCTAssertEqual(MonitoringStatus(monitorState: .cameraPermissionDenied), .cameraPermissionDenied)
         XCTAssertEqual(MonitoringStatus(monitorState: .cameraUnavailable), .cameraUnavailable)
         XCTAssertEqual(MonitoringStatus(monitorState: .calibrationFailed(previousKept: true)), .calibrationFailed(previousKept: true))
+        XCTAssertEqual(MonitoringStatus(monitorState: .calibrationFailed(previousKept: false)), .calibrationFailed(previousKept: false))
     }
 }

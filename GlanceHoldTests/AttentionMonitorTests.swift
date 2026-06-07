@@ -1,3 +1,4 @@
+import CoreMedia
 import XCTest
 @testable import GlanceHold
 
@@ -117,6 +118,37 @@ final class AttentionMonitorTests: XCTestCase {
         XCTAssertEqual(result, .failed(previous: previous))
         XCTAssertEqual(store.load().calibration, previous)
         XCTAssertEqual(monitor.state, .calibrationFailed(previousKept: true))
+    }
+
+    func testCameraBackedFirstTimeCalibrationFailureShowsExplicitFailure() async {
+        let capture = FakeCameraFrameCapture()
+        let analyzer = SequencedVisionAnalyzer(observations: [
+            .ambiguous(time: 0.0),
+            .noFace(time: 0.1),
+            .ambiguous(time: 0.2)
+        ])
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: MonitorSettingsStore(),
+            capture: capture,
+            analyzer: analyzer
+        )
+
+        let resultTask = Task {
+            await monitor.captureCalibrationSampleSet(targetSampleCount: 3, maximumFrameCount: 3)
+        }
+
+        await capture.waitForFrameHandler()
+        capture.emitFrame(time: 0.0)
+        capture.emitFrame(time: 0.1)
+        capture.emitFrame(time: 0.2)
+
+        let result = await resultTask.value
+
+        XCTAssertEqual(result, .failed(previous: nil))
+        XCTAssertEqual(monitor.state, .calibrationFailed(previousKept: false))
+        XCTAssertEqual(MonitoringStatus(monitorState: monitor.state).visibleTitle, "Calibration Failed")
+        XCTAssertTrue(MonitoringStatus(monitorState: monitor.state).detailText.contains("Try again"))
     }
 
     func testMarginalReplacementDecisionPersistsChosenCalibration() async throws {
@@ -330,6 +362,20 @@ private final class FakeCameraFrameCapture: CameraFrameCapturing {
         stopCount += 1
         isRunning = false
     }
+
+    func waitForFrameHandler(
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async {
+        for _ in 0..<100 where frameHandler == nil {
+            await Task.yield()
+        }
+        XCTAssertNotNil(frameHandler, file: file, line: line)
+    }
+
+    func emitFrame(time: TimeInterval) {
+        frameHandler?(CapturedCameraFrame(sampleBuffer: makeSampleBuffer(), time: time))
+    }
 }
 
 private struct FakeVisionAnalyzer: VisionAttentionAnalyzing {
@@ -337,6 +383,18 @@ private struct FakeVisionAnalyzer: VisionAttentionAnalyzing {
 
     func analyze(_ frame: CapturedCameraFrame) -> VisionAttentionObservation {
         observation
+    }
+}
+
+private final class SequencedVisionAnalyzer: VisionAttentionAnalyzing {
+    private var observations: [VisionAttentionObservation]
+
+    init(observations: [VisionAttentionObservation]) {
+        self.observations = observations
+    }
+
+    func analyze(_ frame: CapturedCameraFrame) -> VisionAttentionObservation {
+        observations.isEmpty ? .ambiguous(time: frame.time) : observations.removeFirst()
     }
 }
 
@@ -350,4 +408,24 @@ private func snapshot(_ quality: CalibrationQuality) -> CalibrationSnapshot {
 
 private func makePose(yaw: Double, pitch: Double, roll: Double = 0.0, time: TimeInterval = 0.0) -> PoseSample {
     PoseSample(yawDegrees: yaw, pitchDegrees: pitch, rollDegrees: roll, time: time)
+}
+
+private func makeSampleBuffer() -> CMSampleBuffer {
+    var sampleBuffer: CMSampleBuffer?
+    let status = CMSampleBufferCreate(
+        allocator: kCFAllocatorDefault,
+        dataBuffer: nil,
+        dataReady: true,
+        makeDataReadyCallback: nil,
+        refcon: nil,
+        formatDescription: nil,
+        sampleCount: 0,
+        sampleTimingEntryCount: 0,
+        sampleTimingArray: nil,
+        sampleSizeEntryCount: 0,
+        sampleSizeArray: nil,
+        sampleBufferOut: &sampleBuffer
+    )
+    precondition(status == noErr)
+    return sampleBuffer!
 }
