@@ -161,7 +161,23 @@ Plans:
   3. User-facing status-bar menu text, actions, status details, and alerts are routed through localization resources rather than scattered hard-coded strings.
   4. English and Simplified Chinese localizations cover the v1 status-bar app surface, including monitoring status, IINA/player status, calibration/reset prompts, tuning labels, and shortcut copy.
 
-**Plans:** TBD
+**Plans:** 4 plans
+Plans:
+**Wave 1**
+
+- [ ] 05-01-PLAN.md — Checked tuning menu current-value and selected-state presentation.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 05-02-PLAN.md — IINA plugin monitoring shortcut and safe app-side toggle routing.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 05-03-PLAN.md — English/Simplified Chinese Apple-native localization resources and routing.
+
+**Wave 4** *(blocked on Wave 3 completion; has lightweight human check)*
+
+- [ ] 05-04-PLAN.md — Integrated verification, plugin syntax check, and live-check handoff.
 **UI hint**: yes
 
 ### Phase 6: End-to-End UX Hardening and Manual UAT
