@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 4 04-06 pushed IINA status stream approved; phase closeout validation remains
-last_updated: "2026-06-07T05:12:03Z"
-last_activity: 2026-06-07 -- Phase 04 04-06 pushed-status live validation approved
+stopped_at: Phase 4 Goal metadata repaired; phase closeout validation remains
+last_updated: "2026-06-07T05:43:36Z"
+last_activity: 2026-06-07 -- Quick task 260607-j1k repaired Phase 4 MVP goal format
 progress:
   total_phases: 5
   completed_phases: 3
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-06-05)
 
 Phase: 04 (iina-adapter-spike-and-end-to-end-playback-control) — EXECUTING
 Plan: 04-06
-Status: Pushed-status live validation approved; ready for Phase 4 closeout verification
-Last activity: 2026-06-07 -- Phase 04 04-06 pushed-status live validation approved
+Status: Phase 4 MVP goal format repaired; ready for Phase 4 closeout verification
+Last activity: 2026-06-07 -- Quick task 260607-j1k repaired Phase 4 MVP goal format
 
 Progress: [██████████] 100%
 
@@ -93,6 +93,7 @@ None yet.
 |---|-------------|------|--------|-----------|
 | 260605-mhn | 修复 Phase 01 的 code review 和 UI review warnings | 2026-06-05 | 4180915 | [260605-mhn-phase-01-code-review-ui-review-warnings](./quick/260605-mhn-phase-01-code-review-ui-review-warnings/) |
 | 260606-1jj | 补齐 Phase 1 01-03 人工验证归档并同步 Roadmap/State | 2026-06-06 | this commit | [260606-1jj-phase-1-01-03-roadmap-state](./quick/260606-1jj-phase-1-01-03-roadmap-state/) |
+| 260607-j1k | Repair Phase 4 MVP goal format so gsd-verify-work can run without replanning the completed phase | 2026-06-07 | this commit | [260607-j1k-repair-phase-4-mvp-goal-format-so-gsd-ve](./quick/260607-j1k-repair-phase-4-mvp-goal-format-so-gsd-ve/) |
 
 ## Deferred Items
 

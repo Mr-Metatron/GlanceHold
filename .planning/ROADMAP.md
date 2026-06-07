@@ -93,7 +93,7 @@ Plans:
 
 ### Phase 4: IINA Adapter Spike and End-to-End Playback Control
 
-**Goal:** Users can rely on GlanceHold to control real IINA playback in Speed Control mode first, with Pause/Resume available as the secondary mode.
+**Goal:** As a video learner, I want to let GlanceHold control IINA speed and pause, so that playback follows my attention.
 **Mode:** mvp
 **Depends on:** Phase 3
 **Requirements:** IINA-01, IINA-02, IINA-03, IINA-04, IINA-05, IINA-06, IINA-07, IINA-08
