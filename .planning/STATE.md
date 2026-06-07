@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: Phase 4 verification is human_needed; resume 04-UAT live IINA retest
-last_updated: "2026-06-07T06:24:30Z"
-last_activity: 2026-06-07 -- Phase 4 verification recorded human_needed after 04-07 gap closure
+status: executing
+stopped_at: Phase 4 UAT blockers diagnosed; 04-08 gap closure planned
+last_updated: "2026-06-07T06:44:57Z"
+last_activity: 2026-06-07 -- Phase 4 UAT blockers diagnosed and 04-08 planned
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 15
+  total_plans: 16
   completed_plans: 15
   percent: 60
 ---
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-06-05)
 
 ## Current Position
 
-Phase: 04 (iina-adapter-spike-and-end-to-end-playback-control) — VERIFYING
-Plan: 04-07
-Status: Verification is human_needed; ready to resume Phase 4 UAT from step 1
-Last activity: 2026-06-07 -- Phase 4 verification recorded human_needed after 04-07 gap closure
+Phase: 04 (iina-adapter-spike-and-end-to-end-playback-control) — EXECUTING
+Plan: 04-08
+Status: UAT blockers diagnosed; ready to execute calibration and IINA status gap closure
+Last activity: 2026-06-07 -- Phase 4 UAT blockers diagnosed and 04-08 planned
 
 Progress: [██████████] 100%
 
@@ -86,7 +86,7 @@ None yet.
 ### Blockers/Concerns
 
 - [Phase 3]: Vision threshold tuning and pose sign/orientation require empirical checks on the target Mac/camera setup.
-- [Phase 4]: Verification is human_needed after 04-07; 15 live IINA UAT checks remain before Phase 4 can be marked complete.
+- [Phase 4]: UAT Test 3 found two blockers: first-time calibration falls back to `Needs Calibration`, and IINA status drifts from playing to unavailable. 04-08 is planned to close both before UAT resumes.
 
 ### Quick Tasks Completed
 
@@ -110,5 +110,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-06-07T06:24:30Z
-Stopped at: Phase 4 verification is human_needed; resume 04-UAT live IINA retest
+Stopped at: Phase 4 UAT blockers diagnosed; execute 04-08 before resuming 04-UAT Test 3
 Resume file: .planning/phases/04-iina-adapter-spike-and-end-to-end-playback-control/04-UAT.md

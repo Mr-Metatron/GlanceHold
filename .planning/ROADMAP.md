@@ -105,7 +105,7 @@ Plans:
   4. In Pause/Resume mode, looking away or leaving frame pauses IINA, and returning resumes only when GlanceHold caused the pause.
   5. If IINA is closed, idle, disconnected, or not controllable, user-visible status reports that state and no playback command is sent.
 
-**Plans:** 7/7 plans complete
+**Plans:** 7/8 plans complete
 Plans:
 **Wave 1**
 
@@ -134,6 +134,10 @@ Plans:
 **Wave 7** *(gap closure for Phase 4 UAT copy issue)*
 
 - [x] 04-07-PLAN.md — Neutral `IINA Bridge Waiting` copy for unreachable plugin bridge setup states.
+
+**Wave 8** *(gap closure for Phase 4 UAT blockers)*
+
+- [ ] 04-08-PLAN.md — Repair live calibration failure feedback/sample tolerance and IINA status fallback drift.
 
 ### Phase 5: End-to-End UX Hardening and Manual UAT
 
