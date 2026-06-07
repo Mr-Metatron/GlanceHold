@@ -227,6 +227,45 @@ final class AttentionMonitorTests: XCTestCase {
         XCTAssertEqual(capture.stopCount, 1)
     }
 
+    func testCameraBackedCalibrationKeepsSamplingUntilMinimumDurationOrFrameBound() async {
+        let capture = FakeCameraFrameCapture()
+        let analyzer = SequencedVisionAnalyzer(observations: [
+            .pose(makePose(yaw: 0.0, pitch: 0.0, time: 0.0)),
+            .pose(makePose(yaw: 0.1, pitch: 0.0, time: 0.1)),
+            .pose(makePose(yaw: 0.2, pitch: 0.0, time: 0.2)),
+            .pose(makePose(yaw: 0.1, pitch: 0.1, time: 0.3)),
+            .pose(makePose(yaw: 0.2, pitch: 0.1, time: 0.4))
+        ])
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: MonitorSettingsStore(),
+            capture: capture,
+            analyzer: analyzer
+        )
+
+        let resultTask = Task {
+            await monitor.captureCalibrationSampleSet(
+                targetSampleCount: 3,
+                maximumFrameCount: 5,
+                minimumCaptureDuration: 10.0,
+                maximumCaptureDuration: 20.0
+            )
+        }
+
+        await capture.waitForFrameHandler()
+        for time in stride(from: 0.0, through: 0.4, by: 0.1) {
+            capture.emitFrame(time: time)
+        }
+
+        guard case .accepted = await resultTask.value else {
+            return XCTFail("Expected stable samples to calibrate")
+        }
+
+        XCTAssertEqual(analyzer.analyzeCount, 5)
+        XCTAssertEqual(capture.stopCount, 1)
+        XCTAssertEqual(monitor.state, .ready)
+    }
+
     func testMarginalReplacementDecisionPersistsChosenCalibration() async throws {
         let existing = snapshot(.high)
         let store = MonitorSettingsStore(settings: .defaults.withCalibration(existing))
@@ -480,13 +519,15 @@ private struct FakeVisionAnalyzer: VisionAttentionAnalyzing {
 
 private final class SequencedVisionAnalyzer: VisionAttentionAnalyzing {
     private var observations: [VisionAttentionObservation]
+    private(set) var analyzeCount = 0
 
     init(observations: [VisionAttentionObservation]) {
         self.observations = observations
     }
 
     func analyze(_ frame: CapturedCameraFrame) -> VisionAttentionObservation {
-        observations.isEmpty ? .ambiguous(time: frame.time) : observations.removeFirst()
+        analyzeCount += 1
+        return observations.isEmpty ? .ambiguous(time: frame.time) : observations.removeFirst()
     }
 }
 

@@ -1,4 +1,5 @@
 import Foundation
+import os
 
 enum AttentionMonitorState: Equatable {
     case off
@@ -15,7 +16,44 @@ enum AttentionMonitorState: Equatable {
     case unavailable
 }
 
+private enum CalibrationCaptureEvent {
+    case observation(VisionAttentionObservation)
+    case timeout
+}
+
+private enum CalibrationCaptureEndReason: String {
+    case targetReached
+    case maximumFrames
+    case maximumDuration
+    case sessionCancelled
+}
+
+private struct CalibrationCaptureMetrics {
+    var frameCount = 0
+    var poseCount = 0
+    var noFaceCount = 0
+    var ambiguousCount = 0
+    var failedCount = 0
+
+    mutating func record(_ observation: VisionAttentionObservation) {
+        frameCount += 1
+
+        switch observation {
+        case .pose:
+            poseCount += 1
+        case .noFace:
+            noFaceCount += 1
+        case .ambiguous:
+            ambiguousCount += 1
+        case .failed:
+            failedCount += 1
+        }
+    }
+}
+
 final class AttentionMonitor {
+    private static let logger = Logger(subsystem: "com.metatron.GlanceHold", category: "AttentionMonitor")
+
     private let permissionProvider: CameraPermissionProviding
     private let settingsStore: AttentionSettingsStoring
     private let capture: CameraFrameCapturing
@@ -103,8 +141,10 @@ final class AttentionMonitor {
     }
 
     func captureCalibrationSampleSet(
-        targetSampleCount: Int = 5,
-        maximumFrameCount: Int = 30
+        targetSampleCount: Int = 10,
+        maximumFrameCount: Int = 120,
+        minimumCaptureDuration: TimeInterval = 1.2,
+        maximumCaptureDuration: TimeInterval = 4.0
     ) async -> CalibrationResult {
         guard await resolvePermission() else {
             setState(.cameraPermissionDenied)
@@ -116,16 +156,30 @@ final class AttentionMonitor {
         setState(.calibrating)
 
         var poseSamples: [PoseSample] = []
-        var frameCount = 0
+        var metrics = CalibrationCaptureMetrics()
+        var endReason = CalibrationCaptureEndReason.maximumDuration
+        var streamContinuation: AsyncStream<CalibrationCaptureEvent>.Continuation?
+        let startedAt = Date()
 
-        let stream = AsyncStream<VisionAttentionObservation> { continuation in
+        Self.logger.info(
+            "Calibration capture started targetPoseSamples=\(targetSampleCount, privacy: .public) maximumFrameCount=\(maximumFrameCount, privacy: .public) minimumDurationSeconds=\(minimumCaptureDuration, privacy: .public) maximumDurationSeconds=\(maximumCaptureDuration, privacy: .public)"
+        )
+
+        let stream = AsyncStream<CalibrationCaptureEvent> { continuation in
+            streamContinuation = continuation
             capture.frameHandler = { [weak self] frame in
                 guard let self, self.activeSessionID == sessionID else {
                     return
                 }
 
-                continuation.yield(self.analyzer.analyze(frame))
+                continuation.yield(.observation(self.analyzer.analyze(frame)))
             }
+        }
+
+        let timeoutTask = Task {
+            let timeout = UInt64(max(0.0, maximumCaptureDuration) * 1_000_000_000)
+            try? await Task.sleep(nanoseconds: timeout)
+            streamContinuation?.yield(.timeout)
         }
 
         do {
@@ -141,30 +195,63 @@ final class AttentionMonitor {
             return .failed(previous: settings.calibration)
         }
 
-        for await observation in stream {
+        defer {
+            timeoutTask.cancel()
+            streamContinuation?.finish()
+            clearActiveCapture(sessionID: sessionID)
+        }
+
+        for await event in stream {
             guard activeSessionID == sessionID else {
+                endReason = .sessionCancelled
                 return .failed(previous: settings.calibration)
             }
 
-            frameCount += 1
+            guard case .observation(let observation) = event else {
+                endReason = .maximumDuration
+                break
+            }
+
+            metrics.record(observation)
             if case .pose(let sample) = observation {
                 poseSamples.append(sample)
             }
 
-            if poseSamples.count >= targetSampleCount || frameCount >= maximumFrameCount {
+            let elapsed = Date().timeIntervalSince(startedAt)
+            if metrics.frameCount >= maximumFrameCount {
+                endReason = .maximumFrames
+                break
+            }
+
+            if elapsed >= maximumCaptureDuration {
+                endReason = .maximumDuration
+                break
+            }
+
+            if poseSamples.count >= targetSampleCount && elapsed >= minimumCaptureDuration {
+                endReason = .targetReached
                 break
             }
         }
 
-        clearActiveCapture(sessionID: sessionID)
-        return await startCalibration(samples: poseSamples)
+        return await finishCalibration(samples: poseSamples, captureMetrics: metrics, endReason: endReason)
     }
 
     func startCalibration(samples: [PoseSample]) async -> CalibrationResult {
+        await finishCalibration(samples: samples, captureMetrics: nil, endReason: nil)
+    }
+
+    private func finishCalibration(
+        samples: [PoseSample],
+        captureMetrics: CalibrationCaptureMetrics?,
+        endReason: CalibrationCaptureEndReason?
+    ) async -> CalibrationResult {
         setState(.calibrating)
 
-        let result = CalibrationModel.evaluate(samples: samples, existing: settings.calibration)
-        switch result {
+        let evaluation = CalibrationModel.evaluateDetailed(samples: samples, existing: settings.calibration)
+        logCalibrationEnd(evaluation: evaluation, captureMetrics: captureMetrics, endReason: endReason)
+
+        switch evaluation.result {
         case .accepted(let snapshot):
             if saveCalibration(snapshot) {
                 setState(.ready)
@@ -175,7 +262,7 @@ final class AttentionMonitor {
             setState(.calibrationFailed(previousKept: previous != nil))
         }
 
-        return result
+        return evaluation.result
     }
 
     func applyCalibrationReplacement(
@@ -266,6 +353,23 @@ final class AttentionMonitor {
         settings = updatedSettings
         stateMachine = AttentionStateMachine(timing: updatedSettings.timing(for: updatedSettings.mode))
         stateDidChange?(state, settings)
+    }
+
+    private func logCalibrationEnd(
+        evaluation: CalibrationEvaluation,
+        captureMetrics: CalibrationCaptureMetrics?,
+        endReason: CalibrationCaptureEndReason?
+    ) {
+        let metrics = captureMetrics ?? CalibrationCaptureMetrics()
+        let diagnostics = evaluation.diagnostics
+        let quality = diagnostics.selectedWindowQuality.map { String(describing: $0) } ?? "none"
+        let failureReason = diagnostics.failureReason?.rawValue ?? "none"
+        let captureEndReason = endReason?.rawValue ?? "directSamples"
+        let selectedSpread = diagnostics.selectedWindowSpreadDegrees.map { String(format: "%.3f", $0) } ?? "none"
+
+        Self.logger.info(
+            "Calibration attempt ended frames=\(metrics.frameCount, privacy: .public) poses=\(metrics.poseCount, privacy: .public) noFace=\(metrics.noFaceCount, privacy: .public) ambiguous=\(metrics.ambiguousCount, privacy: .public) failed=\(metrics.failedCount, privacy: .public) inputSamples=\(diagnostics.inputSampleCount, privacy: .public) selectedWindowSize=\(diagnostics.selectedWindowSampleCount, privacy: .public) selectedSpreadDegrees=\(selectedSpread, privacy: .public) selectedQuality=\(quality, privacy: .public) failureReason=\(failureReason, privacy: .public) captureEndReason=\(captureEndReason, privacy: .public)"
+        )
     }
 
     private func clearActiveCapture(sessionID: UUID?) {

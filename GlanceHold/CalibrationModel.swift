@@ -30,6 +30,24 @@ enum CalibrationReplacementDecision: Equatable {
     case useNew
 }
 
+enum CalibrationFailureReason: String, Equatable {
+    case notEnoughPoseSamples
+    case unstablePoseSpread
+}
+
+struct CalibrationEvaluationDiagnostics: Equatable {
+    var inputSampleCount: Int
+    var selectedWindowSampleCount: Int
+    var selectedWindowSpreadDegrees: Double?
+    var selectedWindowQuality: CalibrationQuality?
+    var failureReason: CalibrationFailureReason?
+}
+
+struct CalibrationEvaluation: Equatable {
+    var result: CalibrationResult
+    var diagnostics: CalibrationEvaluationDiagnostics
+}
+
 enum CalibratedAttentionInput: Equatable {
     case pose(PoseSample)
     case noFace
@@ -47,35 +65,77 @@ enum CalibrationModel {
         existing: CalibrationSnapshot?,
         createdAt: Date = Date()
     ) -> CalibrationResult {
+        evaluateDetailed(samples: samples, existing: existing, createdAt: createdAt).result
+    }
+
+    static func evaluateDetailed(
+        samples: [PoseSample],
+        existing: CalibrationSnapshot?,
+        createdAt: Date = Date()
+    ) -> CalibrationEvaluation {
         guard samples.count >= minimumSampleCount else {
-            return .failed(previous: existing)
+            return CalibrationEvaluation(
+                result: .failed(previous: existing),
+                diagnostics: CalibrationEvaluationDiagnostics(
+                    inputSampleCount: samples.count,
+                    selectedWindowSampleCount: 0,
+                    selectedWindowSpreadDegrees: nil,
+                    selectedWindowQuality: nil,
+                    failureReason: .notEnoughPoseSamples
+                )
+            )
         }
 
-        let yaw = average(samples.map(\.yawDegrees))
-        let pitch = average(samples.map(\.pitchDegrees))
-        let roll = average(samples.map(\.rollDegrees))
-        let spread = maxSpread(samples)
+        let orderedSamples = samples.sorted { $0.time < $1.time }
+        guard let selectedWindow = bestWindow(in: orderedSamples) else {
+            return CalibrationEvaluation(
+                result: .failed(previous: existing),
+                diagnostics: CalibrationEvaluationDiagnostics(
+                    inputSampleCount: samples.count,
+                    selectedWindowSampleCount: 0,
+                    selectedWindowSpreadDegrees: nil,
+                    selectedWindowQuality: nil,
+                    failureReason: .notEnoughPoseSamples
+                )
+            )
+        }
 
-        let quality: CalibrationQuality
-        if spread <= highSpreadThresholdDegrees {
-            quality = .high
-        } else if spread <= marginalSpreadThresholdDegrees {
-            quality = .marginal
-        } else {
-            return .failed(previous: existing)
+        guard let quality = quality(forSpread: selectedWindow.spreadDegrees) else {
+            return CalibrationEvaluation(
+                result: .failed(previous: existing),
+                diagnostics: CalibrationEvaluationDiagnostics(
+                    inputSampleCount: samples.count,
+                    selectedWindowSampleCount: selectedWindow.samples.count,
+                    selectedWindowSpreadDegrees: selectedWindow.spreadDegrees,
+                    selectedWindowQuality: nil,
+                    failureReason: .unstablePoseSpread
+                )
+            )
         }
 
         let candidate = CalibrationSnapshot(
-            neutralPose: PoseSample(yawDegrees: yaw, pitchDegrees: pitch, rollDegrees: roll, time: samples.last?.time ?? 0.0),
+            neutralPose: neutralPose(from: selectedWindow.samples),
             quality: quality,
             createdAt: createdAt
         )
 
+        let result: CalibrationResult
         if quality == .marginal, existing?.quality == .high {
-            return .needsReplacementConfirmation(candidate: candidate, existing: existing!)
+            result = .needsReplacementConfirmation(candidate: candidate, existing: existing!)
+        } else {
+            result = .accepted(candidate)
         }
 
-        return .accepted(candidate)
+        return CalibrationEvaluation(
+            result: result,
+            diagnostics: CalibrationEvaluationDiagnostics(
+                inputSampleCount: samples.count,
+                selectedWindowSampleCount: selectedWindow.samples.count,
+                selectedWindowSpreadDegrees: selectedWindow.spreadDegrees,
+                selectedWindowQuality: quality,
+                failureReason: nil
+            )
+        )
     }
 
     static func resolveReplacement(
@@ -93,6 +153,62 @@ enum CalibrationModel {
 
     private static func average(_ values: [Double]) -> Double {
         values.reduce(0.0, +) / Double(values.count)
+    }
+
+    private struct CalibrationWindow {
+        var samples: [PoseSample]
+        var spreadDegrees: Double
+    }
+
+    private static func bestWindow(in samples: [PoseSample]) -> CalibrationWindow? {
+        guard samples.count >= minimumSampleCount else {
+            return nil
+        }
+
+        var best: CalibrationWindow?
+
+        for start in 0...(samples.count - minimumSampleCount) {
+            for length in minimumSampleCount...(samples.count - start) {
+                let windowSamples = Array(samples[start..<(start + length)])
+                let window = CalibrationWindow(
+                    samples: windowSamples,
+                    spreadDegrees: maxSpread(windowSamples)
+                )
+
+                guard let currentBest = best else {
+                    best = window
+                    continue
+                }
+
+                if window.spreadDegrees < currentBest.spreadDegrees ||
+                    (window.spreadDegrees == currentBest.spreadDegrees && window.samples.count > currentBest.samples.count) {
+                    best = window
+                }
+            }
+        }
+
+        return best
+    }
+
+    private static func quality(forSpread spread: Double) -> CalibrationQuality? {
+        if spread <= highSpreadThresholdDegrees {
+            return .high
+        }
+
+        if spread <= marginalSpreadThresholdDegrees {
+            return .marginal
+        }
+
+        return nil
+    }
+
+    private static func neutralPose(from samples: [PoseSample]) -> PoseSample {
+        PoseSample(
+            yawDegrees: average(samples.map(\.yawDegrees)),
+            pitchDegrees: average(samples.map(\.pitchDegrees)),
+            rollDegrees: average(samples.map(\.rollDegrees)),
+            time: samples.last?.time ?? 0.0
+        )
     }
 
     private static func maxSpread(_ samples: [PoseSample]) -> Double {

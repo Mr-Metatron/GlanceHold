@@ -1,6 +1,7 @@
 import AVFoundation
 import Foundation
 import ImageIO
+import os
 import Vision
 
 enum VisionAttentionObservation: Equatable {
@@ -21,6 +22,8 @@ enum AttentionAnalyzerFactory {
 }
 
 struct LiveVisionAttentionAnalyzer: VisionAttentionAnalyzing {
+    private static let logger = Logger(subsystem: "com.metatron.GlanceHold", category: "VisionAttentionAnalyzer")
+
     func analyze(_ frame: CapturedCameraFrame) -> VisionAttentionObservation {
         let request = VNDetectFaceRectanglesRequest()
         let handler = VNImageRequestHandler(
@@ -32,11 +35,16 @@ struct LiveVisionAttentionAnalyzer: VisionAttentionAnalyzing {
         do {
             try handler.perform([request])
         } catch {
+            Self.logger.warning("Vision face request failed during attention analysis")
             return .failed(time: frame.time)
         }
 
         guard let observations = request.results, !observations.isEmpty else {
             return .noFace(time: frame.time)
+        }
+
+        if observations.count > 1 {
+            Self.logger.debug("Vision detected multiple face candidates count=\(observations.count, privacy: .public)")
         }
 
         let primary = observations.max { left, right in
