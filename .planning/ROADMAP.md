@@ -161,7 +161,7 @@ Plans:
   3. User-facing status-bar menu text, actions, status details, and alerts are routed through localization resources rather than scattered hard-coded strings.
   4. English and Simplified Chinese localizations cover the v1 status-bar app surface, including monitoring status, IINA/player status, calibration/reset prompts, tuning labels, and shortcut copy.
 
-**Plans:** 2/4 plans executed
+**Plans:** 3/4 plans executed
 Plans:
 **Wave 1**
 
@@ -173,7 +173,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 05-03-PLAN.md — English/Simplified Chinese Apple-native localization resources and routing.
+- [x] 05-03-PLAN.md — English/Simplified Chinese Apple-native localization resources and routing.
 
 **Wave 4** *(blocked on Wave 3 completion; has lightweight human check)*
 
@@ -207,5 +207,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 2. Pure Attention State Machine and Playback Policy | 2/2 | Complete   | 2026-06-05 |
 | 3. Local Camera, Vision Signal, Calibration, and Tuning | 3/3 | Complete   | 2026-06-06 |
 | 4. IINA Adapter Spike and End-to-End Playback Control | 10/10 | Complete   | 2026-06-07 |
-| 5. Control Polish, IINA Shortcut, and i18n | 2/4 | In Progress|  |
+| 5. Control Polish, IINA Shortcut, and i18n | 3/4 | In Progress|  |
 | 6. End-to-End UX Hardening and Manual UAT | 0/TBD | Not started | - |
