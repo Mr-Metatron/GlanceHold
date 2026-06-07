@@ -11,6 +11,24 @@ struct IINAPluginBridgeAdapter: IINAPlaybackAdapting {
         await client.status().playerSnapshot
     }
 
+    func statusUpdates() -> AsyncStream<PlayerSnapshot> {
+        AsyncStream { continuation in
+            let task = Task {
+                for await status in client.statusUpdates() {
+                    if Task.isCancelled {
+                        break
+                    }
+                    continuation.yield(status.playerSnapshot)
+                }
+                continuation.finish()
+            }
+
+            continuation.onTermination = { _ in
+                task.cancel()
+            }
+        }
+    }
+
     func execute(_ intent: PlaybackIntent) async throws {
         try await client.execute(intent)
     }

@@ -10,10 +10,12 @@ enum IINAPluginBridgeClientError: Error, Equatable {
 
 protocol IINAPluginBridgeTransporting {
     func roundTrip(_ message: String, timeout: TimeInterval) async throws -> String
+    func messages(timeout: TimeInterval) -> AsyncThrowingStream<String, Error>
 }
 
 protocol IINAPluginBridgeClienting {
     func status() async -> IINAPlayerStatus
+    func statusUpdates() -> AsyncStream<IINAPlayerStatus>
     func execute(_ intent: PlaybackIntent) async throws
 }
 
@@ -32,6 +34,12 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
         var ok: Bool
         var snapshot: Snapshot?
         var error: String?
+    }
+
+    private struct StatusChanged: Decodable {
+        var version: Int
+        var type: String
+        var snapshot: Snapshot
     }
 
     private struct Snapshot: Decodable {
@@ -80,6 +88,59 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
             throw IINAPluginBridgeClientError.malformedResponse
         }
 
+        return try status(from: snapshot)
+    }
+
+    func statusUpdates() -> AsyncStream<IINAPlayerStatus> {
+        AsyncStream { continuation in
+            let task = Task {
+                do {
+                    for try await message in transport.messages(timeout: timeout) {
+                        if Task.isCancelled {
+                            break
+                        }
+
+                        guard let status = decodeStatusChanged(message) else {
+                            continue
+                        }
+                        continuation.yield(status)
+                    }
+                    continuation.finish()
+                } catch IINAPluginBridgeClientError.pluginNeeded {
+                    continuation.yield(.setupNeeded)
+                    continuation.finish()
+                } catch {
+                    continuation.yield(.unavailable)
+                    continuation.finish()
+                }
+            }
+
+            continuation.onTermination = { _ in
+                task.cancel()
+            }
+        }
+    }
+
+    func execute(_ intent: PlaybackIntent) async throws {
+        guard let request = request(for: intent) else {
+            return
+        }
+
+        _ = try await send(request)
+    }
+
+    private func decodeStatusChanged(_ message: String) -> IINAPlayerStatus? {
+        guard let data = message.data(using: .utf8),
+              let event = try? decoder.decode(StatusChanged.self, from: data),
+              event.version == Self.protocolVersion,
+              event.type == "statusChanged" else {
+            return nil
+        }
+
+        return try? status(from: event.snapshot)
+    }
+
+    private func status(from snapshot: Snapshot) throws -> IINAPlayerStatus {
         switch snapshot.state {
         case "playing":
             guard let speed = finiteSpeed(snapshot.speed) else {
@@ -96,14 +157,6 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
         default:
             throw IINAPluginBridgeClientError.unavailable
         }
-    }
-
-    func execute(_ intent: PlaybackIntent) async throws {
-        guard let request = request(for: intent) else {
-            return
-        }
-
-        _ = try await send(request)
     }
 
     private func request(for intent: PlaybackIntent) -> Request? {
@@ -211,6 +264,30 @@ struct URLSessionIINAPluginBridgeTransport: IINAPluginBridgeTransporting {
             throw error
         } catch {
             throw mapURLSessionError(error)
+        }
+    }
+
+    func messages(timeout: TimeInterval) -> AsyncThrowingStream<String, Error> {
+        AsyncThrowingStream { continuation in
+            let task = session.webSocketTask(with: url)
+            task.resume()
+
+            let receiveTask = Task {
+                do {
+                    while !Task.isCancelled {
+                        let message = try await receive(from: task)
+                        continuation.yield(message)
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: mapURLSessionError(error))
+                }
+            }
+
+            continuation.onTermination = { _ in
+                receiveTask.cancel()
+                task.cancel(with: .goingAway, reason: nil)
+            }
         }
     }
 

@@ -44,11 +44,20 @@ final class PlaybackCoordinator {
 
     func refreshPlayerState() async {
         let snapshot = await adapter.snapshot()
-        let isControllable = isPlayerControllable(snapshot)
-        if isControllable {
-            suppressCommandsUntilValidSnapshot = false
+        applyReadOnlyPlayerSnapshot(snapshot)
+    }
+
+    func applyPushedPlayerSnapshot(_ snapshot: PlayerSnapshot) {
+        applyReadOnlyPlayerSnapshot(snapshot)
+    }
+
+    func observePlayerStatusUpdates() async {
+        for await snapshot in adapter.statusUpdates() {
+            if Task.isCancelled {
+                return
+            }
+            applyPushedPlayerSnapshot(snapshot)
         }
-        updateState(snapshot: snapshot, isPlayerControllable: isControllable)
     }
 
     func handleAttentionState(_ state: DebouncedAttentionState) async {
@@ -134,6 +143,23 @@ final class PlaybackCoordinator {
 
     private func resetPolicy() {
         policy = PlaybackPolicy(mode: mode)
+    }
+
+    private func applyReadOnlyPlayerSnapshot(_ snapshot: PlayerSnapshot) {
+        let isControllable = isPlayerControllable(snapshot)
+        if let stoppedReason = state.stoppedReason {
+            state = PlaybackCoordinatorState(
+                isPlayerControllable: false,
+                playerSnapshot: snapshot,
+                stoppedReason: stoppedReason
+            )
+            return
+        }
+
+        if isControllable {
+            suppressCommandsUntilValidSnapshot = false
+        }
+        updateState(snapshot: snapshot, isPlayerControllable: isControllable)
     }
 
     private func updateState(snapshot: PlayerSnapshot, isPlayerControllable: Bool) {

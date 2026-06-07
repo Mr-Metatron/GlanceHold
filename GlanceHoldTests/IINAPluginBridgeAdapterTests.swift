@@ -24,18 +24,52 @@ final class IINAPluginBridgeAdapterTests: XCTestCase {
         XCTAssertEqual(setupNeeded, .setupNeeded)
         XCTAssertEqual(unavailable, .playerUnavailable)
     }
+
+    func testPluginBridgeStatusUpdatesMapToPlayerSnapshots() async throws {
+        let client = FakeIINAPluginBridgeClient(
+            statuses: [],
+            updateStatuses: [
+                .paused(speed: 2.0),
+                .playing(speed: 2.0),
+                .idle
+            ]
+        )
+        let adapter = IINAPluginBridgeAdapter(client: client)
+
+        var snapshots: [PlayerSnapshot] = []
+        for await snapshot in adapter.statusUpdates() {
+            snapshots.append(snapshot)
+        }
+
+        XCTAssertEqual(snapshots, [
+            .paused(speed: 2.0),
+            .playing(speed: 2.0),
+            .idle
+        ])
+    }
 }
 
 private final class FakeIINAPluginBridgeClient: IINAPluginBridgeClienting {
     private var statuses: [IINAPlayerStatus]
+    private let updateStatuses: [IINAPlayerStatus]
     private(set) var commands: [PlaybackIntent] = []
 
-    init(statuses: [IINAPlayerStatus]) {
+    init(statuses: [IINAPlayerStatus], updateStatuses: [IINAPlayerStatus] = []) {
         self.statuses = statuses
+        self.updateStatuses = updateStatuses
     }
 
     func status() async -> IINAPlayerStatus {
         statuses.isEmpty ? .unavailable : statuses.removeFirst()
+    }
+
+    func statusUpdates() -> AsyncStream<IINAPlayerStatus> {
+        AsyncStream { continuation in
+            for status in updateStatuses {
+                continuation.yield(status)
+            }
+            continuation.finish()
+        }
     }
 
     func execute(_ intent: PlaybackIntent) async throws {

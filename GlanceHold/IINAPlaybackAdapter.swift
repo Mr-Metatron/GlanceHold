@@ -10,7 +10,16 @@ enum IINAPlayerStatus: Equatable {
 
 protocol IINAPlaybackAdapting {
     func snapshot() async -> PlayerSnapshot
+    func statusUpdates() -> AsyncStream<PlayerSnapshot>
     func execute(_ intent: PlaybackIntent) async throws
+}
+
+extension IINAPlaybackAdapting {
+    func statusUpdates() -> AsyncStream<PlayerSnapshot> {
+        AsyncStream { continuation in
+            continuation.finish()
+        }
+    }
 }
 
 struct IINAPlaybackAdapter: IINAPlaybackAdapting {
