@@ -172,7 +172,7 @@ final class AttentionMonitor {
         case .needsReplacementConfirmation:
             setState(.ready)
         case .failed(let previous):
-            setState(previous == nil ? .needsCalibration : .calibrationFailed(previousKept: true))
+            setState(.calibrationFailed(previousKept: previous != nil))
         }
 
         return result

@@ -61,7 +61,7 @@ struct LiveVisionAttentionAnalyzer: VisionAttentionAnalyzing {
         rollRadians: Double?,
         time: TimeInterval
     ) -> VisionAttentionObservation {
-        guard let yawRadians, let pitchRadians, let rollRadians else {
+        guard let yawRadians, let pitchRadians else {
             return .ambiguous(time: time)
         }
 
@@ -69,7 +69,7 @@ struct LiveVisionAttentionAnalyzer: VisionAttentionAnalyzing {
             PoseSample(
                 yawDegrees: degrees(fromRadians: yawRadians),
                 pitchDegrees: degrees(fromRadians: pitchRadians),
-                rollDegrees: degrees(fromRadians: rollRadians),
+                rollDegrees: rollRadians.map(degrees(fromRadians:)) ?? 0.0,
                 time: time
             )
         )
