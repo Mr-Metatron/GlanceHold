@@ -147,7 +147,7 @@ enum PlayerControlStatus: Equatable {
     static var visibleVocabulary: [String] {
         [
             "IINA Unavailable",
-            "IINA Plugin Needed",
+            "IINA Bridge Waiting",
             "IINA Idle",
             "IINA Paused",
             "IINA Playing",
@@ -189,7 +189,7 @@ enum PlayerControlStatus: Equatable {
         case .unavailable:
             "IINA Unavailable"
         case .setupNeeded:
-            "IINA Plugin Needed"
+            "IINA Bridge Waiting"
         case .idle:
             "IINA Idle"
         case .paused:
@@ -206,7 +206,7 @@ enum PlayerControlStatus: Equatable {
         case .unavailable:
             "Attention monitoring can continue while playback control waits for controllable IINA state."
         case .setupNeeded:
-            "Install or enable the GlanceHold IINA plugin before playback control can connect."
+            "Install or enable the GlanceHold IINA plugin. Start IINA or load a video before playback control can connect."
         case .idle:
             "IINA is open without active playback. No playback command will be sent."
         case .notControllable:
