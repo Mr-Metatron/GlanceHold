@@ -337,11 +337,19 @@ private enum MonitorStoreError: Error {
 }
 
 private final class FakeCameraFrameCapture: CameraFrameCapturing {
-    var frameHandler: ((CapturedCameraFrame) -> Void)?
+    var frameHandler: ((CapturedCameraFrame) -> Void)? {
+        didSet {
+            if frameHandler != nil {
+                frameHandlerContinuation?.resume()
+                frameHandlerContinuation = nil
+            }
+        }
+    }
     private(set) var startCount = 0
     private(set) var stopCount = 0
     private let startError: Error?
     private var isRunning = false
+    private var frameHandlerContinuation: CheckedContinuation<Void, Never>?
 
     init(startError: Error? = nil) {
         self.startError = startError
@@ -367,8 +375,16 @@ private final class FakeCameraFrameCapture: CameraFrameCapturing {
         file: StaticString = #filePath,
         line: UInt = #line
     ) async {
-        for _ in 0..<100 where frameHandler == nil {
-            await Task.yield()
+        if frameHandler != nil {
+            return
+        }
+
+        await withCheckedContinuation { continuation in
+            if frameHandler != nil {
+                continuation.resume()
+            } else {
+                frameHandlerContinuation = continuation
+            }
         }
         XCTAssertNotNil(frameHandler, file: file, line: line)
     }
