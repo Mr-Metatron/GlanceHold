@@ -66,6 +66,8 @@ protocol MPVJSONIPCTransporting {
 }
 
 protocol MPVJSONIPCClienting {
+    var socketPath: String { get }
+
     func getProperty(_ name: String) async throws -> MPVJSONValue
     func send(command: [MPVJSONValue]) async throws
 }
@@ -82,7 +84,7 @@ final class MPVJSONIPCClient: MPVJSONIPCClienting {
         var data: MPVJSONValue?
     }
 
-    private let socketPath: String
+    let socketPath: String
     private let transport: MPVJSONIPCTransporting
     private let timeout: TimeInterval
     private let encoder: JSONEncoder

@@ -8,6 +8,10 @@ struct PlaybackCoordinatorState: Equatable {
     static var unavailable: PlaybackCoordinatorState {
         PlaybackCoordinatorState(isPlayerControllable: false, playerSnapshot: .playerUnavailable)
     }
+
+    static var setupNeeded: PlaybackCoordinatorState {
+        PlaybackCoordinatorState(isPlayerControllable: false, playerSnapshot: .setupNeeded)
+    }
 }
 
 final class PlaybackCoordinator {
@@ -94,7 +98,7 @@ final class PlaybackCoordinator {
         switch snapshot.playbackState {
         case .playing, .paused:
             return snapshot.speed != nil
-        case .idle, .playerUnavailable:
+        case .idle, .setupNeeded, .playerUnavailable:
             return false
         }
     }

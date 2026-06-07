@@ -4,6 +4,7 @@ enum PlayerPlaybackState: Equatable {
     case playing
     case paused
     case idle
+    case setupNeeded
     case playerUnavailable
 }
 
@@ -34,6 +35,10 @@ struct PlayerSnapshot: Equatable {
 
     static var idle: PlayerSnapshot {
         PlayerSnapshot(playbackState: .idle, speed: nil)
+    }
+
+    static var setupNeeded: PlayerSnapshot {
+        PlayerSnapshot(playbackState: .setupNeeded, speed: nil)
     }
 
     static var playerUnavailable: PlayerSnapshot {
@@ -202,7 +207,7 @@ struct PlaybackPolicy: Equatable {
         }
 
         switch player.playbackState {
-        case .idle, .playerUnavailable:
+        case .idle, .setupNeeded, .playerUnavailable:
             return false
         case .playing, .paused:
             return player.speed != nil

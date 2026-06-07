@@ -132,15 +132,17 @@ private struct GlanceHoldMenu: View {
 
             Divider()
 
-            Text("IINA: \(state.playerStatus.visibleTitle)")
-                .accessibilityLabel("IINA: \(state.playerStatus.visibleTitle)")
+            if let playerStatus = state.playerStatus {
+                Text("IINA: \(playerStatus.visibleTitle)")
+                    .accessibilityLabel("IINA: \(playerStatus.visibleTitle)")
 
-            if !state.playerStatus.detailText.isEmpty {
-                Text(state.playerStatus.detailText)
-                    .foregroundStyle(.secondary)
+                if !playerStatus.detailText.isEmpty {
+                    Text(playerStatus.detailText)
+                        .foregroundStyle(.secondary)
+                }
+
+                Divider()
             }
-
-            Divider()
 
             Button(primaryAction.title) {
                 performPrimaryAction(primaryAction)
@@ -407,7 +409,7 @@ private struct GlanceHoldMenu: View {
         playbackCoordinator.stateDidChange = nil
         playbackCoordinator.stopMonitoring()
         playbackCoordinator = Self.makePlaybackCoordinator(mode: mode)
-        state.playerStatus = .setupNeeded
+        state.playerStatus = nil
         installMonitorStateHandler()
     }
 

@@ -160,6 +160,8 @@ enum PlayerControlStatus: Equatable {
             switch coordinatorState.playerSnapshot.playbackState {
             case .idle:
                 self = .idle
+            case .setupNeeded:
+                self = .setupNeeded
             case .playing, .paused:
                 self = .notControllable
             case .playerUnavailable:
@@ -175,6 +177,8 @@ enum PlayerControlStatus: Equatable {
             self = .paused
         case .idle:
             self = .idle
+        case .setupNeeded:
+            self = .setupNeeded
         case .playerUnavailable:
             self = .unavailable
         }
@@ -230,12 +234,12 @@ enum GlanceHoldMenuCopy {
 struct GlanceHoldState: Equatable {
     var settings: AttentionSettings
     var status: MonitoringStatus
-    var playerStatus: PlayerControlStatus
+    var playerStatus: PlayerControlStatus?
 
     init(
         mode: MonitoringMode = .speedControl,
         status: MonitoringStatus = .off,
-        playerStatus: PlayerControlStatus = .setupNeeded,
+        playerStatus: PlayerControlStatus? = nil,
         settings: AttentionSettings = .defaults
     ) {
         var resolvedSettings = settings

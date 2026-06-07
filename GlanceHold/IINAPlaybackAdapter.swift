@@ -1,6 +1,7 @@
 import Foundation
 
 enum IINAPlayerStatus: Equatable {
+    case setupNeeded
     case unavailable
     case idle
     case paused(speed: Double)
@@ -14,9 +15,14 @@ protocol IINAPlaybackAdapting {
 
 struct IINAPlaybackAdapter: IINAPlaybackAdapting {
     private let client: MPVJSONIPCClienting
+    private let socketExists: (String) -> Bool
 
-    init(client: MPVJSONIPCClienting = MPVJSONIPCClient()) {
+    init(
+        client: MPVJSONIPCClienting = MPVJSONIPCClient(),
+        socketExists: @escaping (String) -> Bool = { FileManager.default.fileExists(atPath: $0) }
+    ) {
         self.client = client
+        self.socketExists = socketExists
     }
 
     func snapshot() async -> PlayerSnapshot {
@@ -24,6 +30,10 @@ struct IINAPlaybackAdapter: IINAPlaybackAdapting {
     }
 
     func status() async -> IINAPlayerStatus {
+        guard socketExists(client.socketPath) else {
+            return .setupNeeded
+        }
+
         do {
             let speed = try await client.getProperty("speed")
             let pause = try await client.getProperty("pause")
@@ -62,6 +72,8 @@ struct IINAPlaybackAdapter: IINAPlaybackAdapting {
 private extension IINAPlayerStatus {
     var playerSnapshot: PlayerSnapshot {
         switch self {
+        case .setupNeeded:
+            return .setupNeeded
         case .unavailable:
             return .playerUnavailable
         case .idle:
