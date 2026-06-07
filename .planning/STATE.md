@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: phase_complete
-stopped_at: Phase 5 context gathered
-last_updated: "2026-06-07T10:49:08.368Z"
+status: completed
+stopped_at: Phase 5 UI-SPEC approved
+last_updated: "2026-06-07T11:25:32.900Z"
 last_activity: 2026-06-07 -- Phase 5 shortcut scope changed from macOS global hotkey to IINA plugin menu/key binding bridge
 progress:
   total_phases: 6
@@ -123,6 +123,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-07T10:49:08.363Z
-Stopped at: Phase 5 context gathered
-Resume file: .planning/phases/05-control-polish-iina-shortcut-and-i18n/05-CONTEXT.md
+Last session: 2026-06-07T11:25:32.892Z
+Stopped at: Phase 5 UI-SPEC approved
+Resume file: .planning/phases/05-control-polish-iina-shortcut-and-i18n/05-UI-SPEC.md
