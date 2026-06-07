@@ -42,6 +42,7 @@
 		8D6E7A972F4C4D0E9A1B2C3D /* MenuOptionPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A962F4C4D0E9A1B2C3D /* MenuOptionPresentation.swift */; };
 		8D6E7A992F4C4D0E9A1B2C3D /* MonitoringToggleControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A982F4C4D0E9A1B2C3D /* MonitoringToggleControllerTests.swift */; };
 		8D6E7A9B2F4C4D0E9A1B2C3D /* MonitoringToggleController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A9A2F4C4D0E9A1B2C3D /* MonitoringToggleController.swift */; };
+		8D6E7A9D2F4C4D0E9A1B2C3D /* GlanceHoldLocalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A9C2F4C4D0E9A1B2C3D /* GlanceHoldLocalizationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -94,6 +95,7 @@
 		8D6E7A962F4C4D0E9A1B2C3D /* MenuOptionPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuOptionPresentation.swift; sourceTree = "<group>"; };
 		8D6E7A982F4C4D0E9A1B2C3D /* MonitoringToggleControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitoringToggleControllerTests.swift; sourceTree = "<group>"; };
 		8D6E7A9A2F4C4D0E9A1B2C3D /* MonitoringToggleController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitoringToggleController.swift; sourceTree = "<group>"; };
+		8D6E7A9C2F4C4D0E9A1B2C3D /* GlanceHoldLocalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlanceHoldLocalizationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -179,6 +181,7 @@
 				8D6E7A882F4C4D0E9A1B2C3D /* PlaybackCoordinatorTests.swift */,
 				8D6E7A942F4C4D0E9A1B2C3D /* MenuOptionPresentationTests.swift */,
 				8D6E7A982F4C4D0E9A1B2C3D /* MonitoringToggleControllerTests.swift */,
+				8D6E7A9C2F4C4D0E9A1B2C3D /* GlanceHoldLocalizationTests.swift */,
 			);
 			path = GlanceHoldTests;
 			sourceTree = "<group>";
@@ -323,6 +326,7 @@
 				8D6E7A892F4C4D0E9A1B2C3D /* PlaybackCoordinatorTests.swift in Sources */,
 				8D6E7A952F4C4D0E9A1B2C3D /* MenuOptionPresentationTests.swift in Sources */,
 				8D6E7A992F4C4D0E9A1B2C3D /* MonitoringToggleControllerTests.swift in Sources */,
+				8D6E7A9D2F4C4D0E9A1B2C3D /* GlanceHoldLocalizationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
