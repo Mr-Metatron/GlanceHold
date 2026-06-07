@@ -37,6 +37,11 @@ final class AttentionSettingsTests: XCTestCase {
         XCTAssertEqual(GlanceHoldMenuCopy.recoveryDelayLabel, "Recovery Delay")
     }
 
+    func testCompactDelayLabelsUseOneDecimalSecondSuffix() {
+        XCTAssertEqual(TuningMenuPresentation.formatDelay(0.8), "0.8s")
+        XCTAssertEqual(TuningMenuPresentation.formatDelay(1.2), "1.2s")
+    }
+
     func testStoreRoundTripsScalarSettingsAndResetClearsCalibration() throws {
         let store = InMemoryAttentionSettingsStore()
         let calibration = CalibrationSnapshot(

@@ -38,6 +38,7 @@
 		8D6E7A8F2F4C4D0E9A1B2C3D /* IINAPluginBridgeAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A8E2F4C4D0E9A1B2C3D /* IINAPluginBridgeAdapterTests.swift */; };
 		8D6E7A912F4C4D0E9A1B2C3D /* IINAPluginBridgeClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A902F4C4D0E9A1B2C3D /* IINAPluginBridgeClient.swift */; };
 		8D6E7A932F4C4D0E9A1B2C3D /* IINAPluginBridgeAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A922F4C4D0E9A1B2C3D /* IINAPluginBridgeAdapter.swift */; };
+		8D6E7A952F4C4D0E9A1B2C3D /* MenuOptionPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A942F4C4D0E9A1B2C3D /* MenuOptionPresentationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -86,6 +87,7 @@
 		8D6E7A8E2F4C4D0E9A1B2C3D /* IINAPluginBridgeAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IINAPluginBridgeAdapterTests.swift; sourceTree = "<group>"; };
 		8D6E7A902F4C4D0E9A1B2C3D /* IINAPluginBridgeClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IINAPluginBridgeClient.swift; sourceTree = "<group>"; };
 		8D6E7A922F4C4D0E9A1B2C3D /* IINAPluginBridgeAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IINAPluginBridgeAdapter.swift; sourceTree = "<group>"; };
+		8D6E7A942F4C4D0E9A1B2C3D /* MenuOptionPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuOptionPresentationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -167,6 +169,7 @@
 				8D6E7A8C2F4C4D0E9A1B2C3D /* IINAPluginBridgeClientTests.swift */,
 				8D6E7A8E2F4C4D0E9A1B2C3D /* IINAPluginBridgeAdapterTests.swift */,
 				8D6E7A882F4C4D0E9A1B2C3D /* PlaybackCoordinatorTests.swift */,
+				8D6E7A942F4C4D0E9A1B2C3D /* MenuOptionPresentationTests.swift */,
 			);
 			path = GlanceHoldTests;
 			sourceTree = "<group>";
@@ -307,6 +310,7 @@
 				8D6E7A8D2F4C4D0E9A1B2C3D /* IINAPluginBridgeClientTests.swift in Sources */,
 				8D6E7A8F2F4C4D0E9A1B2C3D /* IINAPluginBridgeAdapterTests.swift in Sources */,
 				8D6E7A892F4C4D0E9A1B2C3D /* PlaybackCoordinatorTests.swift in Sources */,
+				8D6E7A952F4C4D0E9A1B2C3D /* MenuOptionPresentationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
