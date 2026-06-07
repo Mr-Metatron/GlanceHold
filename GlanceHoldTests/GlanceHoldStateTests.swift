@@ -6,6 +6,7 @@ final class GlanceHoldStateTests: XCTestCase {
         let state = GlanceHoldState()
 
         XCTAssertEqual(state.status.visibleTitle, "Off")
+        XCTAssertNil(state.playerStatus)
     }
 
     func testEnablingMonitoringWithoutPermissionResolutionDoesNotBecomeActive() {
@@ -83,7 +84,7 @@ final class GlanceHoldStateTests: XCTestCase {
         let state = GlanceHoldState(status: .facing, playerStatus: .unavailable)
 
         XCTAssertEqual(state.status.visibleTitle, "Facing")
-        XCTAssertEqual(state.playerStatus.visibleTitle, "IINA Unavailable")
+        XCTAssertEqual(state.playerStatus?.visibleTitle, "IINA Unavailable")
         XCTAssertTrue(state.isMonitoringActive)
     }
 

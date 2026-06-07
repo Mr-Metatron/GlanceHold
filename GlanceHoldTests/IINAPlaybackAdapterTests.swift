@@ -9,7 +9,7 @@ final class IINAPlaybackAdapterTests: XCTestCase {
             "pause": .bool(false),
             "idle-active": .bool(false)
         ]
-        let adapter = IINAPlaybackAdapter(client: client)
+        let adapter = IINAPlaybackAdapter(client: client, socketExists: { _ in true })
 
         let playing = await adapter.snapshot()
         XCTAssertEqual(playing, .playing(speed: 1.5))
@@ -22,9 +22,30 @@ final class IINAPlaybackAdapterTests: XCTestCase {
         let idle = await adapter.snapshot()
         XCTAssertEqual(idle, .idle)
 
-        client.propertyFailure = .unavailableSocket
+        client.propertyFailure = .timeout
         let unavailable = await adapter.snapshot()
         XCTAssertEqual(unavailable, .playerUnavailable)
+    }
+
+    func testMissingSocketMapsToSetupNeededBeforeIPCRead() async {
+        let client = FakeMPVJSONIPCClient()
+        let adapter = IINAPlaybackAdapter(client: client, socketExists: { _ in false })
+
+        let snapshot = await adapter.snapshot()
+
+        XCTAssertEqual(snapshot, .setupNeeded)
+        XCTAssertEqual(client.propertyReads, [])
+    }
+
+    func testExistingSocketWithIPCFailureMapsToUnavailable() async {
+        let client = FakeMPVJSONIPCClient()
+        client.propertyFailure = .unavailableSocket
+        let adapter = IINAPlaybackAdapter(client: client, socketExists: { _ in true })
+
+        let snapshot = await adapter.snapshot()
+
+        XCTAssertEqual(snapshot, .playerUnavailable)
+        XCTAssertEqual(client.propertyReads, ["speed"])
     }
 
     func testMissingOrNonNumericSpeedIsUnavailableForControl() async {
@@ -33,7 +54,7 @@ final class IINAPlaybackAdapterTests: XCTestCase {
             "pause": .bool(false),
             "idle-active": .bool(false)
         ]
-        let adapter = IINAPlaybackAdapter(client: client)
+        let adapter = IINAPlaybackAdapter(client: client, socketExists: { _ in true })
 
         let missingSpeed = await adapter.snapshot()
         XCTAssertEqual(missingSpeed, .playerUnavailable)
@@ -79,9 +100,13 @@ final class IINAPlaybackAdapterTests: XCTestCase {
 private final class FakeMPVJSONIPCClient: MPVJSONIPCClienting {
     var propertyValues: [String: MPVJSONValue] = [:]
     var propertyFailure: MPVJSONIPCClientError?
+    var propertyReads: [String] = []
     var commands: [[MPVJSONValue]] = []
+    var socketPath = "/tmp/glancehold-iina-ipc.sock"
 
     func getProperty(_ name: String) async throws -> MPVJSONValue {
+        propertyReads.append(name)
+
         if let propertyFailure {
             throw propertyFailure
         }
