@@ -26,7 +26,16 @@ extension IINAPluginBridgeTransporting {
 protocol IINAPluginBridgeClienting {
     func status() async -> IINAPlayerStatus
     func statusUpdates() -> AsyncStream<IINAPlayerStatus>
+    func monitoringToggleRequests() -> AsyncStream<Void>
     func execute(_ intent: PlaybackIntent) async throws
+}
+
+extension IINAPluginBridgeClienting {
+    func monitoringToggleRequests() -> AsyncStream<Void> {
+        AsyncStream { continuation in
+            continuation.finish()
+        }
+    }
 }
 
 final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
@@ -51,6 +60,12 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
         var version: Int
         var type: String
         var snapshot: Snapshot
+    }
+
+    private struct PushedEvent: Decodable {
+        var id: Int?
+        var version: Int
+        var type: String
     }
 
     private struct Snapshot: Decodable {
@@ -132,6 +147,32 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
         }
     }
 
+    func monitoringToggleRequests() -> AsyncStream<Void> {
+        AsyncStream { continuation in
+            let task = Task {
+                do {
+                    for try await message in transport.messages(timeout: timeout) {
+                        if Task.isCancelled {
+                            break
+                        }
+
+                        guard decodeMonitoringToggleRequested(message) else {
+                            continue
+                        }
+                        continuation.yield(())
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish()
+                }
+            }
+
+            continuation.onTermination = { _ in
+                task.cancel()
+            }
+        }
+    }
+
     func execute(_ intent: PlaybackIntent) async throws {
         guard let request = request(for: intent) else {
             return
@@ -143,12 +184,24 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
     private func decodeStatusChanged(_ message: String) -> IINAPlayerStatus? {
         guard let data = message.data(using: .utf8),
               let event = try? decoder.decode(StatusChanged.self, from: data),
+              event.id == nil,
               event.version == Self.protocolVersion,
               event.type == "statusChanged" else {
             return nil
         }
 
         return try? status(from: event.snapshot)
+    }
+
+    private func decodeMonitoringToggleRequested(_ message: String) -> Bool {
+        guard let data = message.data(using: .utf8),
+              let event = try? decoder.decode(PushedEvent.self, from: data) else {
+            return false
+        }
+
+        return event.id == nil
+            && event.version == Self.protocolVersion
+            && event.type == "toggleMonitoringRequested"
     }
 
     private func status(from snapshot: Snapshot) throws -> IINAPlayerStatus {
@@ -227,11 +280,13 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
 
     private func shouldIgnoreRequestPathMessage(_ message: String) -> Bool {
         guard let data = message.data(using: .utf8),
-              let event = try? decoder.decode(StatusChanged.self, from: data) else {
+              let event = try? decoder.decode(PushedEvent.self, from: data) else {
             return false
         }
 
-        return event.id == nil && event.version == Self.protocolVersion && event.type == "statusChanged"
+        return event.id == nil
+            && event.version == Self.protocolVersion
+            && (event.type == "statusChanged" || event.type == "toggleMonitoringRequested")
     }
 
     private func nextID() -> Int {

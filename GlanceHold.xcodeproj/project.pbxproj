@@ -41,6 +41,7 @@
 		8D6E7A952F4C4D0E9A1B2C3D /* MenuOptionPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A942F4C4D0E9A1B2C3D /* MenuOptionPresentationTests.swift */; };
 		8D6E7A972F4C4D0E9A1B2C3D /* MenuOptionPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A962F4C4D0E9A1B2C3D /* MenuOptionPresentation.swift */; };
 		8D6E7A992F4C4D0E9A1B2C3D /* MonitoringToggleControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A982F4C4D0E9A1B2C3D /* MonitoringToggleControllerTests.swift */; };
+		8D6E7A9B2F4C4D0E9A1B2C3D /* MonitoringToggleController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A9A2F4C4D0E9A1B2C3D /* MonitoringToggleController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -92,6 +93,7 @@
 		8D6E7A942F4C4D0E9A1B2C3D /* MenuOptionPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuOptionPresentationTests.swift; sourceTree = "<group>"; };
 		8D6E7A962F4C4D0E9A1B2C3D /* MenuOptionPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuOptionPresentation.swift; sourceTree = "<group>"; };
 		8D6E7A982F4C4D0E9A1B2C3D /* MonitoringToggleControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitoringToggleControllerTests.swift; sourceTree = "<group>"; };
+		8D6E7A9A2F4C4D0E9A1B2C3D /* MonitoringToggleController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitoringToggleController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -151,6 +153,7 @@
 				8D6E7A922F4C4D0E9A1B2C3D /* IINAPluginBridgeAdapter.swift */,
 				8D6E7A8A2F4C4D0E9A1B2C3D /* PlaybackCoordinator.swift */,
 				8D6E7A962F4C4D0E9A1B2C3D /* MenuOptionPresentation.swift */,
+				8D6E7A9A2F4C4D0E9A1B2C3D /* MonitoringToggleController.swift */,
 				8D6E7A3E2F4C4D0E9A1B2C3D /* Assets.xcassets */,
 				8D6E7A402F4C4D0E9A1B2C3D /* Info.plist */,
 				8D6E7A412F4C4D0E9A1B2C3D /* GlanceHold.entitlements */,
@@ -296,6 +299,7 @@
 				8D6E7A932F4C4D0E9A1B2C3D /* IINAPluginBridgeAdapter.swift in Sources */,
 				8D6E7A8B2F4C4D0E9A1B2C3D /* PlaybackCoordinator.swift in Sources */,
 				8D6E7A972F4C4D0E9A1B2C3D /* MenuOptionPresentation.swift in Sources */,
+				8D6E7A9B2F4C4D0E9A1B2C3D /* MonitoringToggleController.swift in Sources */,
 				8D6E7A3B2F4C4D0E9A1B2C3D /* GlanceHoldApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

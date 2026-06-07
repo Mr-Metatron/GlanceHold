@@ -17,9 +17,17 @@ Server-pushed messages use the same protocol version and do not carry a request 
 
 The pushed stream is for menu/status freshness only. It does not trigger playback commands by itself. GlanceHold's Swift playback policy remains responsible for deciding when to hold speed, restore speed, pause, or resume.
 
+The plugin also adds `Toggle GlanceHold Monitoring` to IINA's Plugin menu with the Option-G key binding (`Alt+g`). This does not send playback commands. It broadcasts one id-less local event to connected GlanceHold clients:
+
+```json
+{"version":1,"type":"toggleMonitoringRequested"}
+```
+
+If GlanceHold is not running or no local client is connected, the menu action is a plugin-side no-op apart from a diagnostic log. The plugin does not launch GlanceHold.
+
 The plugin listens for IINA file-load/start events and mpv `pause`, `speed`, and `idle-active` property changes. A modest plugin-side fallback refresh helps recover from missed events; GlanceHold should not need one-second app-side polling for ordinary status updates.
 
-It does not proxy arbitrary mpv commands, shell commands, AppleScript, Accessibility actions, URL schemes, or media keys.
+It does not proxy arbitrary mpv commands, shell commands, AppleScript, Accessibility actions, URL schemes, app-launch requests, global hotkeys, or media keys.
 
 ## Install
 
@@ -51,4 +59,4 @@ Restart IINA after changing plugin files.
 
 ## Troubleshooting Status Updates
 
-If GlanceHold can send commands but the menu does not update after manual play, pause, speed, or idle changes, restart IINA after copying or linking the latest plugin files and confirm the GlanceHold Bridge plugin is enabled. The expected pushed message type is `statusChanged`; request/response messages for `snapshot`, `setSpeed`, `pause`, and `resume` still include request ids.
+If GlanceHold can send commands but the menu does not update after manual play, pause, speed, or idle changes, restart IINA after copying or linking the latest plugin files and confirm the GlanceHold Bridge plugin is enabled. The expected pushed message types are `statusChanged` and `toggleMonitoringRequested`; request/response messages for `snapshot`, `setSpeed`, `pause`, and `resume` still include request ids.

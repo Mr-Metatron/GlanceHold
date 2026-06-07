@@ -69,10 +69,11 @@ final class IINAPluginBridgeClientTests: XCTestCase {
         let client = IINAPluginBridgeClient(transport: transport)
 
         var iterator = client.monitoringToggleRequests().makeAsyncIterator()
-        let request = await iterator.next()
+        let request: Void? = await iterator.next()
+        let nextRequest: Void? = await iterator.next()
 
         XCTAssertNotNil(request)
-        XCTAssertNil(await iterator.next())
+        XCTAssertNil(nextRequest)
         XCTAssertEqual(transport.sentMessages.count, 0)
     }
 
@@ -125,10 +126,11 @@ final class IINAPluginBridgeClientTests: XCTestCase {
         let client = IINAPluginBridgeClient(transport: transport)
 
         var iterator = client.monitoringToggleRequests().makeAsyncIterator()
-        let request = await iterator.next()
+        let request: Void? = await iterator.next()
+        let nextRequest: Void? = await iterator.next()
 
         XCTAssertNotNil(request)
-        XCTAssertNil(await iterator.next())
+        XCTAssertNil(nextRequest)
         XCTAssertEqual(transport.sentMessages.count, 0)
     }
 

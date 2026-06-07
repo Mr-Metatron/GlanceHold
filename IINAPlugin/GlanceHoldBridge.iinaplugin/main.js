@@ -1,4 +1,4 @@
-const { console, core, event, mpv, ws } = iina;
+const { console, core, event, menu, mpv, ws } = iina;
 
 const protocolVersion = 1;
 const activeConnections = new Set();
@@ -40,6 +40,13 @@ function statusChangedMessage(snapshot) {
   });
 }
 
+function toggleMonitoringRequestedMessage() {
+  return JSON.stringify({
+    version: protocolVersion,
+    type: "toggleMonitoringRequested"
+  });
+}
+
 function sendStatusChanged(conn, snapshot) {
   ws.sendText(conn, statusChangedMessage(snapshot));
 }
@@ -73,6 +80,18 @@ function broadcastStatusChanged({ force = false } = {}) {
   lastBroadcastSnapshotKey = key;
   for (const conn of activeConnections) {
     sendStatusChanged(conn, snapshot);
+  }
+}
+
+function broadcastToggleMonitoringRequested() {
+  if (activeConnections.size === 0) {
+    console.log("GlanceHold bridge toggle requested with no active GlanceHold connection.");
+    return;
+  }
+
+  const message = toggleMonitoringRequestedMessage();
+  for (const conn of activeConnections) {
+    ws.sendText(conn, message);
   }
 }
 
@@ -176,6 +195,12 @@ registerStatusEvent("iina.window-did-close");
 registerStatusEvent("mpv.pause.changed");
 registerStatusEvent("mpv.speed.changed");
 registerStatusEvent("mpv.idle-active.changed");
+
+menu.addItem(menu.item(
+  "Toggle GlanceHold Monitoring",
+  broadcastToggleMonitoringRequested,
+  { keyBinding: "Alt+g" }
+));
 
 if (typeof setInterval === "function") {
   setInterval(() => broadcastStatusChanged(), 5000);

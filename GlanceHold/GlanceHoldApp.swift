@@ -4,13 +4,16 @@ import SwiftUI
 struct GlanceHoldApp: App {
     private let settingsStore: UserDefaultsAttentionSettingsStore
     private let monitor: AttentionMonitor
+    private let bridgeClient: IINAPluginBridgeClient
     @State private var glanceHoldState: GlanceHoldState
     @State private var playbackCoordinator: PlaybackCoordinator
 
     init() {
         let settingsStore = UserDefaultsAttentionSettingsStore()
         let loadedSettings = settingsStore.load()
+        let bridgeClient = IINAPluginBridgeClient(url: URL(string: "ws://127.0.0.1:47873")!)
         self.settingsStore = settingsStore
+        self.bridgeClient = bridgeClient
         self.monitor = AttentionMonitor(
             permissionProvider: CameraPermissionClient.live,
             settingsStore: settingsStore,
@@ -20,7 +23,7 @@ struct GlanceHoldApp: App {
         _glanceHoldState = State(initialValue: GlanceHoldState(mode: loadedSettings.mode, settings: loadedSettings))
         _playbackCoordinator = State(initialValue: PlaybackCoordinator(
             mode: loadedSettings.mode,
-            adapter: IINAPluginBridgeAdapter(client: IINAPluginBridgeClient(url: URL(string: "ws://127.0.0.1:47873")!))
+            adapter: IINAPluginBridgeAdapter(client: bridgeClient)
         ))
     }
 
@@ -29,6 +32,7 @@ struct GlanceHoldApp: App {
             GlanceHoldMenu(
                 state: $glanceHoldState,
                 monitor: monitor,
+                bridgeClient: bridgeClient,
                 playbackCoordinator: $playbackCoordinator
             )
         }
@@ -111,10 +115,12 @@ private enum MonitoringStopSource {
 private struct GlanceHoldMenu: View {
     @Binding var state: GlanceHoldState
     let monitor: AttentionMonitor
+    let bridgeClient: IINAPluginBridgeClienting
     @Binding var playbackCoordinator: PlaybackCoordinator
     @State private var permissionRequestID: UUID?
     @State private var playbackStatusStreamTask: Task<Void, Never>?
     @State private var playbackFallbackRefreshTask: Task<Void, Never>?
+    @State private var monitoringToggleRequestTask: Task<Void, Never>?
     @Environment(\.openWindow) private var openWindow
 
     private let permissionExplanation = "GlanceHold uses the camera only on this Mac to tell whether you are facing the screen. Frames are not saved or uploaded."
@@ -219,6 +225,7 @@ private struct GlanceHoldMenu: View {
 
             Button("Quit GlanceHold") {
                 stopPlaybackStatusUpdates()
+                stopMonitoringToggleRequestHandling()
                 monitor.stopMonitoring()
                 playbackCoordinator.stopMonitoring()
                 NSApplication.shared.terminate(nil)
@@ -227,6 +234,7 @@ private struct GlanceHoldMenu: View {
         .onAppear {
             installMonitorStateHandler()
             startPlaybackStatusUpdates()
+            startMonitoringToggleRequestHandling()
         }
     }
 
@@ -309,6 +317,11 @@ private struct GlanceHoldMenu: View {
         case .openCameraSettings:
             openCameraSettings()
         }
+    }
+
+    private func performMonitoringToggleRequest() {
+        let action = MonitoringToggleController.resolveAction(for: state)
+        performPrimaryAction(action)
     }
 
     private func enableMonitoring() {
@@ -494,6 +507,24 @@ private struct GlanceHoldMenu: View {
         }
     }
 
+    private func startMonitoringToggleRequestHandling() {
+        guard monitoringToggleRequestTask == nil else {
+            return
+        }
+
+        monitoringToggleRequestTask = Task {
+            for await _ in bridgeClient.monitoringToggleRequests() {
+                if Task.isCancelled {
+                    return
+                }
+
+                await MainActor.run {
+                    performMonitoringToggleRequest()
+                }
+            }
+        }
+    }
+
     private func stopPlaybackStatusUpdates() {
         playbackStatusStreamTask?.cancel()
         playbackFallbackRefreshTask?.cancel()
@@ -501,21 +532,26 @@ private struct GlanceHoldMenu: View {
         playbackFallbackRefreshTask = nil
     }
 
+    private func stopMonitoringToggleRequestHandling() {
+        monitoringToggleRequestTask?.cancel()
+        monitoringToggleRequestTask = nil
+    }
+
     private func replacePlaybackCoordinator(mode: MonitoringMode) {
         stopPlaybackStatusUpdates()
         playbackCoordinator.stateDidChange = nil
         playbackCoordinator.stopMonitoringRequested = nil
         playbackCoordinator.stopMonitoring()
-        playbackCoordinator = Self.makePlaybackCoordinator(mode: mode)
+        playbackCoordinator = makePlaybackCoordinator(mode: mode)
         state.playerStatus = nil
         installMonitorStateHandler()
         startPlaybackStatusUpdates()
     }
 
-    private static func makePlaybackCoordinator(mode: MonitoringMode) -> PlaybackCoordinator {
+    private func makePlaybackCoordinator(mode: MonitoringMode) -> PlaybackCoordinator {
         PlaybackCoordinator(
             mode: mode,
-            adapter: IINAPluginBridgeAdapter(client: IINAPluginBridgeClient(url: URL(string: "ws://127.0.0.1:47873")!))
+            adapter: IINAPluginBridgeAdapter(client: bridgeClient)
         )
     }
 
