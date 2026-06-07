@@ -72,7 +72,7 @@ final class GlanceHoldStateTests: XCTestCase {
 
         XCTAssertEqual(phrases, [
             "IINA Unavailable",
-            "IINA Plugin Needed",
+            "IINA Bridge Waiting",
             "IINA Idle",
             "IINA Paused",
             "IINA Playing",
@@ -95,9 +95,11 @@ final class GlanceHoldStateTests: XCTestCase {
         )
     }
 
-    func testPluginNeededStatusUsesExplicitPluginCopy() {
-        XCTAssertEqual(PlayerControlStatus.setupNeeded.visibleTitle, "IINA Plugin Needed")
+    func testSetupNeededStatusUsesNeutralBridgeWaitingCopy() {
+        XCTAssertEqual(PlayerControlStatus.setupNeeded.visibleTitle, "IINA Bridge Waiting")
         XCTAssertTrue(PlayerControlStatus.setupNeeded.detailText.contains("IINA plugin"))
+        XCTAssertTrue(PlayerControlStatus.setupNeeded.detailText.contains("Start IINA"))
+        XCTAssertTrue(PlayerControlStatus.setupNeeded.detailText.contains("load a video"))
     }
 
     func testPhase3StatusTitlesAreExact() {
