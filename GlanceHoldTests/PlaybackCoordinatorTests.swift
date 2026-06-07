@@ -56,6 +56,18 @@ final class PlaybackCoordinatorTests: XCTestCase {
         XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
     }
 
+    func testRefreshPlayerStateReadsSnapshotWithoutPlaybackCommand() async {
+        let adapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5)])
+        let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+
+        await coordinator.refreshPlayerState()
+
+        XCTAssertEqual(adapter.snapshotReadCount, 1)
+        XCTAssertTrue(coordinator.state.isPlayerControllable)
+        XCTAssertEqual(coordinator.state.playerSnapshot, .playing(speed: 1.5))
+        XCTAssertEqual(adapter.commands, [])
+    }
+
     func testPauseModeAwaySendsPause() async {
         let adapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5), .paused(speed: 1.5)])
         let coordinator = PlaybackCoordinator(mode: .pauseResume, adapter: adapter)
