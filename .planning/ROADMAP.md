@@ -2,7 +2,7 @@
 
 ## Overview
 
-GlanceHold v1 delivers a speed-first macOS status-bar utility for IINA. The roadmap starts with a trustworthy menu-bar shell, locks the attention and playback ownership rules in pure tests, connects local AVFoundation/Vision calibration, proves real IINA control, then hardens the end-to-end MVP with manual UAT and failure-state polish.
+GlanceHold v1 delivers a speed-first macOS status-bar utility for IINA. The roadmap starts with a trustworthy menu-bar shell, locks the attention and playback ownership rules in pure tests, connects local AVFoundation/Vision calibration, proves real IINA control, polishes control affordances with an IINA plugin shortcut and localization, then hardens the end-to-end MVP with manual UAT and failure-state polish.
 
 ## Phases
 
@@ -17,7 +17,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Pure Attention State Machine and Playback Policy** - The trust-critical attention debounce and playback ownership rules are deterministic and test-covered before side effects exist. (completed 2026-06-05)
 - [x] **Phase 3: Local Camera, Vision Signal, Calibration, and Tuning** - Users can calibrate and tune a local Vision-based attention signal that drives visible attention states. (completed 2026-06-06)
 - [x] **Phase 4: IINA Adapter Spike and End-to-End Playback Control** - GlanceHold controls real IINA playback for speed and pause modes through a validated adapter. (completed 2026-06-07)
-- [ ] **Phase 5: End-to-End UX Hardening and Manual UAT** - The MVP is safe to use across real camera/player failures, disable/quit flows, and manual acceptance checks.
+- [ ] **Phase 5: Control Polish, IINA Shortcut, and i18n** - Users can tune, toggle, and read GlanceHold more comfortably through checked menu controls, an IINA plugin monitoring shortcut, and English/Chinese localization.
+- [ ] **Phase 6: End-to-End UX Hardening and Manual UAT** - The MVP is safe to use across real camera/player failures, disable/quit flows, and manual acceptance checks.
 
 ## Phase Details
 
@@ -147,18 +148,34 @@ Plans:
 
 - [x] 04-10-PLAN.md — Stop app-level monitoring when Pause/Resume manual pause/takeover is detected.
 
-### Phase 5: End-to-End UX Hardening and Manual UAT
+### Phase 5: Control Polish, IINA Shortcut, and i18n
+
+**Goal:** Users can tune, toggle, and read GlanceHold more comfortably through checked menu controls, an IINA plugin monitoring shortcut, and complete English/Chinese localization for the v1 app surface.
+**Mode:** mvp
+**Depends on:** Phase 4
+**Requirements:** PREF-04, CONV-02, I18N-01, I18N-02
+**Success Criteria** (what must be TRUE):
+
+  1. Sensitivity/tuning menus visibly mark the currently selected option while preserving the existing checked mode-selection behavior.
+  2. User can start or stop monitoring from IINA using a GlanceHold plugin menu item/key binding, without adding macOS-wide hotkey permissions and without bypassing permission, calibration, manual pause, or playback ownership safety rules.
+  3. User-facing status-bar menu text, actions, status details, and alerts are routed through localization resources rather than scattered hard-coded strings.
+  4. English and Simplified Chinese localizations cover the v1 status-bar app surface, including monitoring status, IINA/player status, calibration/reset prompts, tuning labels, and shortcut copy.
+
+**Plans:** TBD
+**UI hint**: yes
+
+### Phase 6: End-to-End UX Hardening and Manual UAT
 
 **Goal:** The GlanceHold MVP is safe and clear enough for manual daily use across real camera, calibration, IINA, disable, and quit scenarios.
 **Mode:** mvp
-**Depends on:** Phase 4
+**Depends on:** Phase 5
 **Requirements:** SAFE-06, PREF-03, VER-03, VER-04
 **Success Criteria** (what must be TRUE):
 
   1. User can see the last meaningful action in the status-bar menu, such as Held speed at 1x, Restored speed, Paused by GlanceHold, Manual pause detected, or No action.
   2. Disabling or quitting GlanceHold stops monitoring and releases or best-effort restores owned playback interventions according to selected mode and known IINA state.
-  3. User can complete a manual verification checklist covering permission grant/deny, calibration success/failure, IINA open/closed/idle, Speed Control mode, Pause/Resume mode, manual pause, disable, and quit.
-  4. The macOS app builds successfully after the status-bar, camera/Vision, and IINA integration changes.
+  3. User can complete a manual verification checklist covering permission grant/deny, calibration success/failure, IINA open/closed/idle, Speed Control mode, Pause/Resume mode, manual pause, IINA plugin shortcut toggle, localization sanity, disable, and quit.
+  4. The macOS app builds successfully after the status-bar, camera/Vision, IINA integration, shortcut, and localization changes.
 
 **Plans:** TBD
 **UI hint**: yes
@@ -166,7 +183,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -174,4 +191,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 2. Pure Attention State Machine and Playback Policy | 2/2 | Complete   | 2026-06-05 |
 | 3. Local Camera, Vision Signal, Calibration, and Tuning | 3/3 | Complete   | 2026-06-06 |
 | 4. IINA Adapter Spike and End-to-End Playback Control | 10/10 | Complete   | 2026-06-07 |
-| 5. End-to-End UX Hardening and Manual UAT | 0/TBD | Not started | - |
+| 5. Control Polish, IINA Shortcut, and i18n | 0/TBD | Not started | - |
+| 6. End-to-End UX Hardening and Manual UAT | 0/TBD | Not started | - |

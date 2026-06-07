@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: phase_complete
-stopped_at: Phase 4 complete; ready for Phase 5 planning/execution
-last_updated: "2026-06-07T10:01:45.000Z"
-last_activity: 2026-06-07 -- Phase 4 closed after 04-10 live Test 7 retest passed
+stopped_at: Phase 5 context gathered
+last_updated: "2026-06-07T10:49:08.368Z"
+last_activity: 2026-06-07 -- Phase 5 shortcut scope changed from macOS global hotkey to IINA plugin menu/key binding bridge
 progress:
-  total_phases: 5
+  total_phases: 6
   completed_phases: 4
   total_plans: 18
   completed_plans: 18
-  percent: 80
+  percent: 67
 ---
 
 # Project State
@@ -21,17 +21,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-05)
 
 **Core value:** 当用户注意力离开屏幕时，GlanceHold 能可靠、克制地替用户处理视频速度或播放状态，并在用户回来时恢复到合适状态，且不误恢复用户手动暂停的视频。
-**Current focus:** Phase 05 — end-to-end UX hardening and manual UAT
+**Current focus:** Phase 05 — control polish, IINA shortcut, and i18n
 
 ## Current Position
 
-Phase: 05 (end-to-end-ux-hardening-and-manual-uat) — READY
+Phase: 05 (control-polish-iina-shortcut-and-i18n) — READY
 Plan: not planned yet
-Status: Phase 4 is complete; Phase 5 is the next open roadmap phase
-Last activity: 2026-06-07 -- Phase 4 live UAT Test 7 passed after 04-10 manual pause monitoring fix
+Status: Phase 4 is complete; Phase 5 is the next open roadmap phase; Phase 6 now holds final hardening and manual UAT
+Last activity: 2026-06-07 -- Phase 5 shortcut scope changed from macOS global hotkey to IINA plugin menu/key binding bridge
 
 Plan execution: [██████████] 100%
-Phase progress: [██████████] Phase 4 complete
+Phase progress: [███████░░░] 4/6 phases complete
 
 ## Performance Metrics
 
@@ -79,9 +79,18 @@ Phase progress: [██████████] Phase 4 complete
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- [Roadmap]: v1 is a vertical MVP with 5 coarse phases: menu-bar trust, pure policy, local Vision calibration, IINA control, and end-to-end hardening.
+- [Roadmap]: v1 is a vertical MVP with 6 coarse phases: menu-bar trust, pure policy, local Vision calibration, IINA control, control polish/i18n, and end-to-end hardening.
+- [Roadmap]: Phase 5 now covers sensitivity menu selected-state polish, IINA plugin monitoring shortcut, and full English/Chinese localization.
+- [Roadmap]: Phase 6 now carries final disable/quit cleanup, last-action feedback, manual UAT, and build verification.
 - [Roadmap]: Speed Control is the primary IINA mode; Pause/Resume remains secondary.
 - [Roadmap]: SemiUHPE remains out of v1 implementation.
+
+### Roadmap Evolution
+
+- Phase 6 added: End-to-End UX Hardening and Manual UAT.
+- Phase 5 edited: Control Polish, IINA Shortcut, and i18n.
+- Phase 5/6 split accepted by user on 2026-06-07 so shortcut/localization work can be planned separately from final MVP hardening.
+- Phase 5 shortcut scope revised on 2026-06-07: use the existing IINA plugin bridge/menu key binding path instead of a macOS-wide global hotkey.
 
 ### Pending Todos
 
@@ -90,7 +99,8 @@ None yet.
 ### Blockers/Concerns
 
 - [Phase 3]: Vision threshold tuning and pose sign/orientation require empirical checks on the target Mac/camera setup.
-- [Phase 5]: Next phase should harden disable/quit flows, last-action feedback, final manual checklist coverage, and build verification.
+- [Phase 5]: Next phase should add checked sensitivity/tuning menu state, an IINA plugin monitoring shortcut, and full English/Chinese localization.
+- [Phase 6]: Final hardening should cover disable/quit flows, last-action feedback, final manual checklist coverage, localization sanity, shortcut toggle sanity, and build verification.
 
 ### Quick Tasks Completed
 
@@ -107,12 +117,12 @@ Items acknowledged and carried forward from previous milestone close:
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
 | v2 players | Browser, VLC, QuickTime, and generic player support | Deferred | v1 roadmap |
-| v2 convenience | Launch at login, global hotkey, diagnostics window | Deferred | v1 roadmap |
+| v2 convenience | Launch at login and diagnostics window | Deferred | v1 roadmap |
 | v2 distribution | Signing, notarization, auto-update, App Store work | Deferred | v1 roadmap |
 | v2 model accuracy | SemiUHPE/model-based integration | Deferred | v1 roadmap |
 
 ## Session Continuity
 
-Last session: 2026-06-07T10:01:45.000Z
-Stopped at: Phase 4 complete; ready for Phase 5 planning/execution
-Resume file: .planning/ROADMAP.md
+Last session: 2026-06-07T10:49:08.363Z
+Stopped at: Phase 5 context gathered
+Resume file: .planning/phases/05-control-polish-iina-shortcut-and-i18n/05-CONTEXT.md

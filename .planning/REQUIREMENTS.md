@@ -59,6 +59,13 @@ Requirements for the first usable local release. Each maps to roadmap phases.
 - [x] **PREF-01**: GlanceHold persists selected mode, sensitivity/threshold, away delay, recovery delay, and last valid scalar calibration data across launches.
 - [x] **PREF-02**: GlanceHold exposes a clear reset/recalibration path for bad persisted calibration or settings.
 - [ ] **PREF-03**: Status bar menu shows the last meaningful action, such as Held speed at 1x, Restored 2x, Paused by GlanceHold, Manual pause detected, or No action.
+- [ ] **PREF-04**: Sensitivity and tuning menus visibly indicate the currently selected option, matching the existing checked mode-selection behavior.
+
+### IINA Plugin Convenience and Localization
+
+- [ ] **CONV-02**: User can start or stop monitoring from IINA through a GlanceHold plugin menu item/key binding without bypassing permission, calibration, manual pause, or playback ownership safety rules.
+- [ ] **I18N-01**: User-facing app strings are routed through localization resources rather than scattered hard-coded Swift literals.
+- [ ] **I18N-02**: English and Simplified Chinese localizations cover the v1 status-bar app surface, including actions, statuses, detail text, tuning labels, alerts, and shortcut copy.
 
 ### Verification
 
@@ -81,7 +88,6 @@ Deferred to future release. Tracked but not in current roadmap.
 ### Convenience
 
 - **CONV-01**: User can enable launch-at-login.
-- **CONV-02**: User can temporarily disable monitoring with a global hotkey.
 - **CONV-03**: User can open an optional diagnostics window with camera preview or pose debugging.
 
 ### Distribution
@@ -142,20 +148,24 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SAFE-03 | Phase 2 | Complete |
 | SAFE-04 | Phase 2 | Complete |
 | SAFE-05 | Phase 2 | Complete |
-| SAFE-06 | Phase 5 | Pending |
+| SAFE-06 | Phase 6 | Pending |
 | PREF-01 | Phase 3 | Complete |
 | PREF-02 | Phase 3 | Complete |
-| PREF-03 | Phase 5 | Pending |
+| PREF-03 | Phase 6 | Pending |
+| PREF-04 | Phase 5 | Pending |
+| CONV-02 | Phase 5 | Pending |
+| I18N-01 | Phase 5 | Pending |
+| I18N-02 | Phase 5 | Pending |
 | VER-01 | Phase 2 | Complete |
 | VER-02 | Phase 2 | Complete |
-| VER-03 | Phase 5 | Pending |
-| VER-04 | Phase 5 | Pending |
+| VER-03 | Phase 6 | Pending |
+| VER-04 | Phase 6 | Pending |
 
 **Coverage:**
-- v1 requirements: 39 total
-- Mapped to phases: 39
+- v1 requirements: 43 total
+- Mapped to phases: 43
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-06-05*
-*Last updated: 2026-06-07 after Phase 4 live UAT closeout*
+*Last updated: 2026-06-07 after Phase 5/6 roadmap split*
