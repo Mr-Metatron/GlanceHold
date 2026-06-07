@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 4 04-06 waiting for pushed IINA status stream live validation
-last_updated: "2026-06-07T05:07:54Z"
-last_activity: 2026-06-07 -- Phase 04 04-06 automated implementation complete; waiting for pushed-status live validation
+stopped_at: Phase 4 04-06 pushed IINA status stream approved; phase closeout validation remains
+last_updated: "2026-06-07T05:12:03Z"
+last_activity: 2026-06-07 -- Phase 04 04-06 pushed-status live validation approved
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 14
-  completed_plans: 13
+  completed_plans: 14
   percent: 60
 ---
 
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-06-05)
 
 Phase: 04 (iina-adapter-spike-and-end-to-end-playback-control) — EXECUTING
 Plan: 04-06
-Status: Waiting for pushed-status plugin bridge live validation
-Last activity: 2026-06-07 -- Phase 04 04-06 automated implementation complete; waiting for pushed-status live validation
+Status: Pushed-status live validation approved; ready for Phase 4 closeout verification
+Last activity: 2026-06-07 -- Phase 04 04-06 pushed-status live validation approved
 
 Progress: [██████████] 100%
 
@@ -85,7 +85,7 @@ None yet.
 ### Blockers/Concerns
 
 - [Phase 3]: Vision threshold tuning and pose sign/orientation require empirical checks on the target Mac/camera setup.
-- [Phase 4]: IINA plugin bridge is live-reachable; status freshness should move from temporary polling to plugin-pushed status events before Phase 4 closeout.
+- [Phase 4]: 04-06 push-first status freshness is approved; broader Phase 4 closeout still needs final checklist/verification pass.
 
 ### Quick Tasks Completed
 
@@ -108,5 +108,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-06-07T03:35:37.415Z
-Stopped at: Phase 4 04-06 waiting for pushed IINA status stream live validation
+Stopped at: Phase 4 04-06 pushed IINA status stream approved; phase closeout validation remains
 Resume file: .planning/phases/04-iina-adapter-spike-and-end-to-end-playback-control/04-CONTEXT.md
