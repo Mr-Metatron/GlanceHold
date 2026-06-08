@@ -52,7 +52,7 @@ Requirements for the first usable local release. Each maps to roadmap phases.
 - [x] **SAFE-03**: GlanceHold tracks whether it currently owns a pause before attempting to resume playback.
 - [x] **SAFE-04**: GlanceHold suppresses duplicate playback commands while an owned speed or pause intervention is already active.
 - [x] **SAFE-05**: Unknown, uncalibrated, ambiguous, denied-permission, camera-unavailable, or IINA-unavailable states produce safe no-op behavior.
-- [ ] **SAFE-06**: Disabling or quitting GlanceHold releases or best-effort restores owned playback interventions according to the selected mode and current known IINA state.
+- [x] **SAFE-06**: Disabling or quitting GlanceHold releases or best-effort restores owned playback interventions according to the selected mode and current known IINA state.
 
 ### Preferences and Feedback
 
@@ -148,7 +148,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SAFE-03 | Phase 2 | Complete |
 | SAFE-04 | Phase 2 | Complete |
 | SAFE-05 | Phase 2 | Complete |
-| SAFE-06 | Phase 6 | Pending |
+| SAFE-06 | Phase 6 | Complete |
 | PREF-01 | Phase 3 | Complete |
 | PREF-02 | Phase 3 | Complete |
 | PREF-03 | Phase 6 | Complete |

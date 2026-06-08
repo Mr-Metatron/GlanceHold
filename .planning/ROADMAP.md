@@ -197,7 +197,7 @@ Plans:
   3. User can complete a manual verification checklist covering permission grant/deny, calibration success/failure, IINA open/closed/idle, Speed Control mode, Pause/Resume mode, manual pause, IINA plugin shortcut toggle, localization sanity, disable, and quit.
   4. The macOS app builds successfully after the status-bar, camera/Vision, IINA integration, shortcut, and localization changes.
 
-**Plans:** 1/4 plans executed
+**Plans:** 2/4 plans executed
 **UI hint**: yes
 
 ## Progress
@@ -212,4 +212,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Local Camera, Vision Signal, Calibration, and Tuning | 3/3 | Complete   | 2026-06-06 |
 | 4. IINA Adapter Spike and End-to-End Playback Control | 10/10 | Complete   | 2026-06-07 |
 | 5. Control Polish, IINA Shortcut, and i18n | 5/5 | Complete   | 2026-06-08 |
-| 6. End-to-End UX Hardening and Manual UAT | 1/4 | In Progress|  |
+| 6. End-to-End UX Hardening and Manual UAT | 2/4 | In Progress|  |
