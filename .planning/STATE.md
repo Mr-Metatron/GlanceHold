@@ -4,8 +4,8 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Completed 06-03-PLAN.md
-last_updated: "2026-06-08T08:05:38.814Z"
-last_activity: 2026-06-08 -- Completed 06-03 user documentation and manual UAT scaffold
+last_updated: "2026-06-08T08:11:03.146Z"
+last_activity: 2026-06-08 -- Completed 06-04 automated closeout gates; waiting for live UAT
 progress:
   total_phases: 6
   completed_phases: 5
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-06-05)
 
 Phase: 06 (end-to-end-ux-hardening-and-manual-uat) — EXECUTING
 Plan: 06-04 final verification and closeout gate
-Status: Ready for Phase 06 wave 4
-Last activity: 2026-06-08 -- Completed 06-03 user documentation and manual UAT scaffold
+Status: Waiting for Phase 06 live real-camera plus real-IINA UAT
+Last activity: 2026-06-08 -- Completed 06-04 automated closeout gates; waiting for live UAT
 
 Plan execution: [██████████] 26/27 plans complete
 Phase progress: [████████░░] 5/6 phases complete
