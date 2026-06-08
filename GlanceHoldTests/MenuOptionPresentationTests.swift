@@ -51,6 +51,20 @@ final class MenuOptionPresentationTests: XCTestCase {
         XCTAssertEqual(MonitoringMode.pauseResume.displayName, GlanceHoldStrings.text(.modePauseResume))
     }
 
+    func testDefaultModeParentLabelIncludesCurrentMode() {
+        XCTAssertEqual(
+            ModeMenuPresentation.title(for: .speedControl),
+            "\(GlanceHoldStrings.text(.menuMode)): \(GlanceHoldStrings.text(.modeSpeedControl))"
+        )
+    }
+
+    func testAlternateModeParentLabelIncludesCurrentMode() {
+        XCTAssertEqual(
+            ModeMenuPresentation.title(for: .pauseResume),
+            "\(GlanceHoldStrings.text(.menuMode)): \(GlanceHoldStrings.text(.modePauseResume))"
+        )
+    }
+
     private func XCTAssertSingleSelection(
         _ options: [MenuOptionPresentation],
         expectedTitle: String,

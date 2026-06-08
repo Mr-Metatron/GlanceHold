@@ -48,8 +48,12 @@ final class GlanceHoldLocalizationTests: XCTestCase {
         XCTAssertEqual(GlanceHoldStrings.text(.playerSetupNeededTitle, localeIdentifier: "zh-Hans"), "IINA 桥接等待中")
 
         XCTAssertEqual(
-            GlanceHoldStrings.text(.privacyNote, localeIdentifier: "zh-Hans"),
-            "摄像头画面仅在本机处理，不会保存或上传。"
+            GlanceHoldStrings.text(.privacyPermissionExplanation, localeIdentifier: "en"),
+            "GlanceHold uses the camera to calibrate your facing-screen pose."
+        )
+        XCTAssertEqual(
+            GlanceHoldStrings.text(.privacyPermissionExplanation, localeIdentifier: "zh-Hans"),
+            "GlanceHold 使用摄像头校准你正对屏幕的姿态。"
         )
     }
 
@@ -70,9 +74,41 @@ final class GlanceHoldLocalizationTests: XCTestCase {
         let simplifiedChinese = try String(contentsOf: infoPlistStringsURL(language: "zh-Hans"), encoding: .utf8)
 
         XCTAssertTrue(english.contains("NSCameraUsageDescription"))
-        XCTAssertTrue(english.contains("processed only on this Mac"))
+        XCTAssertTrue(english.contains("uses the camera to detect whether you are facing the screen"))
+        XCTAssertFalse(english.contains("processed only on this Mac"))
+        XCTAssertFalse(english.contains("not saved"))
+        XCTAssertFalse(english.contains("uploaded"))
         XCTAssertTrue(simplifiedChinese.contains("NSCameraUsageDescription"))
-        XCTAssertTrue(simplifiedChinese.contains("仅在本机处理"))
+        XCTAssertTrue(simplifiedChinese.contains("使用摄像头判断你是否正对屏幕"))
+        XCTAssertFalse(simplifiedChinese.contains("仅在本机处理"))
+        XCTAssertFalse(simplifiedChinese.contains("不会保存"))
+        XCTAssertFalse(simplifiedChinese.contains("不会上传"))
+    }
+
+    func testPlayerDetailCopyDoesNotRepeatNoCommandAssurances() {
+        let details = [
+            GlanceHoldStrings.text(.playerIdleDetail, localeIdentifier: "en"),
+            GlanceHoldStrings.text(.playerNotControllableDetail, localeIdentifier: "en"),
+            GlanceHoldStrings.text(.playerIdleDetail, localeIdentifier: "zh-Hans"),
+            GlanceHoldStrings.text(.playerNotControllableDetail, localeIdentifier: "zh-Hans")
+        ]
+
+        XCTAssertFalse(details.contains { $0.contains("No playback command will be sent") })
+        XCTAssertFalse(details.contains { $0.contains("不会发送播放命令") })
+    }
+
+    func testAppSurfacePrivacyCopyStaysPurposeFocused() {
+        let visibleAppSurfaceStrings = [
+            GlanceHoldStrings.text(.privacyPermissionExplanation, localeIdentifier: "en"),
+            GlanceHoldStrings.text(.privacyNote, localeIdentifier: "en"),
+            GlanceHoldStrings.text(.aboutPrivacyBody, localeIdentifier: "en"),
+            GlanceHoldStrings.text(.privacyPermissionExplanation, localeIdentifier: "zh-Hans"),
+            GlanceHoldStrings.text(.privacyNote, localeIdentifier: "zh-Hans"),
+            GlanceHoldStrings.text(.aboutPrivacyBody, localeIdentifier: "zh-Hans")
+        ]
+
+        XCTAssertTrue(visibleAppSurfaceStrings.contains { $0.contains("camera") || $0.contains("摄像头") })
+        XCTAssertNoRedundantPrivacyAssurance(in: visibleAppSurfaceStrings)
     }
 
     func testIINAPluginUsesLocalizedShortcutLabelAndRejectsUnauthenticatedRequests() throws {
@@ -99,5 +135,26 @@ final class GlanceHoldLocalizationTests: XCTestCase {
             .deletingLastPathComponent()
             .deletingLastPathComponent()
             .appendingPathComponent(relativePath)
+    }
+
+    private func XCTAssertNoRedundantPrivacyAssurance(
+        in strings: [String],
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let redundantPhrases = [
+            "processed only on this Mac",
+            "not saved",
+            "uploaded",
+            "仅在本机处理",
+            "不会保存",
+            "不会上传"
+        ]
+
+        for string in strings {
+            for phrase in redundantPhrases {
+                XCTAssertFalse(string.contains(phrase), "\(phrase) should not appear in \(string)", file: file, line: line)
+            }
+        }
     }
 }
