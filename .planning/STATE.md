@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
+status: executing
 stopped_at: Phase 6 UI-SPEC approved
-last_updated: "2026-06-08T05:37:56.079Z"
-last_activity: 2026-06-08 -- Completed Phase 5 UAT gap closure
+last_updated: "2026-06-08T05:53:24.492Z"
+last_activity: 2026-06-08 -- Phase 06 planning complete
 progress:
   total_phases: 6
   completed_phases: 5
-  total_plans: 23
+  total_plans: 27
   completed_plans: 23
   percent: 83
 ---
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-06-05)
 
 Phase: 06 (end-to-end-ux-hardening-and-manual-uat) — NEXT
 Plan: Phase 6 planning next
-Status: Phase 5 gap closure is complete. Automated verification passed; live IINA shortcut/menu/localization check remains recorded as `human-needed` for Phase 6 manual retest.
-Last activity: 2026-06-08 -- Completed Phase 5 UAT gap closure
+Status: Ready to execute
+Last activity: 2026-06-08 -- Phase 06 planning complete
 
 Plan execution: [██████████] 23/23 plans complete
 Phase progress: [████████░░] 5/6 phases complete
