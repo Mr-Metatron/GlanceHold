@@ -20,6 +20,18 @@ The v1.0 planning archive lives in `.planning/milestones/`:
 - `v1.0-REQUIREMENTS.md`
 - `v1.0-MILESTONE-AUDIT.md`
 
+## Current Milestone: v1.1 Runtime Reliability and Power Budget
+
+**Goal:** Make GlanceHold reliable, quiet, diagnosable, and power-conscious during long real-world IINA viewing sessions.
+
+**Target features:**
+
+- Structured runtime logging and diagnostics with levels, session IDs, state-machine transition breadcrumbs, and low-frequency metrics summaries.
+- Power hot-path control for camera/Vision sampling, duplicate attention notifications, and redundant playback snapshots.
+- Playback ownership safety so stop, quit, and mode changes invalidate in-flight playback tasks before they can control IINA.
+- Attention semantics and calibration robustness fixes for transient unavailable signals, confirmation failures, reset calibration, settings validation, and stable-window calibration.
+- IINA bridge security and legacy backend boundary cleanup, with final stress and live-use verification.
+
 ## Requirements
 
 ### Validated
@@ -41,8 +53,10 @@ The v1.0 planning archive lives in `.planning/milestones/`:
 
 ### Active
 
-- [ ] Start the next milestone with `$gsd-new-milestone` before adding new implementation scope.
-- [ ] Decide whether v1.1 should focus on distribution/signing/notarization, launch-at-login and diagnostics, broader player support, or model accuracy.
+- [ ] v1.1 Runtime Reliability and Power Budget requirements are defined in `.planning/REQUIREMENTS.md`.
+- [ ] v1.1 roadmap continues from Phase 7 and prioritizes logging/diagnostics before power and ownership changes.
+- [ ] User-observed ~5W extra power draw during monitoring is treated as a primary regression target for v1.1.
+- [ ] Staff review findings are triaged into implementation phases without expanding scope into distribution or broader player support.
 
 ### Out of Scope
 
@@ -63,14 +77,19 @@ The first real product direction has been validated: while watching IINA at 2x o
 
 Milestone closeout stats: 6 phases, 27 plans, 43/43 v1 requirements complete, 6/6 phase verification artifacts passed, and about 7,198 lines across tracked Swift/JavaScript/Markdown source and planning files excluding `SemiUHPE/`.
 
+The v1.1 milestone is driven by two inputs: the user's real-use observation that monitoring can add roughly 5W of power draw, and a staff-engineer code review of the current runtime orchestration. The review found credible risks around every-frame state notifications, full-frame-rate Vision analysis, playback snapshots triggered by duplicate attention states, unstructured playback tasks that survive stop/mode changes, transient unavailable signals bypassing recovery delay, short calibration windows, reset-calibration data loss, and IINA bridge authentication gaps.
+
 ## Next Milestone Goals
 
-Candidate directions for the next milestone:
+v1.1 focuses on runtime hardening before adding product surface area:
 
-- Distribution readiness: signing, notarization, install packaging, and update strategy.
-- Convenience: launch-at-login, better diagnostics, and optional troubleshooting surfaces.
-- Broader playback support: browser video, VLC, QuickTime, or per-player behavior profiles.
-- Detection quality: improved calibration/threshold guidance or evaluated model-based accuracy work, while keeping `SemiUHPE/` reference-only unless licensing and distribution risks are resolved.
+- Default-quiet structured logging and diagnostic metrics that can explain occasional state-machine or playback-control surprises.
+- Lower-power monitoring through sampling, semantic notification deduplication, and snapshot throttling.
+- Strong playback ownership boundaries for stop, quit, mode switch, command confirmation, and manual takeover paths.
+- More conservative attention recovery and calibration semantics, backed by deterministic tests.
+- IINA bridge authentication cleanup and clear production/legacy backend boundaries.
+
+Deferred directions remain: distribution readiness, launch-at-login convenience, broader player support, and model-based accuracy work.
 
 ## Constraints
 
@@ -97,6 +116,9 @@ Candidate directions for the next milestone:
 | Respect manual pause but continue auto-managing speed | User explicitly wants pause protection first; speed can stay under GlanceHold control during monitoring | Validated by tests and final UAT |
 | Implement both startup calibration and menu-adjustable thresholds | Calibration handles camera/screen geometry; manual tuning handles edge cases | Validated in Phase 3 and final UAT |
 | Keep SemiUHPE out of v1 implementation | It is useful reference material but creates licensing, dependency, and performance risk | Maintained through v1 |
+| Prioritize runtime reliability and power before new product features in v1.1 | The current MVP works, but user-observed power draw and review findings threaten trust during long viewing sessions | Pending v1.1 |
+| Make logging default-quiet but state-machine-rich when diagnostics are enabled | Normal users should not see log spam, while occasional state/playback bugs need breadcrumbs that survive after the fact | Pending v1.1 |
+| Continue roadmap phase numbering from Phase 7 | v1.0 phases remain historical context and v1.1 can continue without directory collisions | Pending v1.1 |
 
 ## Evolution
 
@@ -116,4 +138,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-08 after v1.0 milestone closeout*
+*Last updated: 2026-06-09 after starting v1.1 Runtime Reliability and Power Budget*

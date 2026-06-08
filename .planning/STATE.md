@@ -1,34 +1,33 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: MVP
-status: Awaiting next milestone
-stopped_at: Completed 06-04-PLAN.md
-last_updated: "2026-06-08T12:38:15.932Z"
-last_activity: 2026-06-08 — Milestone v1.0 completed and archived
+milestone: v1.1
+milestone_name: Runtime Reliability and Power Budget
+status: planning
+last_updated: "2026-06-09T00:41:19+08:00"
+last_activity: 2026-06-09 — Milestone v1.1 requirements and roadmap created
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 27
-  completed_plans: 27
-  percent: 100
+  total_phases: 5
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-08 after v1.0 closeout)
+See: .planning/PROJECT.md (updated 2026-06-09 after starting v1.1)
 
 **Core value:** 当用户注意力离开屏幕时，GlanceHold 能可靠、克制地替用户处理视频速度或播放状态，并在用户回来时恢复到合适状态，且不误恢复用户手动暂停的视频。
-**Current focus:** Planning next milestone
+**Current focus:** v1.1 Runtime Reliability and Power Budget
 
 ## Current Position
 
-Phase: Milestone v1.0 complete
+Phase: 7 — Structured Runtime Logging and Diagnostics Foundation
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-06-08 — Milestone v1.0 completed and archived
+Status: Roadmap defined; ready to discuss or plan Phase 7
+Last activity: 2026-06-09 — Milestone v1.1 requirements and roadmap created
 
 ## Performance Metrics
 
@@ -92,9 +91,17 @@ Recent decisions affecting current work:
 - [Roadmap]: Phase 6 now carries final disable/quit cleanup, last-action feedback, manual UAT, and build verification.
 - [Roadmap]: Speed Control is the primary IINA mode; Pause/Resume remains secondary.
 - [Roadmap]: SemiUHPE remains out of v1 implementation.
+- [Roadmap]: v1.1 prioritizes runtime reliability, power budget, and diagnostics before distribution or player expansion.
+- [Roadmap]: v1.1 continues numbering from Phase 7 and starts with logging/metrics so power and ownership fixes are measurable.
 
 ### Roadmap Evolution
 
+- v1.1 added: Runtime Reliability and Power Budget with phases 7-11.
+- Phase 7 added: Structured Runtime Logging and Diagnostics Foundation.
+- Phase 8 added: Power Hot Path Sampling and Notification Deduplication.
+- Phase 9 added: Playback Coordinator Ownership and Async Safety.
+- Phase 10 added: Attention Semantics, Calibration Robustness, and Settings Validation.
+- Phase 11 added: IINA Bridge Security, Legacy Boundary, and Reliability Verification.
 - Phase 6 added: End-to-End UX Hardening and Manual UAT.
 - Phase 5 edited: Control Polish, IINA Shortcut, and i18n.
 - Phase 5/6 split accepted by user on 2026-06-07 so shortcut/localization work can be planned separately from final MVP hardening.
@@ -109,6 +116,9 @@ None yet.
 - [Phase 3]: Vision threshold tuning and pose sign/orientation require empirical checks on the target Mac/camera setup.
 - [Phase 5]: Live IINA shortcut/menu/localization check was carried forward and smoke-retested in Phase 6 UAT.
 - [Phase 6]: Final hardening covered disable/quit flows, last-action feedback, final manual checklist coverage, localization sanity, shortcut toggle sanity, and build verification.
+- [v1.1]: User observed roughly 5W additional power draw during real monitoring; Phase 8 and Phase 11 must verify before/after behavior.
+- [v1.1]: Logging must be default-quiet and privacy-safe; diagnostic mode may add detail but must not store frames or upload visual data.
+- [v1.1]: Bridge token/pairing strategy needs an explicit design choice before implementation.
 
 ### Quick Tasks Completed
 
@@ -132,10 +142,10 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-08T08:26:41.248Z
-Stopped at: Completed 06-04-PLAN.md
+Last session: 2026-06-09T00:41:19+08:00
+Stopped at: v1.1 milestone initialized
 Resume file: None
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Discuss Phase 7 with /gsd-discuss-phase 7, or plan it directly with /gsd-plan-phase 7.

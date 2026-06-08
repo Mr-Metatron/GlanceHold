@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1-6 (shipped 2026-06-08) — [archive](milestones/v1.0-ROADMAP.md)
-- 📋 **Next milestone** — define with `$gsd-new-milestone`
+- 📋 **v1.1 Runtime Reliability and Power Budget** — Phases 7-11 (planned 2026-06-09)
 
 ## Phases
 
@@ -19,6 +19,91 @@
 
 </details>
 
+<details open>
+<summary>📋 v1.1 Runtime Reliability and Power Budget (Phases 7-11) — PLANNED</summary>
+
+- [ ] Phase 7: Structured Runtime Logging and Diagnostics Foundation
+- [ ] Phase 8: Power Hot Path Sampling and Notification Deduplication
+- [ ] Phase 9: Playback Coordinator Ownership and Async Safety
+- [ ] Phase 10: Attention Semantics, Calibration Robustness, and Settings Validation
+- [ ] Phase 11: IINA Bridge Security, Legacy Boundary, and Reliability Verification
+
+</details>
+
+## v1.1 Phase Details
+
+### Phase 7: Structured Runtime Logging and Diagnostics Foundation
+
+**Goal:** Add default-quiet, structured runtime observability before changing the hot paths, so later power and playback fixes are measurable and occasional bugs leave useful breadcrumbs.
+
+**Requirements:** OBS-01, OBS-02, OBS-03, OBS-04, OBS-05
+
+**Success criteria:**
+
+1. Normal monitoring does not emit per-frame or repeated stable-state logs at default levels.
+2. Logs include a monitoring session identifier and sequence that can connect camera, attention, playback, and bridge events.
+3. Attention state-machine transitions are logged only on meaningful transitions or diagnostic mode, with enough fields to explain recovery and playback emission decisions.
+4. Stop or periodic summaries report frames received/analyzed, analyzer rate, semantic transitions, playback snapshots, commands, dropped samples, and analysis latency.
+5. High-detail diagnostics can be enabled for targeted debugging without changing default user behavior.
+
+### Phase 8: Power Hot Path Sampling and Notification Deduplication
+
+**Goal:** Reduce the user-observed power overhead by decoupling camera frame rate from Vision analysis and ensuring stable attention states do not trigger repeated playback work.
+
+**Requirements:** PWR-01, PWR-02, PWR-03, PWR-04
+
+**Success criteria:**
+
+1. Stable facing monitoring analyzes at a bounded low rate rather than every delivered camera frame.
+2. Repeated identical attention states do not emit duplicate playback semantic notifications.
+3. Stable-state playback snapshot and WebSocket round-trip counts are bounded by semantic changes or explicit low-frequency refresh.
+4. Fake 30fps input tests assert analyzer, notification, snapshot, and command upper bounds.
+5. Runtime metrics from Phase 7 show the expected reductions during tests.
+
+### Phase 9: Playback Coordinator Ownership and Async Safety
+
+**Goal:** Make playback side effects serial, session-bound, and invalidated by stop, quit, and mode replacement so old tasks cannot control IINA after monitoring is no longer active.
+
+**Requirements:** PLAY-01, PLAY-02, PLAY-03, PLAY-04
+
+**Success criteria:**
+
+1. Playback coordinator mutable state is isolated through actor, main-actor, or a serial executor.
+2. Stop, quit, and mode replacement invalidate in-flight `handleAttentionState` work before any command or callback can run.
+3. Command success plus transient confirmation snapshot failure preserves GlanceHold ownership until a trusted follow-up snapshot or bounded retry resolves it.
+4. Manual pause, play, and speed takeover still stop monitoring without restore/resume side effects.
+5. Delayed fake adapter tests cover stop-during-snapshot, stop-during-execute, mode replacement, and confirmation failure paths.
+
+### Phase 10: Attention Semantics, Calibration Robustness, and Settings Validation
+
+**Goal:** Tighten the pure attention and calibration rules that can cause premature recovery, false high-quality calibration, or settings-driven instability.
+
+**Requirements:** ATT-01, ATT-02, ATT-03, ATT-04, ATT-05, ATT-06
+
+**Success criteria:**
+
+1. `lookingAway -> ambiguous/unknown -> facing` cannot jump directly to `facing`; it must satisfy recovery delay.
+2. Short transient unavailable signals are distinct from sustained unavailable state.
+3. Reset Calibration removes only calibration and preserves mode, sensitivity, thresholds, and delays.
+4. Calibration acceptance requires a stable window with minimum sample count and duration, not just a three-frame micro-window.
+5. Calibration diagnostics expose selected window duration and continue to avoid storing or logging camera frames.
+6. Settings load validates or migrates unsafe persisted values into bounded safe ranges.
+
+### Phase 11: IINA Bridge Security, Legacy Boundary, and Reliability Verification
+
+**Goal:** Close the milestone by tightening the bridge trust boundary, clarifying the legacy MPV backend, and verifying the whole runtime with automated stress tests plus real IINA/camera use.
+
+**Requirements:** PWR-05, BRDG-01, BRDG-02, BRDG-03, BRDG-04, VER-01, VER-02
+
+**Success criteria:**
+
+1. Unauthenticated IINA bridge connections do not receive current status, statusChanged events, or toggle events.
+2. Command authorization uses a connection-level handshake or documented per-install/pairing strategy rather than relying on an unauthenticated subscription path.
+3. Bridge security behavior is covered by protocol-level tests.
+4. Legacy MPV IPC is either removed from production or isolated as experimental with shared mapping and clear comments/tests.
+5. Full regression coverage includes concurrency, high-frequency input, attention semantics, calibration windows, settings validation, and bridge auth.
+6. Manual UAT covers real IINA playback, real camera monitoring, disable/quit cleanup, diagnostic log capture, and before/after power observation.
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -29,11 +114,16 @@
 | 4. IINA Adapter Spike and End-to-End Playback Control | v1.0 | 10/10 | Complete | 2026-06-07 |
 | 5. Control Polish, IINA Shortcut, and i18n | v1.0 | 5/5 | Complete | 2026-06-08 |
 | 6. End-to-End UX Hardening and Manual UAT | v1.0 | 4/4 | Complete | 2026-06-08 |
+| 7. Structured Runtime Logging and Diagnostics Foundation | v1.1 | 0/? | Planned | — |
+| 8. Power Hot Path Sampling and Notification Deduplication | v1.1 | 0/? | Planned | — |
+| 9. Playback Coordinator Ownership and Async Safety | v1.1 | 0/? | Planned | — |
+| 10. Attention Semantics, Calibration Robustness, and Settings Validation | v1.1 | 0/? | Planned | — |
+| 11. IINA Bridge Security, Legacy Boundary, and Reliability Verification | v1.1 | 0/? | Planned | — |
 
 ## Next
 
-Start the next requirements and roadmap cycle with:
+Start Phase 7 planning with:
 
 ```bash
-$gsd-new-milestone
+$gsd-discuss-phase 7
 ```
