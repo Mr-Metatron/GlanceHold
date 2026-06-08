@@ -7,6 +7,8 @@ final class GlanceHoldStateTests: XCTestCase {
 
         XCTAssertEqual(state.status.visibleTitle, GlanceHoldStrings.text(.monitoringOffTitle))
         XCTAssertNil(state.playerStatus)
+        XCTAssertNil(state.lastAction)
+        XCTAssertNil(state.lastActionMenuText)
     }
 
     func testEnablingMonitoringWithoutPermissionResolutionDoesNotBecomeActive() {
@@ -36,6 +38,53 @@ final class GlanceHoldStateTests: XCTestCase {
         XCTAssertFalse(state.isMonitoringActive)
         XCTAssertEqual(GlanceHoldPrimaryAction.resolve(for: state.status, hasCalibration: true), .enable)
         XCTAssertEqual(state.playerStatus, .playing)
+        XCTAssertEqual(state.lastAction, .manualPauseDetected)
+    }
+
+    func testReadinessAndPlayerStatusChurnDoNotRecordLastAction() {
+        var state = GlanceHoldState()
+
+        state.apply(monitorState: .needsCalibration)
+        state.apply(monitorState: .facing)
+        state.apply(playerControlState: .unavailable)
+        state.apply(playerControlState: PlaybackCoordinatorState(isPlayerControllable: true, playerSnapshot: .playing(speed: 1.25)))
+
+        XCTAssertNil(state.lastAction)
+    }
+
+    func testNewMonitoringSessionClearsPriorLastAction() {
+        var state = GlanceHoldState(status: .off)
+        state.recordLastAction(.restoredSpeed(2.0))
+
+        state.enableMonitoring()
+
+        XCTAssertNil(state.lastAction)
+        XCTAssertNil(state.lastActionMenuText)
+    }
+
+    func testLastActionMenuCopyUsesCompactPlaybackAndSafetyText() {
+        var state = GlanceHoldState()
+
+        state.recordLastAction(.heldSpeedAtOne)
+        XCTAssertEqual(state.lastActionMenuText, "Last Action: Held speed at 1x")
+
+        state.recordLastAction(.restoredSpeed(2.0))
+        XCTAssertEqual(state.lastActionMenuText, "Last Action: Restored speed to 2x")
+
+        state.recordLastAction(.restoredSpeed(1.25))
+        XCTAssertEqual(state.lastActionMenuText, "Last Action: Restored speed to 1.25x")
+
+        state.recordLastAction(.pausedByGlanceHold)
+        XCTAssertEqual(state.lastActionMenuText, "Last Action: Paused by GlanceHold")
+
+        state.recordLastAction(.resumedPlayback)
+        XCTAssertEqual(state.lastActionMenuText, "Last Action: Resumed playback")
+
+        state.recordLastAction(.manualPauseDetected)
+        XCTAssertEqual(state.lastActionMenuText, "Last Action: Manual pause detected")
+
+        state.recordLastAction(.stoppedMonitoring)
+        XCTAssertEqual(state.lastActionMenuText, "Last Action: Stopped monitoring")
     }
 
     func testModeSelectionReportsExactVisibleModeNames() {

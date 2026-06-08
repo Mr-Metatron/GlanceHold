@@ -5,10 +5,13 @@ final class PlaybackCoordinatorTests: XCTestCase {
     func testAwaySendsOneHoldSpeedCommand() async throws {
         let adapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5), .playing(speed: 1.0)])
         let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+        var completedActions: [PlaybackCompletedAction] = []
+        coordinator.playbackActionDidComplete = { completedActions.append($0) }
 
         await coordinator.handleAttentionState(.lookingAway)
 
         XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
+        XCTAssertEqual(completedActions, [.heldSpeedAtOne])
     }
 
     func testRecoveryRestoresCapturedSpeedAfterFreshSnapshot() async throws {
@@ -21,11 +24,26 @@ final class PlaybackCoordinatorTests: XCTestCase {
             ]
         )
         let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+        var completedActions: [PlaybackCompletedAction] = []
+        coordinator.playbackActionDidComplete = { completedActions.append($0) }
 
         await coordinator.handleAttentionState(.lookingAway)
         await coordinator.handleAttentionState(.facing)
 
         XCTAssertEqual(adapter.commands, [.holdSpeedAtOne, .restoreSpeed(1.25)])
+        XCTAssertEqual(completedActions, [.heldSpeedAtOne, .restoredSpeed(1.25)])
+    }
+
+    func testFailedConfirmationDoesNotEmitCompletedPlaybackAction() async {
+        let adapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5), .playing(speed: 1.5)])
+        let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+        var completedActions: [PlaybackCompletedAction] = []
+        coordinator.playbackActionDidComplete = { completedActions.append($0) }
+
+        await coordinator.handleAttentionState(.lookingAway)
+
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
+        XCTAssertEqual(completedActions, [])
     }
 
     func testUnavailableIdleAndMissingSpeedSendNoCommand() async {
@@ -97,10 +115,13 @@ final class PlaybackCoordinatorTests: XCTestCase {
     func testPauseModeAwaySendsPause() async {
         let adapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5), .paused(speed: 1.5)])
         let coordinator = PlaybackCoordinator(mode: .pauseResume, adapter: adapter)
+        var completedActions: [PlaybackCompletedAction] = []
+        coordinator.playbackActionDidComplete = { completedActions.append($0) }
 
         await coordinator.handleAttentionState(.lookingAway)
 
         XCTAssertEqual(adapter.commands, [.pause])
+        XCTAssertEqual(completedActions, [.pausedByGlanceHold])
     }
 
     func testPauseModeFacingResumesOnlyAfterFreshPausedSnapshot() async {
@@ -113,12 +134,15 @@ final class PlaybackCoordinatorTests: XCTestCase {
             ]
         )
         let coordinator = PlaybackCoordinator(mode: .pauseResume, adapter: adapter)
+        var completedActions: [PlaybackCompletedAction] = []
+        coordinator.playbackActionDidComplete = { completedActions.append($0) }
 
         await coordinator.handleAttentionState(.lookingAway)
         await coordinator.handleAttentionState(.facing)
 
         XCTAssertEqual(adapter.commands, [.pause, .resume])
         XCTAssertEqual(adapter.snapshotReadCount, 4)
+        XCTAssertEqual(completedActions, [.pausedByGlanceHold, .resumedPlayback])
     }
 
     func testManualTakeoverStopsMonitoringWithoutRestoreOrResume() async {

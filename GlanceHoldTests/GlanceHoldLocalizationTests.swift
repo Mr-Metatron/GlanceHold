@@ -55,6 +55,23 @@ final class GlanceHoldLocalizationTests: XCTestCase {
             GlanceHoldStrings.text(.privacyPermissionExplanation, localeIdentifier: "zh-Hans"),
             "GlanceHold 使用摄像头校准你正对屏幕的姿态。"
         )
+
+        XCTAssertEqual(
+            GlanceHoldStrings.format(.menuLastActionFormat, "Held speed at 1x", localeIdentifier: "en"),
+            "Last Action: Held speed at 1x"
+        )
+        XCTAssertEqual(
+            GlanceHoldStrings.format(.menuLastActionFormat, "已将速度保持在 1x", localeIdentifier: "zh-Hans"),
+            "上次操作：已将速度保持在 1x"
+        )
+        XCTAssertEqual(
+            GlanceHoldStrings.format(.lastActionRestoredSpeed, "2x", localeIdentifier: "en"),
+            "Restored speed to 2x"
+        )
+        XCTAssertEqual(
+            GlanceHoldStrings.format(.lastActionRestoredSpeed, "2x", localeIdentifier: "zh-Hans"),
+            "已恢复速度到 2x"
+        )
     }
 
     func testCompactDelayFormattingIsLocalized() {
