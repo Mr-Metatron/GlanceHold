@@ -1,11 +1,11 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-milestone_name: milestone
-status: milestone_complete
-stopped_at: Milestone complete (Phase 06 was final phase)
-last_updated: 2026-06-08T12:19:51Z
-last_activity: 2026-06-08 -- Normalized legacy GSD open-item metadata after Phase 06 completion
+milestone_name: MVP
+status: Awaiting next milestone
+stopped_at: Completed 06-04-PLAN.md
+last_updated: "2026-06-08T12:38:15.932Z"
+last_activity: 2026-06-08 — Milestone v1.0 completed and archived
 progress:
   total_phases: 6
   completed_phases: 6
@@ -18,20 +18,17 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-05)
+See: .planning/PROJECT.md (updated 2026-06-08 after v1.0 closeout)
 
 **Core value:** 当用户注意力离开屏幕时，GlanceHold 能可靠、克制地替用户处理视频速度或播放状态，并在用户回来时恢复到合适状态，且不误恢复用户手动暂停的视频。
-**Current focus:** Milestone complete
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 06
-Plan: All milestone plans complete
-Status: Milestone complete
-Last activity: 2026-06-08 -- Completed Phase 06 final verification and live UAT
-
-Plan execution: [██████████] 27/27 plans complete
-Phase progress: [██████████] 6/6 phases complete
+Phase: Milestone v1.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-08 — Milestone v1.0 completed and archived
 
 ## Performance Metrics
 
@@ -138,3 +135,7 @@ Items acknowledged and carried forward from previous milestone close:
 Last session: 2026-06-08T08:26:41.248Z
 Stopped at: Completed 06-04-PLAN.md
 Resume file: None
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone

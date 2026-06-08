@@ -17,7 +17,7 @@ Requirements for the first usable local release. Each maps to roadmap phases.
 
 ### Privacy and Permissions
 
-- [ ] **PRIV-01**: User is prompted for camera permission only as part of an explicit monitoring/calibration action.
+- [x] **PRIV-01**: User is prompted for camera permission only as part of an explicit monitoring/calibration action.
 - [x] **PRIV-02**: User can understand from app/menu copy that camera processing is local-only.
 - [x] **PRIV-03**: GlanceHold does not upload, store, or persist camera frames, screenshots, face images, or video clips.
 - [x] **PRIV-04**: If camera permission is denied or camera capture is unavailable, GlanceHold shows a recoverable status and sends no playback commands.
@@ -122,7 +122,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | APP-03 | Phase 1 | Complete |
 | APP-04 | Phase 1 | Complete |
 | APP-05 | Phase 1 | Complete |
-| PRIV-01 | Phase 1 | Pending |
+| PRIV-01 | Phase 1 | Complete |
 | PRIV-02 | Phase 1 | Complete |
 | PRIV-03 | Phase 3 | Complete |
 | PRIV-04 | Phase 3 | Complete |
@@ -168,4 +168,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-06-05*
-*Last updated: 2026-06-07 after Phase 5 completion*
+*Last updated: 2026-06-08 after milestone audit gap closure*

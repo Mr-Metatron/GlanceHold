@@ -10,6 +10,16 @@ GlanceHold 是一个 macOS 状态栏工具，用普通摄像头和 Apple Vision 
 
 当用户注意力离开屏幕时，GlanceHold 能可靠、克制地替用户处理视频速度或播放状态，并在用户回来时恢复到合适状态，且不误恢复用户手动暂停的视频。
 
+## Current State
+
+GlanceHold v1.0 MVP shipped on 2026-06-08. The app is a local-only macOS status-bar utility with camera permission handling, AVFoundation/Vision attention monitoring, calibration and tuning, IINA plugin bridge playback control, Speed Control and Pause/Resume modes, Last Action feedback, stop-only disable/quit cleanup, English/Simplified Chinese localization, user docs, and real-camera plus real-IINA UAT evidence.
+
+The v1.0 planning archive lives in `.planning/milestones/`:
+
+- `v1.0-ROADMAP.md`
+- `v1.0-REQUIREMENTS.md`
+- `v1.0-MILESTONE-AUDIT.md`
+
 ## Requirements
 
 ### Validated
@@ -31,8 +41,8 @@ GlanceHold 是一个 macOS 状态栏工具，用普通摄像头和 Apple Vision 
 
 ### Active
 
-- [ ] Run `$gsd-verify-work 6` or `$gsd-complete-milestone` to perform milestone-level archival/closeout.
-- [ ] Decide whether the next milestone should focus on distribution, launch-at-login/diagnostics, broader player support, or model accuracy.
+- [ ] Start the next milestone with `$gsd-new-milestone` before adding new implementation scope.
+- [ ] Decide whether v1.1 should focus on distribution/signing/notarization, launch-at-login and diagnostics, broader player support, or model accuracy.
 
 ### Out of Scope
 
@@ -45,11 +55,22 @@ GlanceHold 是一个 macOS 状态栏工具，用普通摄像头和 Apple Vision 
 
 ## Context
 
-The repository now contains the completed local v1 MVP. The app target is a macOS status-bar utility with local camera permission handling, AVFoundation/Vision attention monitoring, calibration and tuning controls, IINA plugin bridge playback control, Last Action feedback, stop-only disable/quit cleanup, English/Simplified Chinese localization, and final user documentation/UAT artifacts.
+The repository now contains the shipped local v1.0 MVP. The app target is a macOS status-bar utility with local camera permission handling, AVFoundation/Vision attention monitoring, calibration and tuning controls, IINA plugin bridge playback control, Last Action feedback, stop-only disable/quit cleanup, English/Simplified Chinese localization, and final user documentation/UAT artifacts.
 
 The current codebase map lives in `.planning/codebase/`. It records that the app is a single macOS target using Swift 5.0, SwiftUI, macOS deployment target 14.0, App Sandbox, camera entitlement, and a local IINA plugin bridge. `SemiUHPE/` remains a local ignored research checkout and should remain reference-only for v1.
 
 The first real product direction has been validated: while watching IINA at 2x or another user-selected speed, looking away drops playback to 1x and looking back restores the speed that was active before GlanceHold intervened. Pause/Resume remains available as the secondary mode, with manual pause protection preserved.
+
+Milestone closeout stats: 6 phases, 27 plans, 43/43 v1 requirements complete, 6/6 phase verification artifacts passed, and about 7,198 lines across tracked Swift/JavaScript/Markdown source and planning files excluding `SemiUHPE/`.
+
+## Next Milestone Goals
+
+Candidate directions for the next milestone:
+
+- Distribution readiness: signing, notarization, install packaging, and update strategy.
+- Convenience: launch-at-login, better diagnostics, and optional troubleshooting surfaces.
+- Broader playback support: browser video, VLC, QuickTime, or per-player behavior profiles.
+- Detection quality: improved calibration/threshold guidance or evaluated model-based accuracy work, while keeping `SemiUHPE/` reference-only unless licensing and distribution risks are resolved.
 
 ## Constraints
 
@@ -95,4 +116,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-08 after Phase 6 completion*
+*Last updated: 2026-06-08 after v1.0 milestone closeout*
