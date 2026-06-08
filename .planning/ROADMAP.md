@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Local Camera, Vision Signal, Calibration, and Tuning** - Users can calibrate and tune a local Vision-based attention signal that drives visible attention states. (completed 2026-06-06)
 - [x] **Phase 4: IINA Adapter Spike and End-to-End Playback Control** - GlanceHold controls real IINA playback for speed and pause modes through a validated adapter. (completed 2026-06-07)
 - [x] **Phase 5: Control Polish, IINA Shortcut, and i18n** - Users can tune, toggle, and read GlanceHold more comfortably through checked menu controls, an IINA plugin monitoring shortcut, and English/Chinese localization. (completed 2026-06-07)
-- [ ] **Phase 6: End-to-End UX Hardening and Manual UAT** - The MVP is safe to use across real camera/player failures, disable/quit flows, and manual acceptance checks.
+- [x] **Phase 6: End-to-End UX Hardening and Manual UAT** - The MVP is safe to use across real camera/player failures, disable/quit flows, and manual acceptance checks. (completed 2026-06-08)
 
 ## Phase Details
 
@@ -197,7 +197,7 @@ Plans:
   3. User can complete a manual verification checklist covering permission grant/deny, calibration success/failure, IINA open/closed/idle, Speed Control mode, Pause/Resume mode, manual pause, IINA plugin shortcut toggle, localization sanity, disable, and quit.
   4. The macOS app builds successfully after the status-bar, camera/Vision, IINA integration, shortcut, and localization changes.
 
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 **UI hint**: yes
 
 ## Progress
@@ -212,4 +212,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Local Camera, Vision Signal, Calibration, and Tuning | 3/3 | Complete   | 2026-06-06 |
 | 4. IINA Adapter Spike and End-to-End Playback Control | 10/10 | Complete   | 2026-06-07 |
 | 5. Control Polish, IINA Shortcut, and i18n | 5/5 | Complete   | 2026-06-08 |
-| 6. End-to-End UX Hardening and Manual UAT | 3/4 | In Progress|  |
+| 6. End-to-End UX Hardening and Manual UAT | 4/4 | Complete   | 2026-06-08 |
