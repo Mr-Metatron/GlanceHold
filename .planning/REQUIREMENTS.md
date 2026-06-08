@@ -71,7 +71,7 @@ Requirements for the first usable local release. Each maps to roadmap phases.
 
 - [x] **VER-01**: Pure attention state-machine behavior is covered by synthetic sequence tests for facing, away, no-face, recovery, and jitter.
 - [x] **VER-02**: Playback policy behavior is covered by tests for speed capture/restore, pause ownership, manual pause protection, duplicate command suppression, and safe no-op states.
-- [ ] **VER-03**: The app has a manual verification checklist covering camera permission grant/deny, calibration success/failure, IINA open/closed/idle, speed mode, pause mode, manual pause, disable, and quit.
+- [x] **VER-03**: The app has a manual verification checklist covering camera permission grant/deny, calibration success/failure, IINA open/closed/idle, speed mode, pause mode, manual pause, disable, and quit.
 - [ ] **VER-04**: The macOS app builds successfully after the status-bar, camera/Vision, and IINA integration changes.
 
 ## v2 Requirements
@@ -158,7 +158,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | I18N-02 | Phase 5 | Complete |
 | VER-01 | Phase 2 | Complete |
 | VER-02 | Phase 2 | Complete |
-| VER-03 | Phase 6 | Pending |
+| VER-03 | Phase 6 | Complete |
 | VER-04 | Phase 6 | Pending |
 
 **Coverage:**
