@@ -238,6 +238,42 @@ final class PlaybackCoordinatorTests: XCTestCase {
         assertNoRestoreOrResume(adapter.commands)
     }
 
+    func testStopMonitoringClearsSpeedOwnershipWithoutRestoreCommandSnapshotOrCallback() async {
+        let adapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.75), .playing(speed: 1.0)])
+        let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+        var completedActions: [PlaybackCompletedAction] = []
+        coordinator.playbackActionDidComplete = { completedActions.append($0) }
+
+        await coordinator.handleAttentionState(.lookingAway)
+        coordinator.stopMonitoring()
+        await coordinator.handleAttentionState(.facing)
+
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
+        XCTAssertEqual(adapter.snapshotReadCount, 3)
+        XCTAssertEqual(completedActions, [.heldSpeedAtOne])
+        XCTAssertNil(coordinator.state.stoppedReason)
+        XCTAssertFalse(coordinator.state.isPlayerControllable)
+        assertNoRestoreOrResume(adapter.commands)
+    }
+
+    func testStopMonitoringClearsPauseOwnershipWithoutResumeCommandSnapshotOrCallback() async {
+        let adapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5), .paused(speed: 1.5)])
+        let coordinator = PlaybackCoordinator(mode: .pauseResume, adapter: adapter)
+        var completedActions: [PlaybackCompletedAction] = []
+        coordinator.playbackActionDidComplete = { completedActions.append($0) }
+
+        await coordinator.handleAttentionState(.lookingAway)
+        coordinator.stopMonitoring()
+        await coordinator.handleAttentionState(.facing)
+
+        XCTAssertEqual(adapter.commands, [.pause])
+        XCTAssertEqual(adapter.snapshotReadCount, 3)
+        XCTAssertEqual(completedActions, [.pausedByGlanceHold])
+        XCTAssertNil(coordinator.state.stoppedReason)
+        XCTAssertFalse(coordinator.state.isPlayerControllable)
+        assertNoRestoreOrResume(adapter.commands)
+    }
+
     func testPushedSnapshotPreservesManualTakeoverStopReason() async {
         let adapter = FakeIINAPlaybackAdapter(
             snapshots: [
