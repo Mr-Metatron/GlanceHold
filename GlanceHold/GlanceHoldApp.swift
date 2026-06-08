@@ -161,6 +161,13 @@ private struct GlanceHoldMenu: View {
                 Divider()
             }
 
+            if let lastActionMenuText = state.lastActionMenuText {
+                Text(lastActionMenuText)
+                    .foregroundStyle(.secondary)
+
+                Divider()
+            }
+
             Button(primaryAction.title) {
                 performPrimaryAction(primaryAction)
             }
@@ -432,7 +439,7 @@ private struct GlanceHoldMenu: View {
 
         switch source {
         case .userRequested:
-            state.disableMonitoring()
+            state.stopMonitoringAfterUserRequest()
         case .manualPlayerTakeover:
             state.stopMonitoringAfterManualPlayerTakeover()
         }
@@ -462,6 +469,11 @@ private struct GlanceHoldMenu: View {
         playbackCoordinator.stateDidChange = { coordinatorState in
             Task { @MainActor in
                 state.apply(playerControlState: coordinatorState)
+            }
+        }
+        playbackCoordinator.playbackActionDidComplete = { action in
+            Task { @MainActor in
+                state.recordLastAction(action.lastAction)
             }
         }
         playbackCoordinator.stopMonitoringRequested = { _ in
@@ -546,6 +558,7 @@ private struct GlanceHoldMenu: View {
         stopPlaybackStatusUpdates()
         playbackCoordinator.stateDidChange = nil
         playbackCoordinator.stopMonitoringRequested = nil
+        playbackCoordinator.playbackActionDidComplete = nil
         playbackCoordinator.stopMonitoring()
         playbackCoordinator = makePlaybackCoordinator(mode: mode)
         state.playerStatus = nil
@@ -574,6 +587,21 @@ private struct GlanceHoldMenu: View {
             .unavailable
         case .off, .needsCalibration, .calibrating, .ready, .cameraPermissionDenied, .cameraUnavailable, .calibrationFailed:
             nil
+        }
+    }
+}
+
+private extension PlaybackCompletedAction {
+    var lastAction: LastAction {
+        switch self {
+        case .heldSpeedAtOne:
+            .heldSpeedAtOne
+        case let .restoredSpeed(speed):
+            .restoredSpeed(speed)
+        case .pausedByGlanceHold:
+            .pausedByGlanceHold
+        case .resumedPlayback:
+            .resumedPlayback
         }
     }
 }

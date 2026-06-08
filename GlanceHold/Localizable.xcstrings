@@ -579,6 +579,108 @@
         }
       }
     },
+    "lastAction.heldSpeedAtOne" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Held speed at 1x"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已将速度保持在 1x"
+          }
+        }
+      }
+    },
+    "lastAction.manualPauseDetected" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manual pause detected"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "检测到手动暂停"
+          }
+        }
+      }
+    },
+    "lastAction.pausedByGlanceHold" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paused by GlanceHold"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已由 GlanceHold 暂停"
+          }
+        }
+      }
+    },
+    "lastAction.restoredSpeed" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restored speed to %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已恢复速度到 %@"
+          }
+        }
+      }
+    },
+    "lastAction.resumedPlayback" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resumed playback"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已恢复播放"
+          }
+        }
+      }
+    },
+    "lastAction.stoppedMonitoring" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stopped monitoring"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已停止监控"
+          }
+        }
+      }
+    },
     "menu.about" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -592,6 +694,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "关于 GlanceHold..."
+          }
+        }
+      }
+    },
+    "menu.lastAction.format" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last Action: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上次操作：%@"
           }
         }
       }

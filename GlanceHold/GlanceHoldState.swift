@@ -217,6 +217,40 @@ enum PlayerControlStatus: Equatable {
     }
 }
 
+enum LastAction: Equatable {
+    case heldSpeedAtOne
+    case restoredSpeed(Double)
+    case pausedByGlanceHold
+    case resumedPlayback
+    case manualPauseDetected
+    case stoppedMonitoring
+
+    func visibleText(localeIdentifier: String? = nil) -> String {
+        switch self {
+        case .heldSpeedAtOne:
+            GlanceHoldStrings.text(.lastActionHeldSpeedAtOne, localeIdentifier: localeIdentifier)
+        case let .restoredSpeed(speed):
+            GlanceHoldStrings.format(
+                .lastActionRestoredSpeed,
+                Self.formattedSpeed(speed),
+                localeIdentifier: localeIdentifier
+            )
+        case .pausedByGlanceHold:
+            GlanceHoldStrings.text(.lastActionPausedByGlanceHold, localeIdentifier: localeIdentifier)
+        case .resumedPlayback:
+            GlanceHoldStrings.text(.lastActionResumedPlayback, localeIdentifier: localeIdentifier)
+        case .manualPauseDetected:
+            GlanceHoldStrings.text(.lastActionManualPauseDetected, localeIdentifier: localeIdentifier)
+        case .stoppedMonitoring:
+            GlanceHoldStrings.text(.lastActionStoppedMonitoring, localeIdentifier: localeIdentifier)
+        }
+    }
+
+    private static func formattedSpeed(_ speed: Double) -> String {
+        "\(String(format: "%g", speed))x"
+    }
+}
+
 enum GlanceHoldMenuCopy {
     static var tuningSectionTitle: String { GlanceHoldStrings.text(.tuningSection) }
     static var sensitivityLabel: String { GlanceHoldStrings.text(.tuningSensitivity) }
@@ -229,17 +263,23 @@ enum GlanceHoldMenuCopy {
     static var keepCurrentCalibrationButton: String { GlanceHoldStrings.text(.alertKeepCurrentCalibration) }
     static var useNewCalibrationButton: String { GlanceHoldStrings.text(.alertUseNewCalibration) }
     static var resetConfirmationMessage: String { GlanceHoldStrings.text(.alertResetConfirmationMessage) }
+
+    static func lastActionText(_ action: LastAction) -> String {
+        GlanceHoldStrings.format(.menuLastActionFormat, action.visibleText())
+    }
 }
 
 struct GlanceHoldState: Equatable {
     var settings: AttentionSettings
     var status: MonitoringStatus
     var playerStatus: PlayerControlStatus?
+    var lastAction: LastAction?
 
     init(
         mode: MonitoringMode = .speedControl,
         status: MonitoringStatus = .off,
         playerStatus: PlayerControlStatus? = nil,
+        lastAction: LastAction? = nil,
         settings: AttentionSettings = .defaults
     ) {
         var resolvedSettings = settings
@@ -247,6 +287,7 @@ struct GlanceHoldState: Equatable {
         self.settings = resolvedSettings
         self.status = status
         self.playerStatus = playerStatus
+        self.lastAction = lastAction
     }
 
     var mode: MonitoringMode {
@@ -260,6 +301,10 @@ struct GlanceHoldState: Equatable {
 
     var hasCalibration: Bool {
         settings.calibration != nil
+    }
+
+    var lastActionMenuText: String? {
+        lastAction.map(GlanceHoldMenuCopy.lastActionText)
     }
 
     var isMonitoringActive: Bool {
@@ -276,6 +321,7 @@ struct GlanceHoldState: Equatable {
             return
         }
 
+        clearLastActionForNewMonitoringSession()
         status = .cameraPermissionNeeded
     }
 
@@ -302,6 +348,7 @@ struct GlanceHoldState: Equatable {
             return
         }
 
+        clearLastActionForNewMonitoringSession()
         status = .requestingCameraPermission
         status = await resolvedStatusAfterEnable(permissionProvider: permissionProvider)
     }
@@ -310,8 +357,22 @@ struct GlanceHoldState: Equatable {
         status = .off
     }
 
+    mutating func stopMonitoringAfterUserRequest() {
+        status = .off
+        recordLastAction(.stoppedMonitoring)
+    }
+
     mutating func stopMonitoringAfterManualPlayerTakeover() {
         status = .off
+        recordLastAction(.manualPauseDetected)
+    }
+
+    mutating func recordLastAction(_ action: LastAction) {
+        lastAction = action
+    }
+
+    mutating func clearLastActionForNewMonitoringSession() {
+        lastAction = nil
     }
 
     mutating func selectMode(_ mode: MonitoringMode) {

@@ -66,25 +66,46 @@ final class GlanceHoldStateTests: XCTestCase {
         var state = GlanceHoldState()
 
         state.recordLastAction(.heldSpeedAtOne)
-        XCTAssertEqual(state.lastActionMenuText, "Last Action: Held speed at 1x")
+        XCTAssertEqual(
+            state.lastActionMenuText,
+            GlanceHoldStrings.format(.menuLastActionFormat, LastAction.heldSpeedAtOne.visibleText())
+        )
 
         state.recordLastAction(.restoredSpeed(2.0))
-        XCTAssertEqual(state.lastActionMenuText, "Last Action: Restored speed to 2x")
+        XCTAssertEqual(
+            state.lastActionMenuText,
+            GlanceHoldStrings.format(.menuLastActionFormat, LastAction.restoredSpeed(2.0).visibleText())
+        )
 
         state.recordLastAction(.restoredSpeed(1.25))
-        XCTAssertEqual(state.lastActionMenuText, "Last Action: Restored speed to 1.25x")
+        XCTAssertEqual(
+            state.lastActionMenuText,
+            GlanceHoldStrings.format(.menuLastActionFormat, LastAction.restoredSpeed(1.25).visibleText())
+        )
 
         state.recordLastAction(.pausedByGlanceHold)
-        XCTAssertEqual(state.lastActionMenuText, "Last Action: Paused by GlanceHold")
+        XCTAssertEqual(
+            state.lastActionMenuText,
+            GlanceHoldStrings.format(.menuLastActionFormat, LastAction.pausedByGlanceHold.visibleText())
+        )
 
         state.recordLastAction(.resumedPlayback)
-        XCTAssertEqual(state.lastActionMenuText, "Last Action: Resumed playback")
+        XCTAssertEqual(
+            state.lastActionMenuText,
+            GlanceHoldStrings.format(.menuLastActionFormat, LastAction.resumedPlayback.visibleText())
+        )
 
         state.recordLastAction(.manualPauseDetected)
-        XCTAssertEqual(state.lastActionMenuText, "Last Action: Manual pause detected")
+        XCTAssertEqual(
+            state.lastActionMenuText,
+            GlanceHoldStrings.format(.menuLastActionFormat, LastAction.manualPauseDetected.visibleText())
+        )
 
         state.recordLastAction(.stoppedMonitoring)
-        XCTAssertEqual(state.lastActionMenuText, "Last Action: Stopped monitoring")
+        XCTAssertEqual(
+            state.lastActionMenuText,
+            GlanceHoldStrings.format(.menuLastActionFormat, LastAction.stoppedMonitoring.visibleText())
+        )
     }
 
     func testModeSelectionReportsExactVisibleModeNames() {

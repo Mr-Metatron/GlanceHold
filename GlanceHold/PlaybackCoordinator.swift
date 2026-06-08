@@ -14,6 +14,13 @@ struct PlaybackCoordinatorState: Equatable {
     }
 }
 
+enum PlaybackCompletedAction: Equatable {
+    case heldSpeedAtOne
+    case restoredSpeed(Double)
+    case pausedByGlanceHold
+    case resumedPlayback
+}
+
 final class PlaybackCoordinator {
     private static let speedEpsilon = 0.000_001
 
@@ -31,6 +38,7 @@ final class PlaybackCoordinator {
 
     var stateDidChange: ((PlaybackCoordinatorState) -> Void)?
     var stopMonitoringRequested: ((StopMonitoringReason) -> Void)?
+    var playbackActionDidComplete: ((PlaybackCompletedAction) -> Void)?
 
     init(mode: MonitoringMode, adapter: IINAPlaybackAdapting) {
         self.mode = mode
@@ -107,6 +115,9 @@ final class PlaybackCoordinator {
             }
 
             updateState(snapshot: confirmation, isPlayerControllable: isPlayerControllable(confirmation))
+            if let completedAction = completedAction(for: intent) {
+                playbackActionDidComplete?(completedAction)
+            }
         } catch {
             markNotControllable(snapshot: snapshot)
         }
@@ -133,6 +144,21 @@ final class PlaybackCoordinator {
             return snapshot.playbackState == .playing && snapshot.speed != nil
         case .stopMonitoring:
             return false
+        }
+    }
+
+    private func completedAction(for intent: PlaybackIntent) -> PlaybackCompletedAction? {
+        switch intent {
+        case .holdSpeedAtOne:
+            .heldSpeedAtOne
+        case let .restoreSpeed(speed):
+            .restoredSpeed(speed)
+        case .pause:
+            .pausedByGlanceHold
+        case .resume:
+            .resumedPlayback
+        case .stopMonitoring:
+            nil
         }
     }
 
