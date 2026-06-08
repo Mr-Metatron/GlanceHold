@@ -24,13 +24,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Camera stays on this Mac. Frames are not saved or uploaded."
+            "value" : "Camera access starts only during calibration or monitoring."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "摄像头画面仅在本机处理，不会保存或上传。"
+            "value" : "只有在校准或开启监控时才会访问摄像头。"
           }
         }
       }
@@ -500,13 +500,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "IINA is open without active playback. No playback command will be sent."
+            "value" : "IINA is open without active playback."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "IINA 已打开但没有正在播放的内容。不会发送播放命令。"
+            "value" : "IINA 已打开，但没有正在播放的内容。"
           }
         }
       }
@@ -517,13 +517,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "IINA playback state is readable but not safe to control. No playback command will be sent."
+            "value" : "IINA playback state is readable, but current playback is not controllable."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "可以读取 IINA 播放状态，但当前不适合控制。不会发送播放命令。"
+            "value" : "可以读取 IINA 播放状态，但当前播放不可控制。"
           }
         }
       }
@@ -704,13 +704,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Camera stays on this Mac. Frames are not saved or uploaded."
+            "value" : "Camera access starts during calibration or monitoring."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "摄像头画面仅在本机处理，不会保存或上传。"
+            "value" : "校准或开启监控时会访问摄像头。"
           }
         }
       }
@@ -721,13 +721,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "GlanceHold uses the camera only on this Mac to tell whether you are facing the screen. Frames are not saved or uploaded."
+            "value" : "GlanceHold uses the camera to calibrate your facing-screen pose."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "GlanceHold 仅在这台 Mac 上使用摄像头判断你是否正对屏幕。画面不会保存或上传。"
+            "value" : "GlanceHold 使用摄像头校准你正对屏幕的姿态。"
           }
         }
       }

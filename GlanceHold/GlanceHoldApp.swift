@@ -168,7 +168,7 @@ private struct GlanceHoldMenu: View {
 
             Divider()
 
-            Picker(GlanceHoldStrings.text(.menuMode), selection: modeBinding) {
+            Picker(ModeMenuPresentation.title(for: state.mode), selection: modeBinding) {
                 Text(MonitoringMode.speedControl.displayName).tag(MonitoringMode.speedControl)
                 Text(MonitoringMode.pauseResume.displayName).tag(MonitoringMode.pauseResume)
             }
@@ -213,9 +213,6 @@ private struct GlanceHoldMenu: View {
                     resetCalibrationWithConfirmation()
                 }
             }
-
-            Text(GlanceHoldMenuCopy.privacyNote)
-                .foregroundStyle(.secondary)
 
             Divider()
 

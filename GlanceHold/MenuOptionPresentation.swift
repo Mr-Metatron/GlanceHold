@@ -7,6 +7,12 @@ struct MenuOptionPresentation: Equatable, Identifiable {
     let value: Double
 }
 
+enum ModeMenuPresentation {
+    static func title(for mode: MonitoringMode) -> String {
+        "\(GlanceHoldStrings.text(.menuMode)): \(mode.displayName)"
+    }
+}
+
 struct TuningMenuPresentation: Equatable {
     static let delayChoices: [TimeInterval] = [0.5, 0.6, 0.8, 1.0, 1.2, 1.5, 2.0]
     static let delaySelectionTolerance: TimeInterval = 0.0001
