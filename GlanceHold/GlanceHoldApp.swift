@@ -228,11 +228,11 @@ private struct GlanceHoldMenu: View {
             }
 
             Button(GlanceHoldStrings.text(.menuQuit)) {
-                stopPlaybackStatusUpdates()
-                stopMonitoringToggleRequestHandling()
-                monitor.stopMonitoring()
-                playbackCoordinator.stopMonitoring()
-                NSApplication.shared.terminate(nil)
+                let cleanupPlan = MonitoringToggleController.cleanupPlan(for: .quit)
+                performLifecycleCleanup(cleanupPlan)
+                if cleanupPlan.terminateAfterCleanup {
+                    NSApplication.shared.terminate(nil)
+                }
             }
         }
         .onAppear {
@@ -433,15 +433,33 @@ private struct GlanceHoldMenu: View {
     }
 
     private func stopMonitoring(source: MonitoringStopSource) {
-        permissionRequestID = nil
-        monitor.stopMonitoring()
-        playbackCoordinator.stopMonitoring()
-
         switch source {
         case .userRequested:
+            performLifecycleCleanup(MonitoringToggleController.cleanupPlan(for: .userDisable))
             state.stopMonitoringAfterUserRequest()
         case .manualPlayerTakeover:
+            permissionRequestID = nil
+            monitor.stopMonitoring()
+            playbackCoordinator.stopMonitoring()
             state.stopMonitoringAfterManualPlayerTakeover()
+        }
+    }
+
+    private func performLifecycleCleanup(_ plan: MonitoringLifecycleCleanupPlan) {
+        if plan.cancelPermissionRequest {
+            permissionRequestID = nil
+        }
+        if plan.stopPlaybackStatusUpdates {
+            stopPlaybackStatusUpdates()
+        }
+        if plan.stopMonitoringToggleRequests {
+            stopMonitoringToggleRequestHandling()
+        }
+        if plan.stopAttentionMonitor {
+            monitor.stopMonitoring()
+        }
+        if plan.stopPlaybackCoordinator {
+            playbackCoordinator.stopMonitoring()
         }
     }
 
