@@ -4,8 +4,8 @@ milestone: v1.0
 milestone_name: milestone
 status: milestone_complete
 stopped_at: Milestone complete (Phase 06 was final phase)
-last_updated: 2026-06-08T08:29:17.216Z
-last_activity: 2026-06-08 -- Completed Phase 06 final verification and live UAT
+last_updated: 2026-06-08T12:19:51Z
+last_activity: 2026-06-08 -- Normalized legacy GSD open-item metadata after Phase 06 completion
 progress:
   total_phases: 6
   completed_phases: 6
@@ -120,6 +120,7 @@ None yet.
 | 260605-mhn | 修复 Phase 01 的 code review 和 UI review warnings | 2026-06-05 | 4180915 | [260605-mhn-phase-01-code-review-ui-review-warnings](./quick/260605-mhn-phase-01-code-review-ui-review-warnings/) |
 | 260606-1jj | 补齐 Phase 1 01-03 人工验证归档并同步 Roadmap/State | 2026-06-06 | this commit | [260606-1jj-phase-1-01-03-roadmap-state](./quick/260606-1jj-phase-1-01-03-roadmap-state/) |
 | 260607-j1k | Repair Phase 4 MVP goal format so gsd-verify-work can run without replanning the completed phase | 2026-06-07 | this commit | [260607-j1k-repair-phase-4-mvp-goal-format-so-gsd-ve](./quick/260607-j1k-repair-phase-4-mvp-goal-format-so-gsd-ve/) |
+| 260608-s6u | Normalize legacy GSD open-item metadata for completed Phase 4/5 UAT, debug sessions, and quick tasks | 2026-06-08 | this commit | [260608-s6u-normalize-legacy-gsd-open-item-metadata-](./quick/260608-s6u-normalize-legacy-gsd-open-item-metadata-/) |
 
 ## Deferred Items
 
