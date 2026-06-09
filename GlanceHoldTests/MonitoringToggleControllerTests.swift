@@ -135,6 +135,23 @@ final class MonitoringToggleControllerTests: XCTestCase {
         XCTAssertLessThan(dedupRange.lowerBound, sendRange.lowerBound)
     }
 
+    func testAppSourceUsesStatusStreamLivenessInsteadOfFixedSnapshotFallbackPolling() throws {
+        let source = try String(contentsOf: projectFileURL("GlanceHold/GlanceHoldApp.swift"), encoding: .utf8)
+
+        XCTAssertFalse(source.contains("playbackFallbackRefreshTask"))
+        XCTAssertFalse(source.contains("playbackFallbackRefreshIntervalNanoseconds"))
+        XCTAssertTrue(source.contains("playbackStatusStreamReconnectIntervalNanoseconds"))
+
+        let startRange = try XCTUnwrap(source.range(of: "private func startPlaybackStatusUpdates()"))
+        let toggleRange = try XCTUnwrap(source.range(of: "private func startMonitoringToggleRequestHandling()"))
+        let statusUpdateSource = String(source[startRange.lowerBound..<toggleRange.lowerBound])
+
+        XCTAssertTrue(statusUpdateSource.contains("await coordinator.observePlayerStatusUpdates()"))
+        XCTAssertTrue(statusUpdateSource.contains("playbackStatusStreamReconnectIntervalNanoseconds"))
+        XCTAssertFalse(statusUpdateSource.contains("refreshPlayerState()"))
+        XCTAssertFalse(statusUpdateSource.contains("10_000_000_000"))
+    }
+
     private func state(status: MonitoringStatus, hasCalibration: Bool) -> GlanceHoldState {
         var settings = AttentionSettings.defaults
         settings.calibration = hasCalibration ? Self.calibration : nil

@@ -86,11 +86,17 @@ final class PlaybackCoordinator {
     }
 
     func observePlayerStatusUpdates() async {
-        for await snapshot in adapter.statusUpdates() {
+        for await event in adapter.statusEvents() {
             if Task.isCancelled {
                 return
             }
-            applyPushedPlayerSnapshot(snapshot)
+
+            switch event {
+            case let .status(snapshot):
+                applyPushedPlayerSnapshot(snapshot)
+            case .heartbeat:
+                continue
+            }
         }
     }
 

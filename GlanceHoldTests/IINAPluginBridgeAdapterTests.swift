@@ -47,16 +47,41 @@ final class IINAPluginBridgeAdapterTests: XCTestCase {
             .idle
         ])
     }
+
+    func testPluginBridgeStatusEventsPassHeartbeatWithoutPlayerSnapshot() async throws {
+        let client = FakeIINAPluginBridgeClient(
+            statuses: [],
+            updateEvents: [
+                .heartbeat,
+                .status(.playing(speed: 2.0))
+            ]
+        )
+        let adapter = IINAPluginBridgeAdapter(client: client)
+
+        var events: [IINAPlaybackStatusEvent] = []
+        for await event in adapter.statusEvents() {
+            events.append(event)
+        }
+
+        XCTAssertEqual(events, [
+            .heartbeat,
+            .status(.playing(speed: 2.0))
+        ])
+    }
 }
 
 private final class FakeIINAPluginBridgeClient: IINAPluginBridgeClienting {
     private var statuses: [IINAPlayerStatus]
-    private let updateStatuses: [IINAPlayerStatus]
+    private let updateEvents: [IINAPluginBridgePushedEvent]
     private(set) var commands: [PlaybackIntent] = []
 
-    init(statuses: [IINAPlayerStatus], updateStatuses: [IINAPlayerStatus] = []) {
+    init(
+        statuses: [IINAPlayerStatus],
+        updateStatuses: [IINAPlayerStatus] = [],
+        updateEvents: [IINAPluginBridgePushedEvent]? = nil
+    ) {
         self.statuses = statuses
-        self.updateStatuses = updateStatuses
+        self.updateEvents = updateEvents ?? updateStatuses.map { .status($0) }
     }
 
     func status() async -> IINAPlayerStatus {
@@ -65,8 +90,20 @@ private final class FakeIINAPluginBridgeClient: IINAPluginBridgeClienting {
 
     func statusUpdates() -> AsyncStream<IINAPlayerStatus> {
         AsyncStream { continuation in
-            for status in updateStatuses {
+            for event in updateEvents {
+                guard case let .status(status) = event else {
+                    continue
+                }
                 continuation.yield(status)
+            }
+            continuation.finish()
+        }
+    }
+
+    func pushedEvents() -> AsyncStream<IINAPluginBridgePushedEvent> {
+        AsyncStream { continuation in
+            for event in updateEvents {
+                continuation.yield(event)
             }
             continuation.finish()
         }

@@ -142,13 +142,12 @@ private struct GlanceHoldMenu: View {
     @Binding var playbackCoordinator: PlaybackCoordinator
     @State private var permissionRequestID: UUID?
     @State private var playbackStatusStreamTask: Task<Void, Never>?
-    @State private var playbackFallbackRefreshTask: Task<Void, Never>?
     @State private var playbackAttentionTask: Task<Void, Never>?
     @State private var monitoringToggleRequestTask: Task<Void, Never>?
     @State private var playbackSemanticDeduper = PlaybackSemanticDeduper()
     @Environment(\.openWindow) private var openWindow
 
-    private let playbackFallbackRefreshIntervalNanoseconds: UInt64 = 10_000_000_000
+    private let playbackStatusStreamReconnectIntervalNanoseconds: UInt64 = 1_000_000_000
     private let monitoringToggleReconnectIntervalNanoseconds: UInt64 = 10_000_000_000
 
     private var primaryAction: GlanceHoldPrimaryAction {
@@ -602,20 +601,10 @@ private struct GlanceHoldMenu: View {
         playbackStatusStreamTask = Task {
             while !Task.isCancelled {
                 await coordinator.observePlayerStatusUpdates()
-                try? await Task.sleep(nanoseconds: playbackFallbackRefreshIntervalNanoseconds)
                 if Task.isCancelled {
                     return
                 }
-            }
-        }
-
-        playbackFallbackRefreshTask = Task {
-            while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: playbackFallbackRefreshIntervalNanoseconds)
-                if Task.isCancelled {
-                    return
-                }
-                await coordinator.refreshPlayerState()
+                try? await Task.sleep(nanoseconds: playbackStatusStreamReconnectIntervalNanoseconds)
             }
         }
     }
@@ -648,9 +637,7 @@ private struct GlanceHoldMenu: View {
 
     private func stopPlaybackStatusUpdates() {
         playbackStatusStreamTask?.cancel()
-        playbackFallbackRefreshTask?.cancel()
         playbackStatusStreamTask = nil
-        playbackFallbackRefreshTask = nil
     }
 
     private func stopPlaybackAttentionHandling() {

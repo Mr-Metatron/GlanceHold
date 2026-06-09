@@ -25,17 +25,41 @@ extension IINAPluginBridgeTransporting {
 
 protocol IINAPluginBridgeClienting {
     func status() async -> IINAPlayerStatus
+    func pushedEvents() -> AsyncStream<IINAPluginBridgePushedEvent>
     func statusUpdates() -> AsyncStream<IINAPlayerStatus>
     func monitoringToggleRequests() -> AsyncStream<Void>
     func execute(_ intent: PlaybackIntent) async throws
 }
 
 extension IINAPluginBridgeClienting {
+    func pushedEvents() -> AsyncStream<IINAPluginBridgePushedEvent> {
+        AsyncStream { continuation in
+            let task = Task {
+                for await status in statusUpdates() {
+                    if Task.isCancelled {
+                        break
+                    }
+                    continuation.yield(.status(status))
+                }
+                continuation.finish()
+            }
+
+            continuation.onTermination = { _ in
+                task.cancel()
+            }
+        }
+    }
+
     func monitoringToggleRequests() -> AsyncStream<Void> {
         AsyncStream { continuation in
             continuation.finish()
         }
     }
+}
+
+enum IINAPluginBridgePushedEvent: Equatable {
+    case status(IINAPlayerStatus)
+    case heartbeat
 }
 
 final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
@@ -69,6 +93,13 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
         var type: String
     }
 
+    private struct Heartbeat: Decodable {
+        var id: Int?
+        var version: Int
+        var type: String
+        var snapshot: Snapshot?
+    }
+
     private struct Snapshot: Decodable {
         var state: String
         var speed: Double?
@@ -79,6 +110,7 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
 
     private let transport: IINAPluginBridgeTransporting
     private let timeout: TimeInterval
+    private let streamStaleTimeout: TimeInterval
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
     private let requestIDLock = NSLock()
@@ -87,10 +119,12 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
     init(
         url: URL = URL(string: "ws://127.0.0.1:47873")!,
         transport: IINAPluginBridgeTransporting? = nil,
-        timeout: TimeInterval = 1.0
+        timeout: TimeInterval = 1.0,
+        streamStaleTimeout: TimeInterval = 15.0
     ) {
         self.transport = transport ?? URLSessionIINAPluginBridgeTransport(url: url)
         self.timeout = timeout
+        self.streamStaleTimeout = streamStaleTimeout
     }
 
     func status() async -> IINAPlayerStatus {
@@ -123,23 +157,45 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
     func statusUpdates() -> AsyncStream<IINAPlayerStatus> {
         AsyncStream { continuation in
             let task = Task {
+                for await event in pushedEvents() {
+                    if Task.isCancelled {
+                        break
+                    }
+
+                    guard case let .status(status) = event else {
+                        continue
+                    }
+                    continuation.yield(status)
+                }
+                continuation.finish()
+            }
+
+            continuation.onTermination = { _ in
+                task.cancel()
+            }
+        }
+    }
+
+    func pushedEvents() -> AsyncStream<IINAPluginBridgePushedEvent> {
+        AsyncStream { continuation in
+            let task = Task {
                 do {
-                    for try await message in transport.messages(timeout: timeout) {
+                    for try await message in transport.messages(timeout: streamStaleTimeout) {
                         if Task.isCancelled {
                             break
                         }
 
-                        guard let status = decodeStatusChanged(message) else {
+                        guard let event = decodePushedEvent(message) else {
                             continue
                         }
-                        continuation.yield(status)
+                        continuation.yield(event)
                     }
                     continuation.finish()
                 } catch IINAPluginBridgeClientError.pluginNeeded {
-                    continuation.yield(.setupNeeded)
+                    continuation.yield(.status(.setupNeeded))
                     continuation.finish()
                 } catch {
-                    continuation.yield(.unavailable)
+                    continuation.yield(.status(.unavailable))
                     continuation.finish()
                 }
             }
@@ -184,6 +240,18 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
         _ = try await send(request)
     }
 
+    private func decodePushedEvent(_ message: String) -> IINAPluginBridgePushedEvent? {
+        if let status = decodeStatusChanged(message) {
+            return .status(status)
+        }
+
+        if decodeHeartbeat(message) {
+            return .heartbeat
+        }
+
+        return nil
+    }
+
     private func decodeStatusChanged(_ message: String) -> IINAPlayerStatus? {
         guard let data = message.data(using: .utf8),
               let event = try? decoder.decode(StatusChanged.self, from: data),
@@ -194,6 +262,18 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
         }
 
         return try? status(from: event.snapshot)
+    }
+
+    private func decodeHeartbeat(_ message: String) -> Bool {
+        guard let data = message.data(using: .utf8),
+              let event = try? decoder.decode(Heartbeat.self, from: data) else {
+            return false
+        }
+
+        return event.id == nil
+            && event.version == Self.protocolVersion
+            && event.type == "heartbeat"
+            && event.snapshot == nil
     }
 
     private func decodeMonitoringToggleRequested(_ message: String) -> Bool {
@@ -289,7 +369,7 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
 
         return event.id == nil
             && event.version == Self.protocolVersion
-            && (event.type == "statusChanged" || event.type == "toggleMonitoringRequested")
+            && (event.type == "statusChanged" || event.type == "toggleMonitoringRequested" || decodeHeartbeat(message))
     }
 
     private func nextID() -> Int {
@@ -367,10 +447,12 @@ struct URLSessionIINAPluginBridgeTransport: IINAPluginBridgeTransporting {
             let receiveTask = Task {
                 do {
                     while !Task.isCancelled {
-                        let message = try await receive(from: task)
+                        let message = try await receive(from: task, timeout: timeout)
                         continuation.yield(message)
                     }
                     continuation.finish()
+                } catch let error as IINAPluginBridgeClientError {
+                    continuation.finish(throwing: error)
                 } catch {
                     continuation.finish(throwing: mapURLSessionError(error))
                 }
@@ -407,6 +489,24 @@ struct URLSessionIINAPluginBridgeTransport: IINAPluginBridgeTransporting {
             return text
         @unknown default:
             throw IINAPluginBridgeClientError.malformedResponse
+        }
+    }
+
+    private func receive(from task: URLSessionWebSocketTask, timeout: TimeInterval) async throws -> String {
+        try await withThrowingTaskGroup(of: String.self) { group in
+            group.addTask {
+                try await receive(from: task)
+            }
+            group.addTask {
+                try await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
+                throw IINAPluginBridgeClientError.pluginNeeded
+            }
+
+            guard let result = try await group.next() else {
+                throw IINAPluginBridgeClientError.unavailable
+            }
+            group.cancelAll()
+            return result
         }
     }
 

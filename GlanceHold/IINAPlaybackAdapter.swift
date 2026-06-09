@@ -8,13 +8,37 @@ enum IINAPlayerStatus: Equatable {
     case playing(speed: Double)
 }
 
+enum IINAPlaybackStatusEvent: Equatable {
+    case status(PlayerSnapshot)
+    case heartbeat
+}
+
 protocol IINAPlaybackAdapting {
     func snapshot() async -> PlayerSnapshot
+    func statusEvents() -> AsyncStream<IINAPlaybackStatusEvent>
     func statusUpdates() -> AsyncStream<PlayerSnapshot>
     func execute(_ intent: PlaybackIntent) async throws
 }
 
 extension IINAPlaybackAdapting {
+    func statusEvents() -> AsyncStream<IINAPlaybackStatusEvent> {
+        AsyncStream { continuation in
+            let task = Task {
+                for await snapshot in statusUpdates() {
+                    if Task.isCancelled {
+                        break
+                    }
+                    continuation.yield(.status(snapshot))
+                }
+                continuation.finish()
+            }
+
+            continuation.onTermination = { _ in
+                task.cancel()
+            }
+        }
+    }
+
     func statusUpdates() -> AsyncStream<PlayerSnapshot> {
         AsyncStream { continuation in
             continuation.finish()
