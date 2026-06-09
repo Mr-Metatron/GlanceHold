@@ -58,9 +58,16 @@ final class AttentionMonitor {
     private let settingsStore: AttentionSettingsStoring
     private let capture: CameraFrameCapturing
     private let analyzer: VisionAttentionAnalyzing
+    private let diagnosticRecorder: DiagnosticRecording
+    private let diagnosticMode: DiagnosticMode
+    private let runtimeSummaryInterval: TimeInterval
     private var stateMachine: AttentionStateMachine
     private var isCaptureRunning = false
     private var activeSessionID: UUID?
+    private var activeDiagnosticSession: DiagnosticSession?
+    private var monitoringMetrics = DiagnosticRuntimeMetrics.empty
+    private var monitoringStartedAt: TimeInterval?
+    private var lastPeriodicSummaryAt: TimeInterval?
 
     private(set) var state: AttentionMonitorState
     private(set) var settings: AttentionSettings
@@ -70,12 +77,18 @@ final class AttentionMonitor {
         permissionProvider: CameraPermissionProviding,
         settingsStore: AttentionSettingsStoring,
         capture: CameraFrameCapturing,
-        analyzer: VisionAttentionAnalyzing
+        analyzer: VisionAttentionAnalyzing,
+        diagnosticRecorder: DiagnosticRecording = NoOpDiagnosticRecorder(),
+        diagnosticMode: DiagnosticMode = .default,
+        runtimeSummaryInterval: TimeInterval = 5.0
     ) {
         self.permissionProvider = permissionProvider
         self.settingsStore = settingsStore
         self.capture = capture
         self.analyzer = analyzer
+        self.diagnosticRecorder = diagnosticRecorder
+        self.diagnosticMode = diagnosticMode
+        self.runtimeSummaryInterval = runtimeSummaryInterval
 
         let loadedSettings = settingsStore.load()
         self.settings = loadedSettings
@@ -95,15 +108,37 @@ final class AttentionMonitor {
         }
 
         let sessionID = UUID()
+        let diagnosticSession = DiagnosticSession(id: sessionID, kind: .monitoring)
         activeSessionID = sessionID
+        activeDiagnosticSession = diagnosticSession
+        monitoringMetrics = .empty
+        monitoringStartedAt = nil
+        lastPeriodicSummaryAt = nil
+        diagnosticRecorder.record(DiagnosticEventRequest(category: .monitoring, name: .sessionStarted), in: diagnosticSession)
+
         capture.frameHandler = { [weak self] frame in
             guard let self else {
                 return
             }
 
+            self.monitoringMetrics.framesReceived += 1
+            let analysisStartedAt = Date()
             let observation = self.analyzer.analyze(frame)
+            let latencyMilliseconds = Date().timeIntervalSince(analysisStartedAt) * 1_000.0
+            self.monitoringMetrics.framesAnalyzed += 1
+            self.monitoringMetrics.analysisLatencyMillisecondsTotal += latencyMilliseconds
+            self.monitoringMetrics.analysisLatencyMillisecondsMax = max(
+                self.monitoringMetrics.analysisLatencyMillisecondsMax,
+                latencyMilliseconds
+            )
+
             Task { @MainActor [weak self] in
-                guard let self, self.activeSessionID == sessionID else {
+                guard let self else {
+                    return
+                }
+
+                guard self.activeSessionID == sessionID else {
+                    self.monitoringMetrics.droppedSamples += 1
                     return
                 }
 
@@ -116,15 +151,19 @@ final class AttentionMonitor {
             isCaptureRunning = true
             setState(.ready)
         } catch CameraFrameCaptureError.unavailable {
+            recordFailure(category: .camera, in: diagnosticSession)
             clearActiveCapture(sessionID: sessionID)
             setState(.cameraUnavailable)
         } catch {
+            recordFailure(category: .monitoring, in: diagnosticSession)
             clearActiveCapture(sessionID: sessionID)
             setState(.unavailable)
         }
     }
 
     func stopMonitoring() {
+        finishMonitoringDiagnostics()
+
         guard isCaptureRunning else {
             activeSessionID = nil
             capture.frameHandler = nil
@@ -152,7 +191,9 @@ final class AttentionMonitor {
         }
 
         let sessionID = UUID()
+        let diagnosticSession = DiagnosticSession(id: sessionID, kind: .calibration)
         activeSessionID = sessionID
+        diagnosticRecorder.record(DiagnosticEventRequest(category: .calibration, name: .sessionStarted), in: diagnosticSession)
         setState(.calibrating)
 
         var poseSamples: [PoseSample] = []
@@ -190,10 +231,12 @@ final class AttentionMonitor {
             try await capture.start()
             isCaptureRunning = true
         } catch CameraFrameCaptureError.unavailable {
+            recordFailure(category: .camera, in: diagnosticSession)
             clearActiveCapture(sessionID: sessionID)
             setState(.cameraUnavailable)
             return .failed(previous: settings.calibration)
         } catch {
+            recordFailure(category: .calibration, in: diagnosticSession)
             clearActiveCapture(sessionID: sessionID)
             setState(.unavailable)
             return .failed(previous: settings.calibration)
@@ -239,22 +282,40 @@ final class AttentionMonitor {
         }
 
         clearActiveCapture(sessionID: sessionID)
-        return await finishCalibration(samples: poseSamples, captureMetrics: metrics, endReason: endReason)
+        return await finishCalibration(
+            samples: poseSamples,
+            captureMetrics: metrics,
+            endReason: endReason,
+            diagnosticSession: diagnosticSession
+        )
     }
 
     func startCalibration(samples: [PoseSample]) async -> CalibrationResult {
-        await finishCalibration(samples: samples, captureMetrics: nil, endReason: nil)
+        let diagnosticSession = DiagnosticSession(kind: .calibration)
+        diagnosticRecorder.record(DiagnosticEventRequest(category: .calibration, name: .sessionStarted), in: diagnosticSession)
+        return await finishCalibration(
+            samples: samples,
+            captureMetrics: nil,
+            endReason: nil,
+            diagnosticSession: diagnosticSession
+        )
     }
 
     private func finishCalibration(
         samples: [PoseSample],
         captureMetrics: CalibrationCaptureMetrics?,
-        endReason: CalibrationCaptureEndReason?
+        endReason: CalibrationCaptureEndReason?,
+        diagnosticSession: DiagnosticSession
     ) async -> CalibrationResult {
         setState(.calibrating)
 
         let evaluation = CalibrationModel.evaluateDetailed(samples: samples, existing: settings.calibration)
-        logCalibrationEnd(evaluation: evaluation, captureMetrics: captureMetrics, endReason: endReason)
+        logCalibrationEnd(
+            evaluation: evaluation,
+            captureMetrics: captureMetrics,
+            endReason: endReason,
+            diagnosticSession: diagnosticSession
+        )
 
         switch evaluation.result {
         case .accepted(let snapshot):
@@ -309,10 +370,13 @@ final class AttentionMonitor {
             time = sampleTime
         }
 
-        setState(mapDebouncedState(
-            stateMachine.apply(RawAttentionSample(signal: signal, time: time)),
-            signal: signal
-        ))
+        let previousVisibleState = state
+        let transition = stateMachine.applyWithDiagnostics(RawAttentionSample(signal: signal, time: time))
+        setState(mapDebouncedState(transition.nextState, signal: signal))
+        if state != previousVisibleState {
+            monitoringMetrics.semanticStateChanges += 1
+        }
+        recordAttentionDiagnostics(for: transition, sampleTime: time)
         return state
     }
 
@@ -363,18 +427,143 @@ final class AttentionMonitor {
     private func logCalibrationEnd(
         evaluation: CalibrationEvaluation,
         captureMetrics: CalibrationCaptureMetrics?,
-        endReason: CalibrationCaptureEndReason?
+        endReason: CalibrationCaptureEndReason?,
+        diagnosticSession: DiagnosticSession
     ) {
         let metrics = captureMetrics ?? CalibrationCaptureMetrics()
         let diagnostics = evaluation.diagnostics
         let quality = diagnostics.selectedWindowQuality.map { String(describing: $0) } ?? "none"
         let failureReason = diagnostics.failureReason?.rawValue ?? "none"
         let captureEndReason = endReason?.rawValue ?? "directSamples"
-        let selectedSpread = diagnostics.selectedWindowSpreadDegrees.map { String(format: "%.3f", $0) } ?? "none"
 
-        Self.logger.info(
-            "Calibration attempt ended frames=\(metrics.frameCount, privacy: .public) poses=\(metrics.poseCount, privacy: .public) noFace=\(metrics.noFaceCount, privacy: .public) ambiguous=\(metrics.ambiguousCount, privacy: .public) failed=\(metrics.failedCount, privacy: .public) inputSamples=\(diagnostics.inputSampleCount, privacy: .public) selectedWindowSize=\(diagnostics.selectedWindowSampleCount, privacy: .public) selectedSpreadDegrees=\(selectedSpread, privacy: .public) selectedQuality=\(quality, privacy: .public) failureReason=\(failureReason, privacy: .public) captureEndReason=\(captureEndReason, privacy: .public)"
+        diagnosticRecorder.record(
+            DiagnosticEventRequest(
+                category: .calibration,
+                name: .calibrationEnded,
+                fields: [
+                    diagnosticField(.calibrationFrameCount, .int(metrics.frameCount)),
+                    diagnosticField(.calibrationPoseCount, .int(metrics.poseCount)),
+                    diagnosticField(.calibrationNoFaceCount, .int(metrics.noFaceCount)),
+                    diagnosticField(.calibrationAmbiguousCount, .int(metrics.ambiguousCount)),
+                    diagnosticField(.calibrationFailedCount, .int(metrics.failedCount)),
+                    diagnosticField(.inputSampleCount, .int(diagnostics.inputSampleCount)),
+                    diagnosticField(.selectedWindowSampleCount, .int(diagnostics.selectedWindowSampleCount)),
+                    diagnosticField(.selectedWindowDurationSeconds, .double(0.0)),
+                    diagnosticField(.selectedWindowSpreadDegrees, .double(diagnostics.selectedWindowSpreadDegrees ?? 0.0)),
+                    diagnosticField(.selectedWindowQuality, .string(quality)),
+                    diagnosticField(.failureReason, .string(failureReason)),
+                    diagnosticField(.captureEndReason, .string(captureEndReason))
+                ]
+            ),
+            in: diagnosticSession
         )
+    }
+
+    private func finishMonitoringDiagnostics() {
+        guard let diagnosticSession = activeDiagnosticSession else {
+            return
+        }
+
+        diagnosticRecorder.record(
+            DiagnosticEventRequest.runtimeSummary(finalizedMetrics(at: nil), periodic: false),
+            in: diagnosticSession
+        )
+        diagnosticRecorder.record(
+            DiagnosticEventRequest(category: .monitoring, name: .sessionStopped),
+            in: diagnosticSession
+        )
+        activeDiagnosticSession = nil
+        monitoringStartedAt = nil
+        lastPeriodicSummaryAt = nil
+    }
+
+    private func recordFailure(category: DiagnosticCategory, in session: DiagnosticSession) {
+        diagnosticRecorder.record(DiagnosticEventRequest(category: category, name: .failure), in: session)
+    }
+
+    private func recordAttentionDiagnostics(
+        for transition: AttentionStateMachineResult,
+        sampleTime: TimeInterval
+    ) {
+        guard let diagnosticSession = activeDiagnosticSession else {
+            return
+        }
+
+        if monitoringStartedAt == nil {
+            monitoringStartedAt = sampleTime
+            lastPeriodicSummaryAt = sampleTime
+        }
+
+        diagnosticRecorder.record(
+            DiagnosticEventRequest(
+                category: .attention,
+                name: .attentionTransition,
+                fields: attentionFields(for: transition)
+            ),
+            in: diagnosticSession
+        )
+        recordPeriodicRuntimeSummaryIfNeeded(at: sampleTime, in: diagnosticSession)
+    }
+
+    private func recordPeriodicRuntimeSummaryIfNeeded(at sampleTime: TimeInterval, in session: DiagnosticSession) {
+        guard diagnosticMode == .diagnostic else {
+            return
+        }
+
+        let lastSummary = lastPeriodicSummaryAt ?? sampleTime
+        guard sampleTime - lastSummary >= runtimeSummaryInterval else {
+            return
+        }
+
+        diagnosticRecorder.record(
+            DiagnosticEventRequest.runtimeSummary(finalizedMetrics(at: sampleTime), periodic: true),
+            in: session
+        )
+        lastPeriodicSummaryAt = sampleTime
+    }
+
+    private func finalizedMetrics(at sampleTime: TimeInterval?) -> DiagnosticRuntimeMetrics {
+        var metrics = monitoringMetrics
+        let endTime = sampleTime ?? Date().timeIntervalSince1970
+        if let monitoringStartedAt {
+            let duration = max(endTime - monitoringStartedAt, 0.0)
+            if duration > 0.0 {
+                metrics.analyzerRateHz = Double(metrics.framesAnalyzed) / duration
+            }
+        }
+        return metrics
+    }
+
+    private func attentionFields(for transition: AttentionStateMachineResult) -> [DiagnosticField] {
+        var fields = [
+            diagnosticField(.rawSignal, .string(String(describing: transition.rawSignal))),
+            diagnosticField(.previousState, .string(String(describing: transition.previousState))),
+            diagnosticField(.nextState, .string(String(describing: transition.nextState))),
+            diagnosticField(.previousEmittedState, .string(String(describing: transition.previousEmittedState))),
+            diagnosticField(.transitionReason, .string(String(describing: transition.reason)))
+        ]
+
+        if let candidateSignal = transition.candidateSignal {
+            fields.append(diagnosticField(.candidateSignal, .string(String(describing: candidateSignal))))
+        }
+        if let candidateStartedAt = transition.candidateStartedAt {
+            fields.append(diagnosticField(.candidateStartedAt, .double(candidateStartedAt)))
+        }
+        if let elapsedSinceCandidateStart = transition.elapsedSinceCandidateStart {
+            fields.append(diagnosticField(.elapsedSinceCandidateStart, .double(elapsedSinceCandidateStart)))
+        }
+        if let requiredThreshold = transition.requiredThreshold {
+            fields.append(diagnosticField(.requiredThreshold, .double(requiredThreshold)))
+        }
+
+        return fields
+    }
+
+    private func diagnosticField(_ name: DiagnosticFieldName, _ value: DiagnosticFieldValue) -> DiagnosticField {
+        guard let field = try? DiagnosticField(name, value) else {
+            preconditionFailure("Static attention diagnostic field failed validation.")
+        }
+        return field
     }
 
     private func clearActiveCapture(sessionID: UUID?) {

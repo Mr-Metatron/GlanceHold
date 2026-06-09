@@ -35,7 +35,7 @@ final class DiagnosticSession {
     }
 }
 
-enum DiagnosticCategory: String, Equatable {
+enum DiagnosticCategory: String, Equatable, Hashable {
     case monitoring
     case camera
     case attention
@@ -62,6 +62,11 @@ enum DiagnosticFieldName: String, Equatable, Hashable {
     case rawSignal
     case previousState
     case nextState
+    case candidateSignal
+    case candidateStartedAt
+    case elapsedSinceCandidateStart
+    case requiredThreshold
+    case previousEmittedState
     case transitionReason
     case playbackState
     case speedPresent
@@ -77,6 +82,18 @@ enum DiagnosticFieldName: String, Equatable, Hashable {
     case analysisLatencyMillisecondsAverage
     case analysisLatencyMillisecondsMax
     case summaryKind
+    case inputSampleCount
+    case selectedWindowSampleCount
+    case selectedWindowDurationSeconds
+    case selectedWindowSpreadDegrees
+    case selectedWindowQuality
+    case failureReason
+    case captureEndReason
+    case calibrationFrameCount
+    case calibrationPoseCount
+    case calibrationNoFaceCount
+    case calibrationAmbiguousCount
+    case calibrationFailedCount
 }
 
 enum DiagnosticFieldValue: Equatable {
@@ -158,6 +175,20 @@ struct DiagnosticRuntimeMetrics: Equatable {
 
         return analysisLatencyMillisecondsTotal / Double(framesAnalyzed)
     }
+
+    static var empty: DiagnosticRuntimeMetrics {
+        DiagnosticRuntimeMetrics(
+            framesReceived: 0,
+            framesAnalyzed: 0,
+            analyzerRateHz: 0.0,
+            semanticStateChanges: 0,
+            playbackSnapshots: 0,
+            playbackCommands: 0,
+            droppedSamples: 0,
+            analysisLatencyMillisecondsTotal: 0.0,
+            analysisLatencyMillisecondsMax: 0.0
+        )
+    }
 }
 
 struct DiagnosticEventRequest: Equatable {
@@ -200,6 +231,13 @@ struct DiagnosticEvent: Equatable {
 protocol DiagnosticRecording: AnyObject {
     @discardableResult
     func record(_ request: DiagnosticEventRequest, in session: DiagnosticSession) -> DiagnosticEvent?
+}
+
+final class NoOpDiagnosticRecorder: DiagnosticRecording {
+    @discardableResult
+    func record(_ request: DiagnosticEventRequest, in session: DiagnosticSession) -> DiagnosticEvent? {
+        nil
+    }
 }
 
 enum DiagnosticEventPolicy {

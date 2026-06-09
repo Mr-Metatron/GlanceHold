@@ -374,6 +374,122 @@ final class AttentionMonitorTests: XCTestCase {
         XCTAssertEqual(notifiedStates, [.facing, .facing, .lookingAway])
     }
 
+    func testDefaultModeDiagnosticsStayQuietAndRecordFinalSummary() async {
+        let recorder = MonitorDiagnosticRecorder(mode: .default)
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: MonitorSettingsStore(settings: .defaults.withCalibration(snapshot(.high))),
+            capture: FakeCameraFrameCapture(),
+            analyzer: FakeVisionAnalyzer(),
+            diagnosticRecorder: recorder,
+            diagnosticMode: .default
+        )
+
+        await monitor.startMonitoring()
+        for index in 0..<30 {
+            _ = monitor.applySample(.pose(makePose(yaw: 0.0, pitch: 0.0, time: Double(index) * 0.1)))
+        }
+        monitor.stopMonitoring()
+
+        let eventNames = recorder.events.map(\.name)
+        XCTAssertFalse(eventNames.contains(.frameReceived))
+        XCTAssertFalse(eventNames.contains(.analysisCompleted))
+        XCTAssertFalse(eventNames.contains(.repeatedStableState))
+        XCTAssertFalse(eventNames.contains(.attentionTransition))
+        XCTAssertFalse(recorder.events.contains { $0.name == .runtimeSummary && fieldValue(.summaryKind, in: $0) == "periodic" })
+        XCTAssertTrue(recorder.events.contains { $0.name == .runtimeSummary && fieldValue(.summaryKind, in: $0) == "final" })
+    }
+
+    func testDiagnosticModeRecordsAttentionBreadcrumbsAndPeriodicSummary() async {
+        let recorder = MonitorDiagnosticRecorder(mode: .diagnostic)
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: MonitorSettingsStore(settings: .defaults.withCalibration(snapshot(.high))),
+            capture: FakeCameraFrameCapture(),
+            analyzer: FakeVisionAnalyzer(),
+            diagnosticRecorder: recorder,
+            diagnosticMode: .diagnostic,
+            runtimeSummaryInterval: 5.0
+        )
+
+        await monitor.startMonitoring()
+        _ = monitor.applySample(.pose(makePose(yaw: 0.0, pitch: 0.0, time: 0.0)))
+        _ = monitor.applySample(.pose(makePose(yaw: 30.0, pitch: 0.0, time: 0.1)))
+        _ = monitor.applySample(.pose(makePose(yaw: 30.0, pitch: 0.0, time: 1.1)))
+        _ = monitor.applySample(.pose(makePose(yaw: 30.0, pitch: 0.0, time: 6.2)))
+
+        let transitions = recorder.events.filter { $0.name == .attentionTransition }
+        XCTAssertFalse(transitions.isEmpty)
+        XCTAssertTrue(transitions.contains { event in
+            fieldValue(.rawSignal, in: event) == "away"
+                && fieldValue(.previousState, in: event) == "facing"
+                && fieldValue(.nextState, in: event) == "lookingAway"
+                && fieldValue(.transitionReason, in: event) == "thresholdReached"
+        })
+        XCTAssertTrue(recorder.events.contains { $0.name == .runtimeSummary && fieldValue(.summaryKind, in: $0) == "periodic" })
+    }
+
+    func testMonitoringDiagnosticsShareSessionAndIncreasingSequence() async {
+        let recorder = MonitorDiagnosticRecorder(mode: .diagnostic)
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: MonitorSettingsStore(settings: .defaults.withCalibration(snapshot(.high))),
+            capture: FakeCameraFrameCapture(),
+            analyzer: FakeVisionAnalyzer(),
+            diagnosticRecorder: recorder,
+            diagnosticMode: .diagnostic
+        )
+
+        await monitor.startMonitoring()
+        _ = monitor.applySample(.pose(makePose(yaw: 30.0, pitch: 0.0, time: 0.0)))
+        _ = monitor.applySample(.pose(makePose(yaw: 30.0, pitch: 0.0, time: 1.0)))
+        monitor.stopMonitoring()
+
+        let monitoringEvents = recorder.events.filter { $0.sessionKind == .monitoring }
+        let sessionIDs = Set(monitoringEvents.map(\.sessionID))
+        XCTAssertEqual(sessionIDs.count, 1)
+        XCTAssertEqual(monitoringEvents.map(\.sequence), monitoringEvents.map(\.sequence).sorted())
+        XCTAssertEqual(Set(monitoringEvents.map(\.category)), [.monitoring, .attention, .runtimeSummary])
+    }
+
+    func testCalibrationDiagnosticsAreScalarAndUseCalibrationSession() async {
+        let recorder = MonitorDiagnosticRecorder(mode: .default)
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: MonitorSettingsStore(),
+            capture: FakeCameraFrameCapture(),
+            analyzer: FakeVisionAnalyzer(),
+            diagnosticRecorder: recorder
+        )
+
+        _ = await monitor.startCalibration(samples: samples(spread: 0.4))
+
+        guard let calibrationEnded = recorder.events.first(where: { $0.name == .calibrationEnded }) else {
+            return XCTFail("Expected calibrationEnded diagnostic event")
+        }
+        XCTAssertEqual(calibrationEnded.category, .calibration)
+        XCTAssertEqual(calibrationEnded.sessionKind, .calibration)
+        XCTAssertEqual(calibrationEnded.fields.map(\.name), [
+            .calibrationFrameCount,
+            .calibrationPoseCount,
+            .calibrationNoFaceCount,
+            .calibrationAmbiguousCount,
+            .calibrationFailedCount,
+            .inputSampleCount,
+            .selectedWindowSampleCount,
+            .selectedWindowDurationSeconds,
+            .selectedWindowSpreadDegrees,
+            .selectedWindowQuality,
+            .failureReason,
+            .captureEndReason
+        ])
+        let fieldNames = calibrationEnded.fields.map { $0.name.rawValue }
+        XCTAssertFalse(fieldNames.contains("sampleBuffer"))
+        XCTAssertFalse(fieldNames.contains("image"))
+        XCTAssertFalse(fieldNames.contains("faceBox"))
+        XCTAssertFalse(fieldNames.contains("rawPoseStream"))
+    }
+
     func testSettingsUpdatesSaveImmediatelyAndSurviveReload() throws {
         let store = MonitorSettingsStore()
         let monitor = AttentionMonitor(
@@ -535,6 +651,37 @@ private final class SequencedVisionAnalyzer: VisionAttentionAnalyzing {
         analyzeCount += 1
         return observations.isEmpty ? .ambiguous(time: frame.time) : observations.removeFirst()
     }
+}
+
+private final class MonitorDiagnosticRecorder: DiagnosticRecording {
+    let mode: DiagnosticMode
+    private(set) var events: [DiagnosticEvent] = []
+
+    init(mode: DiagnosticMode) {
+        self.mode = mode
+    }
+
+    @discardableResult
+    func record(_ request: DiagnosticEventRequest, in session: DiagnosticSession) -> DiagnosticEvent? {
+        guard DiagnosticEventPolicy.shouldRecord(request, mode: mode) else {
+            return nil
+        }
+
+        let event = DiagnosticEvent(
+            category: request.category,
+            name: request.name,
+            sessionID: session.id,
+            sessionKind: session.kind,
+            sequence: session.nextSequence(),
+            fields: request.fields
+        )
+        events.append(event)
+        return event
+    }
+}
+
+private func fieldValue(_ name: DiagnosticFieldName, in event: DiagnosticEvent) -> String? {
+    event.fields.first { $0.name == name }?.value.logValue
 }
 
 private func snapshot(_ quality: CalibrationQuality) -> CalibrationSnapshot {
