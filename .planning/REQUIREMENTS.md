@@ -15,7 +15,7 @@
 
 ### Power Hot Path
 
-- [ ] **PWR-01**: User can monitor stable facing attention without Vision analysis running at camera frame rate.
+- [x] **PWR-01**: User can monitor stable facing attention without Vision analysis running at camera frame rate.
 - [x] **PWR-02**: User can remain in the same attention state without duplicate semantic notifications triggering repeated playback snapshots.
 - [x] **PWR-03**: User can monitor IINA without stable-state playback checks creating high-frequency WebSocket round trips.
 - [x] **PWR-04**: Developer can verify power hot-path behavior with fake high-frame-rate tests that bound analyzer calls, semantic notifications, playback snapshots, and commands.
@@ -86,7 +86,7 @@
 | OBS-03 | Phase 7 | Complete |
 | OBS-04 | Phase 7 | Complete |
 | OBS-05 | Phase 7 | Complete |
-| PWR-01 | Phase 8 | Pending |
+| PWR-01 | Phase 8 | Complete |
 | PWR-02 | Phase 8 | Complete |
 | PWR-03 | Phase 8 | Complete |
 | PWR-04 | Phase 8 | Complete |

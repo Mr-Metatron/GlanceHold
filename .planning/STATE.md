@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Runtime Reliability and Power Budget
-status: executing
-stopped_at: Completed 08-04-PLAN.md
-last_updated: "2026-06-09T16:52:29.724Z"
-last_activity: 2026-06-09
+status: verifying
+stopped_at: Completed 08-06-PLAN.md with pending post-change resource evidence
+last_updated: "2026-06-09T17:00:01.700Z"
+last_activity: 2026-06-10
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 11
-  completed_plans: 10
-  percent: 20
+  completed_plans: 11
+  percent: 40
 ---
 
 # Project State
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-06-09 after completing Phase 7)
 
 Phase: 08 (power-hot-path-sampling-and-notification-deduplication) — EXECUTING
 Plan: 6 of 6
-Status: Ready to execute
-Last activity: 2026-06-09
+Status: Phase complete — ready for verification
+Last activity: 2026-06-10
 
 ## Performance Metrics
 
@@ -88,6 +88,7 @@ Last activity: 2026-06-09
 | Phase 08 P02 | 2min | 3 tasks | 6 files |
 | Phase 08 P03 | 6min | 3 tasks | 10 files |
 | Phase 08 P04 | 6min | 3 tasks | 7 files |
+| Phase 08 P06 | 4min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -111,6 +112,9 @@ Recent decisions affecting current work:
 - [Phase 08]: 08-04 emits no-op reason diagnostics as Diagnostic Mode-only playbackNoOpSummary events; default runtime summaries omit no-op details.
 - [Phase 08]: 08-04 records repeated stable-state suppression at the app dedup boundary using a notRead breadcrumb without calling handleAttentionState, reading snapshots, or emitting commands.
 - [Phase 08]: 08-04 coalesces coordinator no-command decisions per monitoring session with count plus first/latest scalar breadcrumbs.
+- [Phase 08]: 08-06 keeps verification pending-resource-evidence until post-change live resource observations are supplied or explicitly accepted as a limitation. — Manual post-change scalar evidence is required by the plan; automated gates alone cannot make Phase 8 nyquist-compliant.
+- [Phase 08]: 08-06 treats the first full XCTest host kill as transient because the immediate identical retry passed. — The first run failed before test bootstrapping with signal kill, while the identical retry passed without assertion failures.
+- [Phase 08]: 08-06 does not use a fixed watt threshold for resource evidence. — Phase 8 resource readings are noisy, so verification relies on automated quantity gates plus scalar before/after observations.
 
 ### Roadmap Evolution
 
@@ -138,6 +142,7 @@ Recent decisions affecting current work:
 - [v1.1]: Logging must be default-quiet and privacy-safe; diagnostic mode may add detail but must not store frames or upload visual data.
 - [v1.1]: Bridge token/pairing strategy needs an explicit design choice before implementation.
 - [Phase 7]: Live Diagnostic Mode unified-log evidence passed. Pre-paused IINA startup semantics were fixed in quick task 260609-jit.
+- [Phase 08]: Post-change 1-minute stable-viewing resource observation is pending; need IINA/plugin/camera state plus CPU, energy impact if available, wakeups if available, WebSocket/network scalar, and analyzer received/analyzed/skipped/rate counters before marking verification passed or nyquist_compliant true.
 
 ### Quick Tasks Completed
 
@@ -162,8 +167,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-09T16:52:29.472Z
-Stopped at: Completed 08-04-PLAN.md
+Last session: 2026-06-09T16:59:34.946Z
+Stopped at: Completed 08-06-PLAN.md with pending post-change resource evidence
 Resume file: None
 
 ## Operator Next Steps
