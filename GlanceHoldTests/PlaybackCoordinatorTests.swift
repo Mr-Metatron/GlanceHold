@@ -587,7 +587,123 @@ final class PlaybackCoordinatorTests: XCTestCase {
         XCTAssertTrue(recorder.events.contains { $0.category == .runtimeSummary && $0.name == .runtimeSummary })
     }
 
-    func testNoIntentPlaybackEvaluationsDoNotEmitDetailedNoOpBreadcrumbs() async {
+    func testDiagnosticModeCoalescesNoOpReasonSummaries() async throws {
+        let recorder = PlaybackDiagnosticRecorder(mode: .diagnostic)
+        let session = DiagnosticSession(kind: .monitoring)
+        let adapter = FakeIINAPlaybackAdapter(
+            snapshots: [
+                PlayerSnapshot(playbackState: .playing, speed: nil),
+                PlayerSnapshot(playbackState: .playing, speed: nil),
+                PlayerSnapshot(playbackState: .paused, speed: nil)
+            ]
+        )
+        let coordinator = PlaybackCoordinator(
+            mode: .speedControl,
+            adapter: adapter,
+            diagnosticRecorder: recorder,
+            diagnosticMode: .diagnostic,
+            diagnosticSession: session
+        )
+
+        await coordinator.handleAttentionState(.lookingAway)
+        await coordinator.handleAttentionState(.lookingAway)
+        await coordinator.handleAttentionState(.facing)
+        coordinator.stopMonitoring()
+
+        let summaries = recorder.events.filter { $0.name == .playbackNoOpSummary }
+        XCTAssertEqual(summaries.count, 1)
+        let summary = try XCTUnwrap(summaries.first)
+        XCTAssertEqual(fieldValue(.noOpReason, in: summary), "missingSpeed")
+        XCTAssertEqual(fieldValue(.noOpCount, in: summary), "3")
+        XCTAssertEqual(fieldValue(.firstAttentionState, in: summary), "lookingAway")
+        XCTAssertEqual(fieldValue(.latestAttentionState, in: summary), "facing")
+        XCTAssertEqual(fieldValue(.firstSnapshotState, in: summary), "playing")
+        XCTAssertEqual(fieldValue(.latestSnapshotState, in: summary), "paused")
+        XCTAssertEqual(fieldValue(.firstSpeedPresent, in: summary), "false")
+        XCTAssertEqual(fieldValue(.latestSpeedPresent, in: summary), "false")
+        XCTAssertEqual(fieldValue(.firstIntentType, in: summary), "none")
+        XCTAssertEqual(fieldValue(.latestIntentType, in: summary), "none")
+        XCTAssertEqual(adapter.commands, [])
+    }
+
+    func testDiagnosticModeRecordsRepresentativeNoOpReasonsAtCoordinatorBoundary() async {
+        let recorder = PlaybackDiagnosticRecorder(mode: .diagnostic)
+        let coordinator = PlaybackCoordinator(
+            mode: .speedControl,
+            adapter: FakeIINAPlaybackAdapter(
+                snapshots: [
+                    PlayerSnapshot(playbackState: .playing, speed: nil),
+                    .idle,
+                    .playing(speed: 1.5),
+                    .playing(speed: 1.5)
+                ]
+            ),
+            diagnosticRecorder: recorder,
+            diagnosticMode: .diagnostic,
+            diagnosticSession: DiagnosticSession(kind: .monitoring)
+        )
+
+        await coordinator.handleAttentionState(.lookingAway)
+        await coordinator.handleAttentionState(.lookingAway)
+        await coordinator.handleAttentionState(.recovering)
+        await coordinator.handleAttentionState(.facing)
+        coordinator.stopMonitoring()
+
+        let reasons = recorder.events
+            .filter { $0.name == .playbackNoOpSummary }
+            .compactMap { fieldValue(.noOpReason, in: $0) }
+
+        XCTAssertEqual(Set(reasons), [
+            "missingSpeed",
+            "playerNotControllable",
+            "recoveringNoCommand",
+            "policyEvaluatedWithoutIntent"
+        ])
+    }
+
+    func testDefaultModeRecordsNoNoOpReasonDetailsIncludingFinalSummaries() async {
+        let recorder = PlaybackDiagnosticRecorder(mode: .default)
+        let session = DiagnosticSession(kind: .monitoring)
+        let adapter = FakeIINAPlaybackAdapter(
+            snapshots: [
+                PlayerSnapshot(playbackState: .playing, speed: nil),
+                .idle,
+                .playing(speed: 1.5)
+            ]
+        )
+        let coordinator = PlaybackCoordinator(
+            mode: .speedControl,
+            adapter: adapter,
+            diagnosticRecorder: recorder,
+            diagnosticMode: .default,
+            diagnosticSession: session
+        )
+
+        await coordinator.handleAttentionState(.lookingAway)
+        await coordinator.handleAttentionState(.lookingAway)
+        await coordinator.handleAttentionState(.facing)
+        coordinator.stopMonitoring()
+
+        XCTAssertFalse(recorder.events.contains { $0.name == .playbackNoOpSummary })
+        for event in recorder.events {
+            XCTAssertFalse(event.fields.contains { field in
+                [
+                    DiagnosticFieldName.noOpReason,
+                    .noOpCount,
+                    .firstAttentionState,
+                    .latestAttentionState,
+                    .firstSnapshotState,
+                    .latestSnapshotState,
+                    .firstSpeedPresent,
+                    .latestSpeedPresent,
+                    .firstIntentType,
+                    .latestIntentType
+                ].contains(field.name)
+            })
+        }
+    }
+
+    func testNoIntentPlaybackEvaluationsEmitBoundedNoOpSummaryInDiagnosticMode() async {
         let recorder = PlaybackDiagnosticRecorder(mode: .diagnostic)
         let adapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5), .playing(speed: 1.5)])
         let coordinator = PlaybackCoordinator(
@@ -604,6 +720,7 @@ final class PlaybackCoordinatorTests: XCTestCase {
 
         XCTAssertFalse(recorder.events.contains { $0.name == .playbackAction })
         XCTAssertTrue(recorder.events.contains { $0.name == .runtimeSummary })
+        XCTAssertEqual(recorder.events.filter { $0.name == .playbackNoOpSummary }.count, 1)
     }
 }
 

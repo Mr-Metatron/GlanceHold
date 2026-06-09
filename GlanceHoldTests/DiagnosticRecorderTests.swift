@@ -149,6 +149,88 @@ final class DiagnosticRecorderTests: XCTestCase {
         ])
     }
 
+    func testPlaybackNoOpDiagnosticFieldsAreTypedScalarAndPrivacySafe() throws {
+        let fields = [
+            try DiagnosticField(name: "noOpReason", value: .string("missingSpeed")),
+            try DiagnosticField(name: "noOpCount", value: .int(3)),
+            try DiagnosticField(name: "firstAttentionState", value: .string("lookingAway")),
+            try DiagnosticField(name: "latestAttentionState", value: .string("lookingAway")),
+            try DiagnosticField(name: "firstSnapshotState", value: .string("playing")),
+            try DiagnosticField(name: "latestSnapshotState", value: .string("playing")),
+            try DiagnosticField(name: "firstSpeedPresent", value: .bool(false)),
+            try DiagnosticField(name: "latestSpeedPresent", value: .bool(false)),
+            try DiagnosticField(name: "firstIntentType", value: .string("none")),
+            try DiagnosticField(name: "latestIntentType", value: .string("none"))
+        ]
+
+        XCTAssertEqual(fields.map(\.name), [
+            .noOpReason,
+            .noOpCount,
+            .firstAttentionState,
+            .latestAttentionState,
+            .firstSnapshotState,
+            .latestSnapshotState,
+            .firstSpeedPresent,
+            .latestSpeedPresent,
+            .firstIntentType,
+            .latestIntentType
+        ])
+
+        for field in fields {
+            XCTAssertFalse(field.name.rawValue.contains("sampleBuffer"))
+            XCTAssertFalse(field.name.rawValue.contains("image"))
+            XCTAssertFalse(field.name.rawValue.contains("faceBox"))
+            XCTAssertFalse(field.name.rawValue.contains("rawPoseStream"))
+            XCTAssertFalse(field.name.rawValue.contains("mediaPath"))
+            XCTAssertFalse(field.name.rawValue.contains("mediaTitle"))
+            XCTAssertFalse(field.name.rawValue.contains("rawBridgePayload"))
+            XCTAssertFalse(field.name.rawValue.contains("bridgeToken"))
+            XCTAssertFalse(field.name.rawValue.contains("token"))
+        }
+    }
+
+    func testDefaultModeDropsNoOpSummaryEvents() throws {
+        let recorder = FakeDiagnosticRecorder(mode: .default)
+        let session = DiagnosticSession(kind: .monitoring)
+        let request = DiagnosticEventRequest(
+            category: .playback,
+            name: .playbackNoOpSummary,
+            fields: [
+                try DiagnosticField(name: "noOpReason", value: .string("policyEvaluatedWithoutIntent")),
+                try DiagnosticField(name: "noOpCount", value: .int(1))
+            ]
+        )
+
+        XCTAssertNil(recorder.record(request, in: session))
+        XCTAssertTrue(recorder.events.isEmpty)
+        XCTAssertEqual(recorder.droppedEventCounts[.playbackNoOpSummary], 1)
+    }
+
+    func testDiagnosticModeAcceptsBoundedNoOpSummaryBreadcrumbs() throws {
+        let recorder = FakeDiagnosticRecorder(mode: .diagnostic)
+        let session = DiagnosticSession(kind: .monitoring)
+        let request = DiagnosticEventRequest(
+            category: .playback,
+            name: .playbackNoOpSummary,
+            fields: [
+                try DiagnosticField(name: "noOpReason", value: .string("recoveringNoCommand")),
+                try DiagnosticField(name: "noOpCount", value: .int(5)),
+                try DiagnosticField(name: "firstAttentionState", value: .string("recovering")),
+                try DiagnosticField(name: "latestAttentionState", value: .string("recovering")),
+                try DiagnosticField(name: "firstSnapshotState", value: .string("playing")),
+                try DiagnosticField(name: "latestSnapshotState", value: .string("playing")),
+                try DiagnosticField(name: "firstSpeedPresent", value: .bool(true)),
+                try DiagnosticField(name: "latestSpeedPresent", value: .bool(true)),
+                try DiagnosticField(name: "firstIntentType", value: .string("none")),
+                try DiagnosticField(name: "latestIntentType", value: .string("none"))
+            ]
+        )
+
+        XCTAssertNotNil(recorder.record(request, in: session))
+        XCTAssertEqual(recorder.events.map(\.name), [.playbackNoOpSummary])
+        XCTAssertEqual(recorder.events[0].fields.first { $0.name == .noOpCount }?.value.logValue, "5")
+    }
+
     func testRuntimeMetricsSummaryUsesScalarAggregateFields() {
         let metrics = DiagnosticRuntimeMetrics(
             framesReceived: 120,
