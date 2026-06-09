@@ -33,6 +33,7 @@ final class PlaybackCoordinator {
     private var monitoringSessionActive = false
     private var activeDiagnosticSession: DiagnosticSession?
     private var playbackMetrics = DiagnosticRuntimeMetrics.empty
+    private var playbackNoOpAggregates: [PlaybackNoOpReason: PlaybackNoOpAggregate] = [:]
 
     private(set) var state: PlaybackCoordinatorState {
         didSet {
@@ -63,6 +64,7 @@ final class PlaybackCoordinator {
     func setDiagnosticSession(_ session: DiagnosticSession?) {
         activeDiagnosticSession = session
         playbackMetrics = .empty
+        playbackNoOpAggregates.removeAll()
     }
 
     func stopMonitoring() {
@@ -120,6 +122,12 @@ final class PlaybackCoordinator {
         updateState(snapshot: snapshot, isPlayerControllable: isControllable)
 
         guard isControllable else {
+            recordPlaybackNoOp(
+                reason: noOpReasonForUncontrollableSnapshot(snapshot),
+                attentionState: state,
+                snapshot: snapshot,
+                intent: nil
+            )
             return
         }
 
@@ -130,6 +138,12 @@ final class PlaybackCoordinator {
 
         let result = policy.apply(attention: state, player: snapshot)
         guard let intent = result.intents.first else {
+            recordPlaybackNoOp(
+                reason: noOpReasonForNoIntent(attentionState: state),
+                attentionState: state,
+                snapshot: snapshot,
+                intent: nil
+            )
             return
         }
 
@@ -312,11 +326,82 @@ final class PlaybackCoordinator {
             return
         }
 
+        recordPlaybackNoOpSummaries(in: diagnosticSession)
         diagnosticRecorder.record(
             DiagnosticEventRequest.runtimeSummary(playbackMetrics, periodic: false),
             in: diagnosticSession
         )
         activeDiagnosticSession = nil
+        playbackNoOpAggregates.removeAll()
+    }
+
+    private func noOpReasonForUncontrollableSnapshot(_ snapshot: PlayerSnapshot) -> PlaybackNoOpReason {
+        switch snapshot.playbackState {
+        case .playing, .paused:
+            snapshot.speed == nil ? .missingSpeed : .playerNotControllable
+        case .idle, .setupNeeded, .playerUnavailable:
+            .playerNotControllable
+        }
+    }
+
+    private func noOpReasonForNoIntent(attentionState: DebouncedAttentionState) -> PlaybackNoOpReason {
+        switch attentionState {
+        case .recovering:
+            .recoveringNoCommand
+        case .facing, .lookingAway, .noFaceDetected, .unavailable:
+            .policyEvaluatedWithoutIntent
+        }
+    }
+
+    private func recordPlaybackNoOp(
+        reason: PlaybackNoOpReason,
+        attentionState: DebouncedAttentionState,
+        snapshot: PlayerSnapshot,
+        intent: PlaybackIntent?
+    ) {
+        guard diagnosticMode == .diagnostic, activeDiagnosticSession != nil else {
+            return
+        }
+
+        let breadcrumb = PlaybackNoOpBreadcrumb(
+            attentionState: attentionState.diagnosticName,
+            snapshotState: snapshot.playbackState.diagnosticName,
+            speedPresent: snapshot.speed != nil,
+            intentType: intent?.diagnosticName ?? "none"
+        )
+        playbackNoOpAggregates[reason, default: PlaybackNoOpAggregate(first: breadcrumb)].record(breadcrumb)
+    }
+
+    private func recordPlaybackNoOpSummaries(in diagnosticSession: DiagnosticSession) {
+        guard diagnosticMode == .diagnostic else {
+            return
+        }
+
+        for reason in PlaybackNoOpReason.allCases {
+            guard let aggregate = playbackNoOpAggregates[reason] else {
+                continue
+            }
+
+            diagnosticRecorder.record(
+                DiagnosticEventRequest(
+                    category: .playback,
+                    name: .playbackNoOpSummary,
+                    fields: [
+                        diagnosticField(.noOpReason, .string(reason.rawValue)),
+                        diagnosticField(.noOpCount, .int(aggregate.count)),
+                        diagnosticField(.firstAttentionState, .string(aggregate.first.attentionState)),
+                        diagnosticField(.latestAttentionState, .string(aggregate.latest.attentionState)),
+                        diagnosticField(.firstSnapshotState, .string(aggregate.first.snapshotState)),
+                        diagnosticField(.latestSnapshotState, .string(aggregate.latest.snapshotState)),
+                        diagnosticField(.firstSpeedPresent, .bool(aggregate.first.speedPresent)),
+                        diagnosticField(.latestSpeedPresent, .bool(aggregate.latest.speedPresent)),
+                        diagnosticField(.firstIntentType, .string(aggregate.first.intentType)),
+                        diagnosticField(.latestIntentType, .string(aggregate.latest.intentType))
+                    ]
+                ),
+                in: diagnosticSession
+            )
+        }
     }
 
     private func recordPlaybackAction(
@@ -357,6 +442,38 @@ final class PlaybackCoordinator {
     }
 }
 
+private enum PlaybackNoOpReason: String, CaseIterable {
+    case missingSpeed
+    case playerNotControllable
+    case recoveringNoCommand
+    case repeatedStableStateNoCommand
+    case policyEvaluatedWithoutIntent
+}
+
+private struct PlaybackNoOpBreadcrumb: Equatable {
+    var attentionState: String
+    var snapshotState: String
+    var speedPresent: Bool
+    var intentType: String
+}
+
+private struct PlaybackNoOpAggregate: Equatable {
+    var count: Int
+    var first: PlaybackNoOpBreadcrumb
+    var latest: PlaybackNoOpBreadcrumb
+
+    init(first: PlaybackNoOpBreadcrumb) {
+        self.count = 0
+        self.first = first
+        self.latest = first
+    }
+
+    mutating func record(_ breadcrumb: PlaybackNoOpBreadcrumb) {
+        count += 1
+        latest = breadcrumb
+    }
+}
+
 private extension PlayerPlaybackState {
     var diagnosticName: String {
         switch self {
@@ -370,6 +487,23 @@ private extension PlayerPlaybackState {
             "setupNeeded"
         case .playerUnavailable:
             "playerUnavailable"
+        }
+    }
+}
+
+private extension DebouncedAttentionState {
+    var diagnosticName: String {
+        switch self {
+        case .facing:
+            "facing"
+        case .lookingAway:
+            "lookingAway"
+        case .noFaceDetected:
+            "noFaceDetected"
+        case .recovering:
+            "recovering"
+        case .unavailable:
+            "unavailable"
         }
     }
 }

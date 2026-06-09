@@ -52,6 +52,7 @@ enum DiagnosticEventName: String, Equatable, Hashable {
     case attentionTransition
     case calibrationEnded
     case playbackAction
+    case playbackNoOpSummary
     case runtimeSummary
     case frameReceived
     case analysisCompleted
@@ -78,6 +79,16 @@ enum DiagnosticFieldName: String, Equatable, Hashable {
     case confirmation
     case completedActionEmitted
     case errorCategory
+    case noOpReason
+    case noOpCount
+    case firstAttentionState
+    case latestAttentionState
+    case firstSnapshotState
+    case latestSnapshotState
+    case firstSpeedPresent
+    case latestSpeedPresent
+    case firstIntentType
+    case latestIntentType
     case framesReceived
     case framesAnalyzed
     case analyzerRateHz
@@ -317,7 +328,7 @@ final class LiveDiagnosticRecorder: DiagnosticRecording {
 private extension DiagnosticEventName {
     var isDiagnosticOnly: Bool {
         switch self {
-        case .attentionTransition, .playbackAction:
+        case .attentionTransition, .playbackAction, .playbackNoOpSummary:
             return true
         case .sessionStarted, .sessionStopped, .failure, .calibrationEnded, .runtimeSummary, .frameReceived, .analysisCompleted, .repeatedStableState:
             return false
@@ -328,7 +339,7 @@ private extension DiagnosticEventName {
         switch self {
         case .frameReceived, .analysisCompleted, .repeatedStableState:
             return true
-        case .sessionStarted, .sessionStopped, .failure, .attentionTransition, .calibrationEnded, .playbackAction, .runtimeSummary:
+        case .sessionStarted, .sessionStopped, .failure, .attentionTransition, .calibrationEnded, .playbackAction, .playbackNoOpSummary, .runtimeSummary:
             return false
         }
     }
