@@ -67,17 +67,20 @@ struct PlaybackPolicyState: Equatable {
     var capturedSpeed: Double?
     var pauseOwnedByGlanceHold: Bool
     var stoppedReason: StopMonitoringReason?
+    var observedPlayingWhileMonitoringActive: Bool
 
     init(
         mode: MonitoringMode,
         capturedSpeed: Double? = nil,
         pauseOwnedByGlanceHold: Bool = false,
-        stoppedReason: StopMonitoringReason? = nil
+        stoppedReason: StopMonitoringReason? = nil,
+        observedPlayingWhileMonitoringActive: Bool = false
     ) {
         self.mode = mode
         self.capturedSpeed = capturedSpeed
         self.pauseOwnedByGlanceHold = pauseOwnedByGlanceHold
         self.stoppedReason = stoppedReason
+        self.observedPlayingWhileMonitoringActive = observedPlayingWhileMonitoringActive
     }
 }
 
@@ -129,6 +132,15 @@ struct PlaybackPolicy: Equatable {
         }
 
         guard monitoringActive, state.mode == .pauseResume, !state.pauseOwnedByGlanceHold else {
+            return result([])
+        }
+
+        if player.playbackState == .playing, player.speed != nil {
+            state.observedPlayingWhileMonitoringActive = true
+            return result([])
+        }
+
+        guard state.observedPlayingWhileMonitoringActive else {
             return result([])
         }
 
@@ -217,6 +229,7 @@ struct PlaybackPolicy: Equatable {
             state.capturedSpeed = nil
             state.pauseOwnedByGlanceHold = false
             state.stoppedReason = .manualPlayerTakeover
+            state.observedPlayingWhileMonitoringActive = false
             return result([.stopMonitoring(reason: .manualPlayerTakeover)])
         }
     }

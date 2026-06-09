@@ -92,7 +92,7 @@ final class PlaybackPolicyTests: XCTestCase {
         XCTAssertFalse(policy.apply(attention: .facing, player: .paused(speed: 1.5)).intents.contains(.resume))
     }
 
-    func testObservedUnownedPauseStopsMonitoringOnlyWhenPauseMonitoringIsActive() {
+    func testObservedUnownedPauseAtMonitoringStartDoesNotStopOrClaimPauseOwnership() {
         var inactivePolicy = PlaybackPolicy(mode: .pauseResume)
 
         let inactiveResult = inactivePolicy.applyObservedPlayerSnapshot(.paused(speed: 1.5), monitoringActive: false)
@@ -105,11 +105,40 @@ final class PlaybackPolicyTests: XCTestCase {
 
         let activeResult = activePolicy.applyObservedPlayerSnapshot(.paused(speed: 1.5), monitoringActive: true)
 
-        XCTAssertEqual(activeResult.intents, [.stopMonitoring(reason: .manualPlayerTakeover)])
-        XCTAssertNil(activeResult.state.capturedSpeed)
+        XCTAssertEqual(activeResult.intents, [])
         XCTAssertFalse(activeResult.state.pauseOwnedByGlanceHold)
-        XCTAssertEqual(activeResult.state.stoppedReason, .manualPlayerTakeover)
+        XCTAssertNil(activeResult.state.stoppedReason)
         assertNoRestoreOrResume(activeResult.intents)
+    }
+
+    func testObservedUnownedPauseAfterPlayingDuringMonitoringStopsAsManualTakeover() {
+        var policy = PlaybackPolicy(mode: .pauseResume)
+
+        let playing = policy.applyObservedPlayerSnapshot(.playing(speed: 1.5), monitoringActive: true)
+        XCTAssertEqual(playing.intents, [])
+        XCTAssertNil(playing.state.stoppedReason)
+
+        let paused = policy.applyObservedPlayerSnapshot(.paused(speed: 1.5), monitoringActive: true)
+
+        XCTAssertEqual(paused.intents, [.stopMonitoring(reason: .manualPlayerTakeover)])
+        XCTAssertFalse(paused.state.pauseOwnedByGlanceHold)
+        XCTAssertEqual(paused.state.stoppedReason, .manualPlayerTakeover)
+        assertNoRestoreOrResume(paused.intents)
+    }
+
+    func testObservedPlayingOutsideActiveMonitoringDoesNotArmManualPauseDetection() {
+        var policy = PlaybackPolicy(mode: .pauseResume)
+
+        let inactivePlaying = policy.applyObservedPlayerSnapshot(.playing(speed: 1.5), monitoringActive: false)
+        XCTAssertEqual(inactivePlaying.intents, [])
+        XCTAssertFalse(inactivePlaying.state.observedPlayingWhileMonitoringActive)
+
+        let activePaused = policy.applyObservedPlayerSnapshot(.paused(speed: 1.5), monitoringActive: true)
+
+        XCTAssertEqual(activePaused.intents, [])
+        XCTAssertFalse(activePaused.state.observedPlayingWhileMonitoringActive)
+        XCTAssertNil(activePaused.state.stoppedReason)
+        assertNoRestoreOrResume(activePaused.intents)
     }
 
     func testManualPlayPressedWhilePauseOwnedStopsMonitoringWithoutResume() {

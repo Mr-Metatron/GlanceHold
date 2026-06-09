@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Runtime Reliability and Power Budget
 status: executing
-stopped_at: Phase 07 Plan 05 complete; live Diagnostic Mode checklist pending
-last_updated: "2026-06-09T03:30:00.000Z"
-last_activity: 2026-06-09 -- Phase 07 Plan 05 automated verification complete; manual Diagnostic Mode evidence pending
+stopped_at: Phase 07 live UAT complete; pre-paused IINA startup ownership quick fix complete
+last_updated: "2026-06-09T06:10:08.000Z"
+last_activity: 2026-06-09 -- Phase 07 live Diagnostic Mode UAT passed; quick fix 260609-jit corrected pre-paused IINA monitoring start semantics
 progress:
   total_phases: 5
   completed_phases: 0
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-06-09 after starting v1.1)
 
 Phase: 7 — Structured Runtime Logging and Diagnostics Foundation
 Plan: 07-05 — Phase 07 evidence and closeout readiness
-Status: Pending live Diagnostic Mode verification
-Last activity: 2026-06-09 -- Completed 07-05 automated verification and created pending live Diagnostic Mode checklist
+Status: Live Diagnostic Mode verification passed; follow-up ownership quick fix complete
+Last activity: 2026-06-09 -- Completed Phase 07 UAT and fixed pre-paused IINA startup so monitoring remains armed without owning an existing pause
 
 ## Performance Metrics
 
@@ -116,7 +116,7 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-- [Phase 7]: Complete `.planning/phases/07-structured-runtime-logging-and-diagnostics-foundation/07-DIAGNOSTIC-CHECKLIST.md` with a live Diagnostic Mode unified-log capture before marking Phase 07 verification passed.
+- [Phase 8]: Begin power hot path sampling and notification deduplication work.
 
 ### Blockers/Concerns
 
@@ -126,7 +126,7 @@ Recent decisions affecting current work:
 - [v1.1]: User observed roughly 5W additional power draw during real monitoring; Phase 8 and Phase 11 must verify before/after behavior.
 - [v1.1]: Logging must be default-quiet and privacy-safe; diagnostic mode may add detail but must not store frames or upload visual data.
 - [v1.1]: Bridge token/pairing strategy needs an explicit design choice before implementation.
-- [Phase 7]: Automated diagnostics gates passed, but live Diagnostic Mode unified-log evidence remains pending.
+- [Phase 7]: Live Diagnostic Mode unified-log evidence passed. Pre-paused IINA startup semantics were fixed in quick task 260609-jit.
 
 ### Quick Tasks Completed
 
@@ -136,6 +136,7 @@ Recent decisions affecting current work:
 | 260606-1jj | 补齐 Phase 1 01-03 人工验证归档并同步 Roadmap/State | 2026-06-06 | this commit | [260606-1jj-phase-1-01-03-roadmap-state](./quick/260606-1jj-phase-1-01-03-roadmap-state/) |
 | 260607-j1k | Repair Phase 4 MVP goal format so gsd-verify-work can run without replanning the completed phase | 2026-06-07 | this commit | [260607-j1k-repair-phase-4-mvp-goal-format-so-gsd-ve](./quick/260607-j1k-repair-phase-4-mvp-goal-format-so-gsd-ve/) |
 | 260608-s6u | Normalize legacy GSD open-item metadata for completed Phase 4/5 UAT, debug sessions, and quick tasks | 2026-06-08 | this commit | [260608-s6u-normalize-legacy-gsd-open-item-metadata-](./quick/260608-s6u-normalize-legacy-gsd-open-item-metadata-/) |
+| 260609-jit | Fix pre-paused IINA monitoring start ownership semantics | 2026-06-09 | this commit | [260609-jit-fix-pre-paused-iina-monitoring-start-own](./quick/260609-jit-fix-pre-paused-iina-monitoring-start-own/) |
 
 ## Deferred Items
 
@@ -150,11 +151,11 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-09T03:30:00.000Z
-Stopped at: Phase 07 Plan 05 complete; live Diagnostic Mode checklist pending
-Resume file: .planning/phases/07-structured-runtime-logging-and-diagnostics-foundation/07-DIAGNOSTIC-CHECKLIST.md
+Last session: 2026-06-09T06:10:08.000Z
+Stopped at: Phase 07 live UAT complete; quick task 260609-jit complete
+Resume file: .planning/quick/260609-jit-fix-pre-paused-iina-monitoring-start-own/260609-jit-SUMMARY.md
 
 ## Operator Next Steps
 
-- Complete the Phase 07 live Diagnostic Mode checklist, then run `/gsd-verify-work 7`.
-- Per user request on 2026-06-09, do not start code review immediately after execution.
+- Start Phase 08 when ready.
+- Per user request on 2026-06-09, do not start code review immediately after execution unless explicitly requested.
