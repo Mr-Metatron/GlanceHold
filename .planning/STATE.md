@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Runtime Reliability and Power Budget
 status: executing
-stopped_at: Completed 08-03-PLAN.md
-last_updated: "2026-06-09T16:43:12.672Z"
+stopped_at: Completed 08-04-PLAN.md
+last_updated: "2026-06-09T16:52:29.724Z"
 last_activity: 2026-06-09
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 11
-  completed_plans: 9
+  completed_plans: 10
   percent: 20
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-09 after completing Phase 7)
 ## Current Position
 
 Phase: 08 (power-hot-path-sampling-and-notification-deduplication) — EXECUTING
-Plan: 5 of 6
+Plan: 6 of 6
 Status: Ready to execute
 Last activity: 2026-06-09
 
@@ -87,6 +87,7 @@ Last activity: 2026-06-09
 | Phase 07 P05 | 7 min | 3 tasks | 4 files |
 | Phase 08 P02 | 2min | 3 tasks | 6 files |
 | Phase 08 P03 | 6min | 3 tasks | 10 files |
+| Phase 08 P04 | 6min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -107,6 +108,9 @@ Recent decisions affecting current work:
 - [Phase 08]: 08-02 treats recovering as playback-relevant by allowing it through once per semantic transition.
 - [Phase 08]: 08-03 treats heartbeat as id-less liveness only; statusChanged remains the snapshot-carrying pushed status event.
 - [Phase 08]: 08-03 removes fixed 10-second playback fallback snapshot polling during stable monitoring in favor of heartbeat/status stream stale reconnect.
+- [Phase 08]: 08-04 emits no-op reason diagnostics as Diagnostic Mode-only playbackNoOpSummary events; default runtime summaries omit no-op details.
+- [Phase 08]: 08-04 records repeated stable-state suppression at the app dedup boundary using a notRead breadcrumb without calling handleAttentionState, reading snapshots, or emitting commands.
+- [Phase 08]: 08-04 coalesces coordinator no-command decisions per monitoring session with count plus first/latest scalar breadcrumbs.
 
 ### Roadmap Evolution
 
@@ -158,8 +162,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-09T16:43:12.668Z
-Stopped at: Completed 08-03-PLAN.md
+Last session: 2026-06-09T16:52:29.472Z
+Stopped at: Completed 08-04-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
