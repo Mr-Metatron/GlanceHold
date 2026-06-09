@@ -75,6 +75,23 @@ final class MonitoringToggleControllerTests: XCTestCase {
         XCTAssertEqual(requester.requestCount, 1)
     }
 
+    func testAppSourceWiresDiagnosticModeRecorderAndMenuNearAboutQuit() throws {
+        let source = try String(contentsOf: projectFileURL("GlanceHold/GlanceHoldApp.swift"), encoding: .utf8)
+
+        XCTAssertTrue(source.contains("let diagnosticSettingsStore = UserDefaultsDiagnosticSettingsStore()"))
+        XCTAssertTrue(source.contains("let loadedDiagnosticSettings = diagnosticSettingsStore.load()"))
+        XCTAssertTrue(source.contains("LiveDiagnosticRecorder(mode: loadedDiagnosticSettings.diagnosticMode)"))
+        XCTAssertTrue(source.contains("diagnosticRecorder: diagnosticRecorder"))
+        XCTAssertTrue(source.contains("restartRequester: LiveAppRestartRequester()"))
+        XCTAssertTrue(source.contains("DiagnosticModeMenuAction.toggle"))
+
+        let diagnosticRange = try XCTUnwrap(source.range(of: "DiagnosticModeMenuPresentation"))
+        let aboutRange = try XCTUnwrap(source.range(of: "GlanceHoldStrings.text(.menuAbout)"))
+        let quitRange = try XCTUnwrap(source.range(of: "GlanceHoldStrings.text(.menuQuit)"))
+        XCTAssertLessThan(diagnosticRange.lowerBound, aboutRange.lowerBound)
+        XCTAssertLessThan(aboutRange.lowerBound, quitRange.lowerBound)
+    }
+
     private func state(status: MonitoringStatus, hasCalibration: Bool) -> GlanceHoldState {
         var settings = AttentionSettings.defaults
         settings.calibration = hasCalibration ? Self.calibration : nil
@@ -86,6 +103,13 @@ final class MonitoringToggleControllerTests: XCTestCase {
         quality: .high,
         createdAt: Date(timeIntervalSince1970: 0)
     )
+
+    private func projectFileURL(_ relativePath: String) -> URL {
+        URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent(relativePath)
+    }
 }
 
 private final class FakeDiagnosticSettingsStore: DiagnosticSettingsStoring {
