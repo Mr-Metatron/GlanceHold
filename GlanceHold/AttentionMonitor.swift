@@ -453,7 +453,10 @@ final class AttentionMonitor {
                     diagnosticField(.calibrationFailedCount, .int(metrics.failedCount)),
                     diagnosticField(.inputSampleCount, .int(diagnostics.inputSampleCount)),
                     diagnosticField(.selectedWindowSampleCount, .int(diagnostics.selectedWindowSampleCount)),
-                    diagnosticField(.selectedWindowDurationSeconds, .double(0.0)),
+                    diagnosticField(
+                        .selectedWindowDurationSeconds,
+                        .double(diagnostics.selectedWindowDurationSeconds ?? 0.0)
+                    ),
                     diagnosticField(.selectedWindowSpreadDegrees, .double(diagnostics.selectedWindowSpreadDegrees ?? 0.0)),
                     diagnosticField(.selectedWindowQuality, .string(quality)),
                     diagnosticField(.failureReason, .string(failureReason)),

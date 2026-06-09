@@ -38,6 +38,7 @@ enum CalibrationFailureReason: String, Equatable {
 struct CalibrationEvaluationDiagnostics: Equatable {
     var inputSampleCount: Int
     var selectedWindowSampleCount: Int
+    var selectedWindowDurationSeconds: TimeInterval?
     var selectedWindowSpreadDegrees: Double?
     var selectedWindowQuality: CalibrationQuality?
     var failureReason: CalibrationFailureReason?
@@ -79,6 +80,7 @@ enum CalibrationModel {
                 diagnostics: CalibrationEvaluationDiagnostics(
                     inputSampleCount: samples.count,
                     selectedWindowSampleCount: 0,
+                    selectedWindowDurationSeconds: nil,
                     selectedWindowSpreadDegrees: nil,
                     selectedWindowQuality: nil,
                     failureReason: .notEnoughPoseSamples
@@ -93,6 +95,7 @@ enum CalibrationModel {
                 diagnostics: CalibrationEvaluationDiagnostics(
                     inputSampleCount: samples.count,
                     selectedWindowSampleCount: 0,
+                    selectedWindowDurationSeconds: nil,
                     selectedWindowSpreadDegrees: nil,
                     selectedWindowQuality: nil,
                     failureReason: .notEnoughPoseSamples
@@ -106,6 +109,7 @@ enum CalibrationModel {
                 diagnostics: CalibrationEvaluationDiagnostics(
                     inputSampleCount: samples.count,
                     selectedWindowSampleCount: selectedWindow.samples.count,
+                    selectedWindowDurationSeconds: duration(of: selectedWindow.samples),
                     selectedWindowSpreadDegrees: selectedWindow.spreadDegrees,
                     selectedWindowQuality: nil,
                     failureReason: .unstablePoseSpread
@@ -131,6 +135,7 @@ enum CalibrationModel {
             diagnostics: CalibrationEvaluationDiagnostics(
                 inputSampleCount: samples.count,
                 selectedWindowSampleCount: selectedWindow.samples.count,
+                selectedWindowDurationSeconds: duration(of: selectedWindow.samples),
                 selectedWindowSpreadDegrees: selectedWindow.spreadDegrees,
                 selectedWindowQuality: quality,
                 failureReason: nil
@@ -209,6 +214,14 @@ enum CalibrationModel {
             rollDegrees: average(samples.map(\.rollDegrees)),
             time: samples.last?.time ?? 0.0
         )
+    }
+
+    private static func duration(of samples: [PoseSample]) -> TimeInterval? {
+        guard let first = samples.first?.time, let last = samples.last?.time else {
+            return nil
+        }
+
+        return max(last - first, 0.0)
     }
 
     private static func maxSpread(_ samples: [PoseSample]) -> Double {

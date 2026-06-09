@@ -508,6 +508,7 @@ final class AttentionMonitorTests: XCTestCase {
         XCTAssertFalse(fieldNames.contains("image"))
         XCTAssertFalse(fieldNames.contains("faceBox"))
         XCTAssertFalse(fieldNames.contains("rawPoseStream"))
+        XCTAssertEqual(fieldValue(.selectedWindowDurationSeconds, in: calibrationEnded), "0.200")
     }
 
     func testSettingsUpdatesSaveImmediatelyAndSurviveReload() throws {
