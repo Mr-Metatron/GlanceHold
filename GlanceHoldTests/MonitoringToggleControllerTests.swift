@@ -75,6 +75,25 @@ final class MonitoringToggleControllerTests: XCTestCase {
         XCTAssertEqual(requester.requestCount, 1)
     }
 
+    func testDiagnosticModeToggleReportsRestartFailureAfterPersistingSetting() throws {
+        let store = FakeDiagnosticSettingsStore(settings: .disabled)
+        let requester = FakeAppRestartRequester()
+        requester.shouldFail = true
+        var restartFailureCount = 0
+
+        try DiagnosticModeMenuAction.toggle(
+            settingsStore: store,
+            restartRequester: requester,
+            restartFailureHandler: {
+                restartFailureCount += 1
+            }
+        )
+
+        XCTAssertEqual(store.savedSettings, [DiagnosticSettings(isEnabled: true)])
+        XCTAssertEqual(requester.requestCount, 1)
+        XCTAssertEqual(restartFailureCount, 1)
+    }
+
     func testAppSourceWiresDiagnosticModeRecorderAndMenuNearAboutQuit() throws {
         let source = try String(contentsOf: projectFileURL("GlanceHold/GlanceHoldApp.swift"), encoding: .utf8)
 
@@ -90,6 +109,16 @@ final class MonitoringToggleControllerTests: XCTestCase {
         let quitRange = try XCTUnwrap(source.range(of: "GlanceHoldStrings.text(.menuQuit)"))
         XCTAssertLessThan(diagnosticRange.lowerBound, aboutRange.lowerBound)
         XCTAssertLessThan(aboutRange.lowerBound, quitRange.lowerBound)
+    }
+
+    func testLiveRestartRequesterOnlyTerminatesAfterSuccessfulRelaunch() throws {
+        let source = try String(contentsOf: projectFileURL("GlanceHold/AppRestartRequester.swift"), encoding: .utf8)
+
+        XCTAssertTrue(source.contains("guard app != nil, error == nil else"))
+        XCTAssertTrue(source.contains("onFailure()"))
+        let relaunchGuardRange = try XCTUnwrap(source.range(of: "guard app != nil, error == nil else"))
+        let terminateRange = try XCTUnwrap(source.range(of: "NSApplication.shared.terminate(nil)"))
+        XCTAssertLessThan(relaunchGuardRange.lowerBound, terminateRange.lowerBound)
     }
 
     private func state(status: MonitoringStatus, hasCalibration: Bool) -> GlanceHoldState {
@@ -140,11 +169,15 @@ private final class FakeDiagnosticSettingsStore: DiagnosticSettingsStoring {
 private final class FakeAppRestartRequester: AppRestartRequesting {
     private(set) var requestCount = 0
     private(set) var events: [String] = []
+    var shouldFail = false
     weak var store: FakeDiagnosticSettingsStore?
 
-    func requestRestart() {
+    func requestRestart(onFailure: @escaping () -> Void) {
         requestCount += 1
         store?.noteRestartObserved()
         events.append("restart")
+        if shouldFail {
+            onFailure()
+        }
     }
 }

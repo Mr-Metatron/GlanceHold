@@ -351,7 +351,12 @@ private struct GlanceHoldMenu: View {
         do {
             try DiagnosticModeMenuAction.toggle(
                 settingsStore: diagnosticSettingsStore,
-                restartRequester: restartRequester
+                restartRequester: restartRequester,
+                restartFailureHandler: {
+                    Task { @MainActor in
+                        state.status = .cameraUnavailable
+                    }
+                }
             )
         } catch {
             state.status = .cameraUnavailable

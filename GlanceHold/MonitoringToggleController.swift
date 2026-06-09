@@ -49,10 +49,11 @@ enum MonitoringToggleController {
 enum DiagnosticModeMenuAction {
     static func toggle(
         settingsStore: DiagnosticSettingsStoring,
-        restartRequester: AppRestartRequesting
+        restartRequester: AppRestartRequesting,
+        restartFailureHandler: @escaping () -> Void = {}
     ) throws {
         let current = settingsStore.load()
         try settingsStore.save(DiagnosticSettings(isEnabled: !current.isEnabled))
-        restartRequester.requestRestart()
+        restartRequester.requestRestart(onFailure: restartFailureHandler)
     }
 }
