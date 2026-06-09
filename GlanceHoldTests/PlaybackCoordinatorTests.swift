@@ -74,6 +74,54 @@ final class PlaybackCoordinatorTests: XCTestCase {
         XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
     }
 
+    func testDedupedStableFacingIsNotAPlayerFreshnessPath() async {
+        var deduper = PlaybackSemanticDeduper()
+        deduper.startSession(UUID(uuidString: "99999999-9999-9999-9999-999999999999")!)
+        let adapter = FakeIINAPlaybackAdapter(
+            snapshots: [
+                .playing(speed: 1.5),
+                .playing(speed: 1.5),
+                .playing(speed: 1.5)
+            ]
+        )
+        let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+
+        for state in [DebouncedAttentionState.facing, .facing, .facing] {
+            if deduper.shouldEmit(state) {
+                await coordinator.handleAttentionState(state)
+            }
+        }
+
+        XCTAssertEqual(adapter.snapshotReadCount, 1, "Stable repeated input is not a player freshness path.")
+        XCTAssertEqual(adapter.commands, [], "Stable repeated input is not a player freshness path.")
+    }
+
+    func testDedupedAwayAndFacingTransitionsStillUseCommandConfirmationSnapshots() async {
+        var deduper = PlaybackSemanticDeduper()
+        deduper.startSession(UUID(uuidString: "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA")!)
+        let adapter = FakeIINAPlaybackAdapter(
+            snapshots: [
+                .playing(speed: 1.25),
+                .playing(speed: 1.0),
+                .playing(speed: 1.0),
+                .playing(speed: 1.25)
+            ]
+        )
+        let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+        var completedActions: [PlaybackCompletedAction] = []
+        coordinator.playbackActionDidComplete = { completedActions.append($0) }
+
+        for state in [DebouncedAttentionState.lookingAway, .lookingAway, .facing, .facing] {
+            if deduper.shouldEmit(state) {
+                await coordinator.handleAttentionState(state)
+            }
+        }
+
+        XCTAssertEqual(adapter.snapshotReadCount, 4)
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne, .restoreSpeed(1.25)])
+        XCTAssertEqual(completedActions, [.heldSpeedAtOne, .restoredSpeed(1.25)])
+    }
+
     func testRefreshPlayerStateReadsSnapshotWithoutPlaybackCommand() async {
         let adapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5)])
         let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
