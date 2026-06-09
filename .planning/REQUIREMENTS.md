@@ -7,11 +7,11 @@
 
 ### Observability and Diagnostics
 
-- [ ] **OBS-01**: User can run GlanceHold normally without per-frame or repetitive log spam at default log levels.
-- [ ] **OBS-02**: Developer can correlate a monitoring session across camera, attention, playback, and bridge logs using a session identifier and monotonic event sequence.
-- [ ] **OBS-03**: Developer can diagnose attention-state surprises from structured state-machine transition logs that include raw signal class, previous state, next state, candidate state, threshold context, and whether a playback event was emitted.
-- [ ] **OBS-04**: Developer can inspect low-frequency runtime metrics for frames received, frames analyzed, analyzer rate, semantic state changes, playback snapshots, playback commands, dropped samples, and analysis latency.
-- [ ] **OBS-05**: Developer can enable high-detail diagnostics for targeted debugging without permanently changing normal-user logging behavior.
+- [x] **OBS-01**: User can run GlanceHold normally without per-frame or repetitive log spam at default log levels.
+- [x] **OBS-02**: Developer can correlate a monitoring session across camera, attention, playback, and bridge logs using a session identifier and monotonic event sequence.
+- [x] **OBS-03**: Developer can diagnose attention-state surprises from structured state-machine transition logs that include raw signal class, previous state, next state, candidate state, threshold context, and whether a playback event was emitted.
+- [x] **OBS-04**: Developer can inspect low-frequency runtime metrics for frames received, frames analyzed, analyzer rate, semantic state changes, playback snapshots, playback commands, dropped samples, and analysis latency.
+- [x] **OBS-05**: Developer can enable high-detail diagnostics for targeted debugging without permanently changing normal-user logging behavior.
 
 ### Power Hot Path
 
@@ -81,11 +81,11 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| OBS-01 | Phase 7 | Pending |
-| OBS-02 | Phase 7 | Pending |
-| OBS-03 | Phase 7 | Pending |
-| OBS-04 | Phase 7 | Pending |
-| OBS-05 | Phase 7 | Pending |
+| OBS-01 | Phase 7 | Complete |
+| OBS-02 | Phase 7 | Complete |
+| OBS-03 | Phase 7 | Complete |
+| OBS-04 | Phase 7 | Complete |
+| OBS-05 | Phase 7 | Complete |
 | PWR-01 | Phase 8 | Pending |
 | PWR-02 | Phase 8 | Pending |
 | PWR-03 | Phase 8 | Pending |

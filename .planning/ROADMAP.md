@@ -22,7 +22,7 @@
 <details open>
 <summary>🚧 v1.1 Runtime Reliability and Power Budget (Phases 7-11) — EXECUTING</summary>
 
-- [ ] Phase 7: Structured Runtime Logging and Diagnostics Foundation (5/5 plans, pending live Diagnostic Mode verification)
+- [x] Phase 7: Structured Runtime Logging and Diagnostics Foundation (5/5 plans) — completed 2026-06-09
 - [ ] Phase 8: Power Hot Path Sampling and Notification Deduplication
 - [ ] Phase 9: Playback Coordinator Ownership and Async Safety
 - [ ] Phase 10: Attention Semantics, Calibration Robustness, and Settings Validation
@@ -114,7 +114,7 @@
 | 4. IINA Adapter Spike and End-to-End Playback Control | v1.0 | 10/10 | Complete | 2026-06-07 |
 | 5. Control Polish, IINA Shortcut, and i18n | v1.0 | 5/5 | Complete | 2026-06-08 |
 | 6. End-to-End UX Hardening and Manual UAT | v1.0 | 4/4 | Complete | 2026-06-08 |
-| 7. Structured Runtime Logging and Diagnostics Foundation | v1.1 | 3/5 | Executing | — |
+| 7. Structured Runtime Logging and Diagnostics Foundation | v1.1 | 5/5 | Complete    | 2026-06-09 |
 | 8. Power Hot Path Sampling and Notification Deduplication | v1.1 | 0/? | Planned | — |
 | 9. Playback Coordinator Ownership and Async Safety | v1.1 | 0/? | Planned | — |
 | 10. Attention Semantics, Calibration Robustness, and Settings Validation | v1.1 | 0/? | Planned | — |
@@ -122,8 +122,8 @@
 
 ## Next
 
-Start Phase 7 planning with:
+Start Phase 8 discussion with:
 
 ```bash
-$gsd-discuss-phase 7
+$gsd-discuss-phase 8
 ```
