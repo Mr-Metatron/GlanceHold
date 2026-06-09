@@ -85,6 +85,7 @@ enum DiagnosticFieldName: String, Equatable, Hashable {
     case playbackSnapshots
     case playbackCommands
     case droppedSamples
+    case skippedSamples
     case analysisLatencyMillisecondsAverage
     case analysisLatencyMillisecondsMax
     case summaryKind
@@ -172,6 +173,7 @@ struct DiagnosticRuntimeMetrics: Equatable {
     var playbackSnapshots: Int
     var playbackCommands: Int
     var droppedSamples: Int
+    var skippedSamples: Int
     var analysisLatencyMillisecondsTotal: Double
     var analysisLatencyMillisecondsMax: Double
 
@@ -192,6 +194,7 @@ struct DiagnosticRuntimeMetrics: Equatable {
             playbackSnapshots: 0,
             playbackCommands: 0,
             droppedSamples: 0,
+            skippedSamples: 0,
             analysisLatencyMillisecondsTotal: 0.0,
             analysisLatencyMillisecondsMax: 0.0
         )
@@ -341,6 +344,7 @@ private extension DiagnosticRuntimeMetrics {
             field(.playbackSnapshots, .int(playbackSnapshots)),
             field(.playbackCommands, .int(playbackCommands)),
             field(.droppedSamples, .int(droppedSamples)),
+            field(.skippedSamples, .int(skippedSamples)),
             field(.analysisLatencyMillisecondsAverage, .double(averageAnalysisLatencyMilliseconds)),
             field(.analysisLatencyMillisecondsMax, .double(analysisLatencyMillisecondsMax)),
             field(.summaryKind, .string(periodic ? "periodic" : "final"))

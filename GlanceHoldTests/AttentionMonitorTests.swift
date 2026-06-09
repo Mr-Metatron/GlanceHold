@@ -459,10 +459,9 @@ final class AttentionMonitorTests: XCTestCase {
         XCTAssertEqual(fieldValue(.skippedSamples, in: finalSummary), "\(frameCount - analyzer.analyzeCount)")
         XCTAssertGreaterThan(frameCount - analyzer.analyzeCount, 0)
 
-        guard let periodicSummary = recorder.events.last(where: { $0.name == .runtimeSummary && fieldValue(.summaryKind, in: $0) == "periodic" }),
-              let analyzerRate = fieldValue(.analyzerRateHz, in: periodicSummary).flatMap(Double.init)
+        guard let analyzerRate = fieldValue(.analyzerRateHz, in: finalSummary).flatMap(Double.init)
         else {
-            return XCTFail("Expected a periodic runtime summary with analyzerRateHz")
+            return XCTFail("Expected a final runtime summary with analyzerRateHz")
         }
         XCTAssertLessThanOrEqual(analyzerRate, 5.5, "analyzerRateHz should stay within 5 Hz plus fake-timestamp tolerance")
     }

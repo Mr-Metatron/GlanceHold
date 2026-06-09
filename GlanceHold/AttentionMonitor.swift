@@ -68,7 +68,9 @@ final class AttentionMonitor {
     private var activeDiagnosticSession: DiagnosticSession?
     private var monitoringMetrics = DiagnosticRuntimeMetrics.empty
     private var monitoringStartedAt: TimeInterval?
+    private var lastMonitoringMetricSampleAt: TimeInterval?
     private var lastPeriodicSummaryAt: TimeInterval?
+    private let monitoringAnalysisInterval: TimeInterval = 0.2
 
     private(set) var state: AttentionMonitorState
     private(set) var settings: AttentionSettings
@@ -122,8 +124,11 @@ final class AttentionMonitor {
         activeDiagnosticSession = diagnosticSession
         monitoringMetrics = .empty
         monitoringStartedAt = nil
+        lastMonitoringMetricSampleAt = nil
         lastPeriodicSummaryAt = nil
         diagnosticRecorder.record(DiagnosticEventRequest(category: .monitoring, name: .sessionStarted), in: diagnosticSession)
+
+        var lastAnalyzedMonitoringFrameTime: TimeInterval?
 
         capture.frameHandler = { [weak self] frame in
             guard let self else {
@@ -131,6 +136,15 @@ final class AttentionMonitor {
             }
 
             self.monitoringMetrics.framesReceived += 1
+            self.lastMonitoringMetricSampleAt = frame.time
+
+            if let lastAnalyzedMonitoringFrameTime,
+               frame.time - lastAnalyzedMonitoringFrameTime < self.monitoringAnalysisInterval {
+                self.monitoringMetrics.skippedSamples += 1
+                return
+            }
+
+            lastAnalyzedMonitoringFrameTime = frame.time
             let analysisStartedAt = Date()
             let observation = self.analyzer.analyze(frame)
             let latencyMilliseconds = Date().timeIntervalSince(analysisStartedAt) * 1_000.0
@@ -488,6 +502,7 @@ final class AttentionMonitor {
         activeDiagnosticSession = nil
         diagnosticSessionDidChange?(nil)
         monitoringStartedAt = nil
+        lastMonitoringMetricSampleAt = nil
         lastPeriodicSummaryAt = nil
     }
 
@@ -538,7 +553,7 @@ final class AttentionMonitor {
 
     private func finalizedMetrics(at sampleTime: TimeInterval?) -> DiagnosticRuntimeMetrics {
         var metrics = monitoringMetrics
-        let endTime = sampleTime ?? Date().timeIntervalSince1970
+        let endTime = sampleTime ?? lastMonitoringMetricSampleAt ?? Date().timeIntervalSince1970
         if let monitoringStartedAt {
             let duration = max(endTime - monitoringStartedAt, 0.0)
             if duration > 0.0 {
