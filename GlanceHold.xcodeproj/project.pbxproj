@@ -46,6 +46,7 @@
 		8D6E7A9F2F4C4D0E9A1B2C3D /* GlanceHoldStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7A9E2F4C4D0E9A1B2C3D /* GlanceHoldStrings.swift */; };
 		8D6E7AA12F4C4D0E9A1B2C3D /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 8D6E7AA02F4C4D0E9A1B2C3D /* Localizable.xcstrings */; };
 		8D6E7AA52F4C4D0E9A1B2C3D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8D6E7AA42F4C4D0E9A1B2C3D /* InfoPlist.strings */; };
+		8D6E7AA72F4C4D0E9A1B2C3D /* DiagnosticRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7AA62F4C4D0E9A1B2C3D /* DiagnosticRecorderTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -103,6 +104,7 @@
 		8D6E7AA02F4C4D0E9A1B2C3D /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		8D6E7AA22F4C4D0E9A1B2C3D /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		8D6E7AA32F4C4D0E9A1B2C3D /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		8D6E7AA62F4C4D0E9A1B2C3D /* DiagnosticRecorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticRecorderTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -192,6 +194,7 @@
 				8D6E7A942F4C4D0E9A1B2C3D /* MenuOptionPresentationTests.swift */,
 				8D6E7A982F4C4D0E9A1B2C3D /* MonitoringToggleControllerTests.swift */,
 				8D6E7A9C2F4C4D0E9A1B2C3D /* GlanceHoldLocalizationTests.swift */,
+				8D6E7AA62F4C4D0E9A1B2C3D /* DiagnosticRecorderTests.swift */,
 			);
 			path = GlanceHoldTests;
 			sourceTree = "<group>";
@@ -341,6 +344,7 @@
 				8D6E7A952F4C4D0E9A1B2C3D /* MenuOptionPresentationTests.swift in Sources */,
 				8D6E7A992F4C4D0E9A1B2C3D /* MonitoringToggleControllerTests.swift in Sources */,
 				8D6E7A9D2F4C4D0E9A1B2C3D /* GlanceHoldLocalizationTests.swift in Sources */,
+				8D6E7AA72F4C4D0E9A1B2C3D /* DiagnosticRecorderTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
