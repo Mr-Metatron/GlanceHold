@@ -118,6 +118,7 @@ final class DiagnosticRecorderTests: XCTestCase {
             "mediaPath",
             "mediaTitle",
             "rawBridgePayload",
+            "bridgeToken",
             "token"
         ]
 

@@ -159,6 +159,7 @@ struct DiagnosticField: Equatable {
         "mediaPath",
         "mediaTitle",
         "rawBridgePayload",
+        "bridgeToken",
         "token"
     ]
 }
