@@ -143,6 +143,7 @@ private struct GlanceHoldMenu: View {
     @State private var permissionRequestID: UUID?
     @State private var playbackStatusStreamTask: Task<Void, Never>?
     @State private var playbackFallbackRefreshTask: Task<Void, Never>?
+    @State private var playbackAttentionTask: Task<Void, Never>?
     @State private var monitoringToggleRequestTask: Task<Void, Never>?
     @Environment(\.openWindow) private var openWindow
 
@@ -507,6 +508,7 @@ private struct GlanceHoldMenu: View {
             stopMonitoringToggleRequestHandling()
         }
         if plan.stopPlaybackCoordinator {
+            stopPlaybackAttentionHandling()
             playbackCoordinator.stopMonitoring()
         }
         if plan.stopAttentionMonitor {
@@ -526,14 +528,12 @@ private struct GlanceHoldMenu: View {
             Task { @MainActor in
                 state.updateSettings(settings)
                 state.apply(monitorState: monitorState)
-            }
 
-            guard let attentionState = Self.playbackAttentionState(for: monitorState) else {
-                return
-            }
+                guard let attentionState = Self.playbackAttentionState(for: monitorState) else {
+                    return
+                }
 
-            Task {
-                await coordinator.handleAttentionState(attentionState)
+                sendAttentionState(attentionState, to: coordinator)
             }
         }
     }
@@ -559,6 +559,13 @@ private struct GlanceHoldMenu: View {
     private func refreshPlaybackCoordinator(_ coordinator: PlaybackCoordinator) {
         Task {
             await coordinator.refreshPlayerState()
+        }
+    }
+
+    private func sendAttentionState(_ attentionState: DebouncedAttentionState, to coordinator: PlaybackCoordinator) {
+        playbackAttentionTask?.cancel()
+        playbackAttentionTask = Task {
+            await coordinator.handleAttentionState(attentionState)
         }
     }
 
@@ -622,6 +629,11 @@ private struct GlanceHoldMenu: View {
         playbackFallbackRefreshTask = nil
     }
 
+    private func stopPlaybackAttentionHandling() {
+        playbackAttentionTask?.cancel()
+        playbackAttentionTask = nil
+    }
+
     private func stopMonitoringToggleRequestHandling() {
         monitoringToggleRequestTask?.cancel()
         monitoringToggleRequestTask = nil
@@ -629,6 +641,7 @@ private struct GlanceHoldMenu: View {
 
     private func replacePlaybackCoordinator(mode: MonitoringMode) {
         stopPlaybackStatusUpdates()
+        stopPlaybackAttentionHandling()
         playbackCoordinator.stateDidChange = nil
         playbackCoordinator.stopMonitoringRequested = nil
         playbackCoordinator.playbackActionDidComplete = nil
