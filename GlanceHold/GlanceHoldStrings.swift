@@ -9,6 +9,7 @@ enum GlanceHoldStrings {
         case menuPlayerFormat = "menu.player.format"
         case menuLastActionFormat = "menu.lastAction.format"
         case menuAbout = "menu.about"
+        case menuDiagnosticMode = "menu.diagnosticMode"
         case menuQuit = "menu.quit"
         case lastActionHeldSpeedAtOne = "lastAction.heldSpeedAtOne"
         case lastActionRestoredSpeed = "lastAction.restoredSpeed"

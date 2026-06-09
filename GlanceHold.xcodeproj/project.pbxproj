@@ -48,6 +48,8 @@
 		8D6E7AA52F4C4D0E9A1B2C3D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8D6E7AA42F4C4D0E9A1B2C3D /* InfoPlist.strings */; };
 		8D6E7AA72F4C4D0E9A1B2C3D /* DiagnosticRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7AA62F4C4D0E9A1B2C3D /* DiagnosticRecorderTests.swift */; };
 		8D6E7AA92F4C4D0E9A1B2C3D /* DiagnosticRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7AA82F4C4D0E9A1B2C3D /* DiagnosticRecorder.swift */; };
+		8D6E7AAB2F4C4D0E9A1B2C3D /* DiagnosticSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7AAA2F4C4D0E9A1B2C3D /* DiagnosticSettingsStore.swift */; };
+		8D6E7AAD2F4C4D0E9A1B2C3D /* AppRestartRequester.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7AAC2F4C4D0E9A1B2C3D /* AppRestartRequester.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -107,6 +109,8 @@
 		8D6E7AA32F4C4D0E9A1B2C3D /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		8D6E7AA62F4C4D0E9A1B2C3D /* DiagnosticRecorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticRecorderTests.swift; sourceTree = "<group>"; };
 		8D6E7AA82F4C4D0E9A1B2C3D /* DiagnosticRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticRecorder.swift; sourceTree = "<group>"; };
+		8D6E7AAA2F4C4D0E9A1B2C3D /* DiagnosticSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticSettingsStore.swift; sourceTree = "<group>"; };
+		8D6E7AAC2F4C4D0E9A1B2C3D /* AppRestartRequester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRestartRequester.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -158,6 +162,7 @@
 				8D6E7A702F4C4D0E9A1B2C3D /* AttentionSettings.swift */,
 				8D6E7A722F4C4D0E9A1B2C3D /* CalibrationModel.swift */,
 				8D6E7A742F4C4D0E9A1B2C3D /* AttentionSettingsStore.swift */,
+				8D6E7AAA2F4C4D0E9A1B2C3D /* DiagnosticSettingsStore.swift */,
 				8D6E7A7A2F4C4D0E9A1B2C3D /* CameraFrameCapture.swift */,
 				8D6E7A7C2F4C4D0E9A1B2C3D /* VisionAttentionAnalyzer.swift */,
 				8D6E7A7E2F4C4D0E9A1B2C3D /* AttentionMonitor.swift */,
@@ -169,6 +174,7 @@
 				8D6E7A8A2F4C4D0E9A1B2C3D /* PlaybackCoordinator.swift */,
 				8D6E7A962F4C4D0E9A1B2C3D /* MenuOptionPresentation.swift */,
 				8D6E7A9A2F4C4D0E9A1B2C3D /* MonitoringToggleController.swift */,
+				8D6E7AAC2F4C4D0E9A1B2C3D /* AppRestartRequester.swift */,
 				8D6E7A3E2F4C4D0E9A1B2C3D /* Assets.xcassets */,
 				8D6E7AA02F4C4D0E9A1B2C3D /* Localizable.xcstrings */,
 				8D6E7AA42F4C4D0E9A1B2C3D /* InfoPlist.strings */,
@@ -312,6 +318,7 @@
 				8D6E7A712F4C4D0E9A1B2C3D /* AttentionSettings.swift in Sources */,
 				8D6E7A732F4C4D0E9A1B2C3D /* CalibrationModel.swift in Sources */,
 				8D6E7A752F4C4D0E9A1B2C3D /* AttentionSettingsStore.swift in Sources */,
+				8D6E7AAB2F4C4D0E9A1B2C3D /* DiagnosticSettingsStore.swift in Sources */,
 				8D6E7A7B2F4C4D0E9A1B2C3D /* CameraFrameCapture.swift in Sources */,
 				8D6E7A7D2F4C4D0E9A1B2C3D /* VisionAttentionAnalyzer.swift in Sources */,
 				8D6E7A7F2F4C4D0E9A1B2C3D /* AttentionMonitor.swift in Sources */,
@@ -323,6 +330,7 @@
 				8D6E7A8B2F4C4D0E9A1B2C3D /* PlaybackCoordinator.swift in Sources */,
 				8D6E7A972F4C4D0E9A1B2C3D /* MenuOptionPresentation.swift in Sources */,
 				8D6E7A9B2F4C4D0E9A1B2C3D /* MonitoringToggleController.swift in Sources */,
+				8D6E7AAD2F4C4D0E9A1B2C3D /* AppRestartRequester.swift in Sources */,
 				8D6E7A9F2F4C4D0E9A1B2C3D /* GlanceHoldStrings.swift in Sources */,
 				8D6E7A3B2F4C4D0E9A1B2C3D /* GlanceHoldApp.swift in Sources */,
 			);

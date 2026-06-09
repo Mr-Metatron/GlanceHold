@@ -698,6 +698,22 @@
         }
       }
     },
+    "menu.diagnosticMode" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diagnostic Mode"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "诊断模式"
+          }
+        }
+      }
+    },
     "menu.lastAction.format" : {
       "extractionState" : "stale",
       "localizations" : {

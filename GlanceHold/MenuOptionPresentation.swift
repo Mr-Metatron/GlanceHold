@@ -13,6 +13,16 @@ enum ModeMenuPresentation {
     }
 }
 
+struct DiagnosticModeMenuPresentation: Equatable {
+    let title: String
+    let isSelected: Bool
+
+    init(settings: DiagnosticSettings) {
+        title = GlanceHoldStrings.text(.menuDiagnosticMode)
+        isSelected = settings.isEnabled
+    }
+}
+
 struct TuningMenuPresentation: Equatable {
     static let delayChoices: [TimeInterval] = [0.5, 0.6, 0.8, 1.0, 1.2, 1.5, 2.0]
     static let delaySelectionTolerance: TimeInterval = 0.0001
