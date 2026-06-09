@@ -155,6 +155,22 @@ final class DiagnosticRecorderTests: XCTestCase {
             .summaryKind
         ])
     }
+
+    func testDefaultModeCoalescesRepeatedHighVolumeEventsInsteadOfRecordingUnboundedArrays() {
+        let recorder = FakeDiagnosticRecorder(mode: .default)
+        let session = DiagnosticSession(kind: .monitoring)
+
+        for _ in 0..<50 {
+            XCTAssertNil(recorder.record(DiagnosticEventRequest(category: .camera, name: .frameReceived), in: session))
+            XCTAssertNil(recorder.record(DiagnosticEventRequest(category: .attention, name: .analysisCompleted), in: session))
+            XCTAssertNil(recorder.record(DiagnosticEventRequest(category: .attention, name: .repeatedStableState), in: session))
+        }
+
+        XCTAssertTrue(recorder.events.isEmpty)
+        XCTAssertEqual(recorder.droppedEventCounts[.frameReceived], 50)
+        XCTAssertEqual(recorder.droppedEventCounts[.analysisCompleted], 50)
+        XCTAssertEqual(recorder.droppedEventCounts[.repeatedStableState], 50)
+    }
 }
 
 private final class FakeDiagnosticRecorder: DiagnosticRecording {
