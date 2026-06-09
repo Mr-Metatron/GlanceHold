@@ -22,7 +22,7 @@
 <details open>
 <summary>🚧 v1.1 Runtime Reliability and Power Budget (Phases 7-11) — EXECUTING</summary>
 
-- [ ] Phase 7: Structured Runtime Logging and Diagnostics Foundation (3/5 plans)
+- [ ] Phase 7: Structured Runtime Logging and Diagnostics Foundation (4/5 plans)
 - [ ] Phase 8: Power Hot Path Sampling and Notification Deduplication
 - [ ] Phase 9: Playback Coordinator Ownership and Async Safety
 - [ ] Phase 10: Attention Semantics, Calibration Robustness, and Settings Validation
