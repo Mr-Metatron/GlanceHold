@@ -423,7 +423,7 @@ final class PlaybackCoordinatorTests: XCTestCase {
         )
     }
 
-    func testDiagnosticModeRecordsCommandAndConfirmationFailuresWithoutCompletedAction() async {
+    func testDiagnosticModeRecordsCommandAndConfirmationFailuresWithoutCompletedAction() async throws {
         let commandRecorder = PlaybackDiagnosticRecorder(mode: .diagnostic)
         let commandAdapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5)])
         commandAdapter.failingCommands = [.holdSpeedAtOne]

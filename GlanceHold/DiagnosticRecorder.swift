@@ -68,10 +68,16 @@ enum DiagnosticFieldName: String, Equatable, Hashable {
     case requiredThreshold
     case previousEmittedState
     case transitionReason
+    case snapshotState
     case playbackState
     case speedPresent
+    case intentType
     case intent
+    case commandType
+    case confirmationOutcome
     case confirmation
+    case completedActionEmitted
+    case errorCategory
     case framesReceived
     case framesAnalyzed
     case analyzerRateHz

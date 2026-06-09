@@ -26,9 +26,13 @@ final class PlaybackCoordinator {
 
     private let mode: MonitoringMode
     private let adapter: IINAPlaybackAdapting
+    private let diagnosticRecorder: DiagnosticRecording
+    private let diagnosticMode: DiagnosticMode
     private var policy: PlaybackPolicy
     private var suppressCommandsUntilValidSnapshot = false
     private var monitoringSessionActive = false
+    private var activeDiagnosticSession: DiagnosticSession?
+    private var playbackMetrics = DiagnosticRuntimeMetrics.empty
 
     private(set) var state: PlaybackCoordinatorState {
         didSet {
@@ -40,25 +44,41 @@ final class PlaybackCoordinator {
     var stopMonitoringRequested: ((StopMonitoringReason) -> Void)?
     var playbackActionDidComplete: ((PlaybackCompletedAction) -> Void)?
 
-    init(mode: MonitoringMode, adapter: IINAPlaybackAdapting) {
+    init(
+        mode: MonitoringMode,
+        adapter: IINAPlaybackAdapting,
+        diagnosticRecorder: DiagnosticRecording = NoOpDiagnosticRecorder(),
+        diagnosticMode: DiagnosticMode = .default,
+        diagnosticSession: DiagnosticSession? = nil
+    ) {
         self.mode = mode
         self.adapter = adapter
+        self.diagnosticRecorder = diagnosticRecorder
+        self.diagnosticMode = diagnosticMode
+        self.activeDiagnosticSession = diagnosticSession
         self.policy = PlaybackPolicy(mode: mode)
         self.state = .unavailable
     }
 
+    func setDiagnosticSession(_ session: DiagnosticSession?) {
+        activeDiagnosticSession = session
+        playbackMetrics = .empty
+    }
+
     func stopMonitoring() {
         monitoringSessionActive = false
+        recordFinalPlaybackSummary()
         resetPolicy()
         state = .unavailable
     }
 
     func refreshPlayerState() async {
-        let snapshot = await adapter.snapshot()
+        let snapshot = await readSnapshot()
         applyReadOnlyPlayerSnapshot(snapshot)
     }
 
     func applyPushedPlayerSnapshot(_ snapshot: PlayerSnapshot) {
+        playbackMetrics.playbackSnapshots += 1
         applyReadOnlyPlayerSnapshot(snapshot)
     }
 
@@ -73,7 +93,7 @@ final class PlaybackCoordinator {
 
     func handleAttentionState(_ state: DebouncedAttentionState) async {
         monitoringSessionActive = true
-        let snapshot = await adapter.snapshot()
+        let snapshot = await readSnapshot()
         let isControllable = isPlayerControllable(snapshot)
 
         if self.state.stoppedReason != nil {
@@ -107,20 +127,48 @@ final class PlaybackCoordinator {
         }
 
         do {
+            playbackMetrics.playbackCommands += 1
             try await adapter.execute(intent)
-            let confirmation = await adapter.snapshot()
+            let confirmation = await readSnapshot()
             guard confirms(intent: intent, with: confirmation) else {
+                recordPlaybackAction(
+                    snapshot: snapshot,
+                    intent: intent,
+                    confirmationOutcome: "failed",
+                    completedAction: nil,
+                    errorCategory: "confirmationFailed"
+                )
                 markNotControllable(snapshot: confirmation)
                 return
             }
 
             updateState(snapshot: confirmation, isPlayerControllable: isPlayerControllable(confirmation))
             if let completedAction = completedAction(for: intent) {
+                recordPlaybackAction(
+                    snapshot: snapshot,
+                    intent: intent,
+                    confirmationOutcome: "confirmed",
+                    completedAction: completedAction,
+                    errorCategory: "none"
+                )
                 playbackActionDidComplete?(completedAction)
             }
         } catch {
+            recordPlaybackAction(
+                snapshot: snapshot,
+                intent: intent,
+                confirmationOutcome: "notAttempted",
+                completedAction: nil,
+                errorCategory: "commandFailed"
+            )
             markNotControllable(snapshot: snapshot)
         }
+    }
+
+    private func readSnapshot() async -> PlayerSnapshot {
+        let snapshot = await adapter.snapshot()
+        playbackMetrics.playbackSnapshots += 1
+        return snapshot
     }
 
     private func isPlayerControllable(_ snapshot: PlayerSnapshot) -> Bool {
@@ -232,5 +280,103 @@ final class PlaybackCoordinator {
             playerSnapshot: snapshot,
             stoppedReason: nil
         )
+    }
+
+    private func recordFinalPlaybackSummary() {
+        guard let diagnosticSession = activeDiagnosticSession else {
+            return
+        }
+
+        diagnosticRecorder.record(
+            DiagnosticEventRequest.runtimeSummary(playbackMetrics, periodic: false),
+            in: diagnosticSession
+        )
+        activeDiagnosticSession = nil
+    }
+
+    private func recordPlaybackAction(
+        snapshot: PlayerSnapshot,
+        intent: PlaybackIntent,
+        confirmationOutcome: String,
+        completedAction: PlaybackCompletedAction?,
+        errorCategory: String
+    ) {
+        guard diagnosticMode == .diagnostic, let diagnosticSession = activeDiagnosticSession else {
+            return
+        }
+
+        diagnosticRecorder.record(
+            DiagnosticEventRequest(
+                category: .playback,
+                name: .playbackAction,
+                fields: [
+                    diagnosticField(.snapshotState, .string(snapshot.playbackState.diagnosticName)),
+                    diagnosticField(.speedPresent, .bool(snapshot.speed != nil)),
+                    diagnosticField(.intentType, .string(intent.diagnosticName)),
+                    diagnosticField(.commandType, .string(intent.diagnosticName)),
+                    diagnosticField(.confirmationOutcome, .string(confirmationOutcome)),
+                    diagnosticField(.completedActionEmitted, .string(completedAction?.diagnosticName ?? "none")),
+                    diagnosticField(.errorCategory, .string(errorCategory))
+                ]
+            ),
+            in: diagnosticSession
+        )
+    }
+
+    private func diagnosticField(_ name: DiagnosticFieldName, _ value: DiagnosticFieldValue) -> DiagnosticField {
+        guard let field = try? DiagnosticField(name, value) else {
+            preconditionFailure("Static playback diagnostic field failed validation.")
+        }
+
+        return field
+    }
+}
+
+private extension PlayerPlaybackState {
+    var diagnosticName: String {
+        switch self {
+        case .playing:
+            "playing"
+        case .paused:
+            "paused"
+        case .idle:
+            "idle"
+        case .setupNeeded:
+            "setupNeeded"
+        case .playerUnavailable:
+            "playerUnavailable"
+        }
+    }
+}
+
+private extension PlaybackIntent {
+    var diagnosticName: String {
+        switch self {
+        case .holdSpeedAtOne:
+            "holdSpeedAtOne"
+        case .restoreSpeed:
+            "restoreSpeed"
+        case .pause:
+            "pause"
+        case .resume:
+            "resume"
+        case .stopMonitoring:
+            "stopMonitoring"
+        }
+    }
+}
+
+private extension PlaybackCompletedAction {
+    var diagnosticName: String {
+        switch self {
+        case .heldSpeedAtOne:
+            "heldSpeedAtOne"
+        case .restoredSpeed:
+            "restoredSpeed"
+        case .pausedByGlanceHold:
+            "pausedByGlanceHold"
+        case .resumedPlayback:
+            "resumedPlayback"
+        }
     }
 }
