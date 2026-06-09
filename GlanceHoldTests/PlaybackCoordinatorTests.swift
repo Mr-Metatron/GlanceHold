@@ -304,6 +304,212 @@ final class PlaybackCoordinatorTests: XCTestCase {
         XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
         XCTAssertFalse(coordinator.state.isPlayerControllable)
     }
+
+    func testDefaultModePlaybackDiagnosticsStayQuietButFinalSummaryCountsActivity() async {
+        let recorder = PlaybackDiagnosticRecorder(mode: .default)
+        let session = DiagnosticSession(
+            id: UUID(uuidString: "77777777-7777-7777-7777-777777777777")!,
+            kind: .monitoring
+        )
+        let adapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5), .playing(speed: 1.0)])
+        let coordinator = PlaybackCoordinator(
+            mode: .speedControl,
+            adapter: adapter,
+            diagnosticRecorder: recorder,
+            diagnosticMode: .default,
+            diagnosticSession: session
+        )
+
+        await coordinator.handleAttentionState(.lookingAway)
+        coordinator.stopMonitoring()
+
+        XCTAssertFalse(recorder.events.contains { $0.name == .playbackAction })
+        guard let summary = recorder.events.first(where: { $0.name == .runtimeSummary }) else {
+            return XCTFail("Expected final playback runtime summary")
+        }
+        XCTAssertEqual(fieldValue(.summaryKind, in: summary), "final")
+        XCTAssertEqual(fieldValue(.playbackSnapshots, in: summary), "2")
+        XCTAssertEqual(fieldValue(.playbackCommands, in: summary), "1")
+    }
+
+    func testDiagnosticModeRecordsSpeedControlActionChainBreadcrumbs() async {
+        let recorder = PlaybackDiagnosticRecorder(mode: .diagnostic)
+        let session = DiagnosticSession(kind: .monitoring)
+        let adapter = FakeIINAPlaybackAdapter(
+            snapshots: [
+                .playing(speed: 1.25),
+                .playing(speed: 1.0),
+                .playing(speed: 1.0),
+                .playing(speed: 1.25)
+            ]
+        )
+        let coordinator = PlaybackCoordinator(
+            mode: .speedControl,
+            adapter: adapter,
+            diagnosticRecorder: recorder,
+            diagnosticMode: .diagnostic,
+            diagnosticSession: session
+        )
+
+        await coordinator.handleAttentionState(.lookingAway)
+        await coordinator.handleAttentionState(.facing)
+
+        let actions = recorder.events.filter { $0.name == .playbackAction }
+        XCTAssertEqual(actions.count, 2)
+        assertPlaybackAction(
+            actions[0],
+            snapshotState: "playing",
+            speedPresent: "true",
+            intentType: "holdSpeedAtOne",
+            commandType: "holdSpeedAtOne",
+            confirmationOutcome: "confirmed",
+            completedActionEmitted: "heldSpeedAtOne",
+            errorCategory: "none"
+        )
+        assertPlaybackAction(
+            actions[1],
+            snapshotState: "playing",
+            speedPresent: "true",
+            intentType: "restoreSpeed",
+            commandType: "restoreSpeed",
+            confirmationOutcome: "confirmed",
+            completedActionEmitted: "restoredSpeed",
+            errorCategory: "none"
+        )
+    }
+
+    func testDiagnosticModeRecordsPauseResumeActionChainBreadcrumbs() async {
+        let recorder = PlaybackDiagnosticRecorder(mode: .diagnostic)
+        let adapter = FakeIINAPlaybackAdapter(
+            snapshots: [
+                .playing(speed: 1.5),
+                .paused(speed: 1.5),
+                .paused(speed: 1.5),
+                .playing(speed: 1.5)
+            ]
+        )
+        let coordinator = PlaybackCoordinator(
+            mode: .pauseResume,
+            adapter: adapter,
+            diagnosticRecorder: recorder,
+            diagnosticMode: .diagnostic,
+            diagnosticSession: DiagnosticSession(kind: .monitoring)
+        )
+
+        await coordinator.handleAttentionState(.lookingAway)
+        await coordinator.handleAttentionState(.facing)
+
+        let actions = recorder.events.filter { $0.name == .playbackAction }
+        XCTAssertEqual(actions.count, 2)
+        assertPlaybackAction(
+            actions[0],
+            snapshotState: "playing",
+            speedPresent: "true",
+            intentType: "pause",
+            commandType: "pause",
+            confirmationOutcome: "confirmed",
+            completedActionEmitted: "pausedByGlanceHold",
+            errorCategory: "none"
+        )
+        assertPlaybackAction(
+            actions[1],
+            snapshotState: "paused",
+            speedPresent: "true",
+            intentType: "resume",
+            commandType: "resume",
+            confirmationOutcome: "confirmed",
+            completedActionEmitted: "resumedPlayback",
+            errorCategory: "none"
+        )
+    }
+
+    func testDiagnosticModeRecordsCommandAndConfirmationFailuresWithoutCompletedAction() async {
+        let commandRecorder = PlaybackDiagnosticRecorder(mode: .diagnostic)
+        let commandAdapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5)])
+        commandAdapter.failingCommands = [.holdSpeedAtOne]
+        let commandCoordinator = PlaybackCoordinator(
+            mode: .speedControl,
+            adapter: commandAdapter,
+            diagnosticRecorder: commandRecorder,
+            diagnosticMode: .diagnostic,
+            diagnosticSession: DiagnosticSession(kind: .monitoring)
+        )
+        var commandCompletedActions: [PlaybackCompletedAction] = []
+        commandCoordinator.playbackActionDidComplete = { commandCompletedActions.append($0) }
+
+        await commandCoordinator.handleAttentionState(.lookingAway)
+
+        let commandFailure = try XCTUnwrap(commandRecorder.events.first { $0.name == .playbackAction })
+        XCTAssertEqual(fieldValue(.confirmationOutcome, in: commandFailure), "notAttempted")
+        XCTAssertEqual(fieldValue(.completedActionEmitted, in: commandFailure), "none")
+        XCTAssertEqual(fieldValue(.errorCategory, in: commandFailure), "commandFailed")
+        XCTAssertEqual(commandCompletedActions, [])
+
+        let confirmationRecorder = PlaybackDiagnosticRecorder(mode: .diagnostic)
+        let confirmationAdapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5), .playing(speed: 1.5)])
+        let confirmationCoordinator = PlaybackCoordinator(
+            mode: .speedControl,
+            adapter: confirmationAdapter,
+            diagnosticRecorder: confirmationRecorder,
+            diagnosticMode: .diagnostic,
+            diagnosticSession: DiagnosticSession(kind: .monitoring)
+        )
+        var confirmationCompletedActions: [PlaybackCompletedAction] = []
+        confirmationCoordinator.playbackActionDidComplete = { confirmationCompletedActions.append($0) }
+
+        await confirmationCoordinator.handleAttentionState(.lookingAway)
+
+        let confirmationFailure = try XCTUnwrap(confirmationRecorder.events.first { $0.name == .playbackAction })
+        XCTAssertEqual(fieldValue(.confirmationOutcome, in: confirmationFailure), "failed")
+        XCTAssertEqual(fieldValue(.completedActionEmitted, in: confirmationFailure), "none")
+        XCTAssertEqual(fieldValue(.errorCategory, in: confirmationFailure), "confirmationFailed")
+        XCTAssertEqual(confirmationCompletedActions, [])
+    }
+
+    func testPlaybackDiagnosticsShareMonitoringSessionAndIncreasingSequences() async {
+        let recorder = PlaybackDiagnosticRecorder(mode: .diagnostic)
+        let session = DiagnosticSession(
+            id: UUID(uuidString: "88888888-8888-8888-8888-888888888888")!,
+            kind: .monitoring
+        )
+        let adapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5), .playing(speed: 1.0)])
+        let coordinator = PlaybackCoordinator(
+            mode: .speedControl,
+            adapter: adapter,
+            diagnosticRecorder: recorder,
+            diagnosticMode: .diagnostic,
+            diagnosticSession: session
+        )
+
+        await coordinator.handleAttentionState(.lookingAway)
+        coordinator.stopMonitoring()
+
+        XCTAssertFalse(recorder.events.isEmpty)
+        XCTAssertEqual(Set(recorder.events.map(\.sessionID)), [session.id])
+        XCTAssertEqual(Set(recorder.events.map(\.sessionKind)), [.monitoring])
+        XCTAssertEqual(recorder.events.map(\.sequence), recorder.events.map(\.sequence).sorted())
+        XCTAssertTrue(recorder.events.contains { $0.category == .playback && $0.name == .playbackAction })
+        XCTAssertTrue(recorder.events.contains { $0.category == .runtimeSummary && $0.name == .runtimeSummary })
+    }
+
+    func testNoIntentPlaybackEvaluationsDoNotEmitDetailedNoOpBreadcrumbs() async {
+        let recorder = PlaybackDiagnosticRecorder(mode: .diagnostic)
+        let adapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5), .playing(speed: 1.5)])
+        let coordinator = PlaybackCoordinator(
+            mode: .speedControl,
+            adapter: adapter,
+            diagnosticRecorder: recorder,
+            diagnosticMode: .diagnostic,
+            diagnosticSession: DiagnosticSession(kind: .monitoring)
+        )
+
+        await coordinator.handleAttentionState(.facing)
+        await coordinator.handleAttentionState(.facing)
+        coordinator.stopMonitoring()
+
+        XCTAssertFalse(recorder.events.contains { $0.name == .playbackAction })
+        XCTAssertTrue(recorder.events.contains { $0.name == .runtimeSummary })
+    }
 }
 
 final class FakeIINAPlaybackAdapter: IINAPlaybackAdapting {
@@ -343,4 +549,55 @@ private func assertNoRestoreOrResume(_ commands: [PlaybackIntent]) {
         }
         return false
     })
+}
+
+private final class PlaybackDiagnosticRecorder: DiagnosticRecording {
+    let mode: DiagnosticMode
+    private(set) var events: [DiagnosticEvent] = []
+
+    init(mode: DiagnosticMode) {
+        self.mode = mode
+    }
+
+    @discardableResult
+    func record(_ request: DiagnosticEventRequest, in session: DiagnosticSession) -> DiagnosticEvent? {
+        guard DiagnosticEventPolicy.shouldRecord(request, mode: mode) else {
+            return nil
+        }
+
+        let event = DiagnosticEvent(
+            category: request.category,
+            name: request.name,
+            sessionID: session.id,
+            sessionKind: session.kind,
+            sequence: session.nextSequence(),
+            fields: request.fields
+        )
+        events.append(event)
+        return event
+    }
+}
+
+private func assertPlaybackAction(
+    _ event: DiagnosticEvent,
+    snapshotState: String,
+    speedPresent: String,
+    intentType: String,
+    commandType: String,
+    confirmationOutcome: String,
+    completedActionEmitted: String,
+    errorCategory: String
+) {
+    XCTAssertEqual(event.category, .playback)
+    XCTAssertEqual(fieldValue(.snapshotState, in: event), snapshotState)
+    XCTAssertEqual(fieldValue(.speedPresent, in: event), speedPresent)
+    XCTAssertEqual(fieldValue(.intentType, in: event), intentType)
+    XCTAssertEqual(fieldValue(.commandType, in: event), commandType)
+    XCTAssertEqual(fieldValue(.confirmationOutcome, in: event), confirmationOutcome)
+    XCTAssertEqual(fieldValue(.completedActionEmitted, in: event), completedActionEmitted)
+    XCTAssertEqual(fieldValue(.errorCategory, in: event), errorCategory)
+}
+
+private func fieldValue(_ name: DiagnosticFieldName, in event: DiagnosticEvent) -> String? {
+    event.fields.first { $0.name == name }?.value.logValue
 }

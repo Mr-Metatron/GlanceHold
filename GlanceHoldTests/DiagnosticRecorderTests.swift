@@ -126,6 +126,28 @@ final class DiagnosticRecorderTests: XCTestCase {
         }
     }
 
+    func testPlaybackActionDiagnosticFieldsAreTypedAndScalar() throws {
+        let fields = [
+            try DiagnosticField(name: "snapshotState", value: .string("playing")),
+            try DiagnosticField(name: "speedPresent", value: .bool(true)),
+            try DiagnosticField(name: "intentType", value: .string("holdSpeedAtOne")),
+            try DiagnosticField(name: "commandType", value: .string("holdSpeedAtOne")),
+            try DiagnosticField(name: "confirmationOutcome", value: .string("confirmed")),
+            try DiagnosticField(name: "completedActionEmitted", value: .string("heldSpeedAtOne")),
+            try DiagnosticField(name: "errorCategory", value: .string("none"))
+        ]
+
+        XCTAssertEqual(fields.map(\.name), [
+            .snapshotState,
+            .speedPresent,
+            .intentType,
+            .commandType,
+            .confirmationOutcome,
+            .completedActionEmitted,
+            .errorCategory
+        ])
+    }
+
     func testRuntimeMetricsSummaryUsesScalarAggregateFields() {
         let metrics = DiagnosticRuntimeMetrics(
             framesReceived: 120,
