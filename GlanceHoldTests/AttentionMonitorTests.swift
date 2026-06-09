@@ -417,6 +417,56 @@ final class AttentionMonitorTests: XCTestCase {
         XCTAssertTrue(recorder.events.contains { $0.name == .runtimeSummary && fieldValue(.summaryKind, in: $0) == "final" })
     }
 
+    func testCameraBackedMonitoringSamplesFake30fpsAtFiveHzAndCountsSkippedSamples() async {
+        let recorder = MonitorDiagnosticRecorder(mode: .diagnostic)
+        let capture = FakeCameraFrameCapture()
+        let analyzer = TimestampEchoVisionAnalyzer()
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: MonitorSettingsStore(settings: .defaults.withCalibration(snapshot(.high))),
+            capture: capture,
+            analyzer: analyzer,
+            diagnosticRecorder: recorder,
+            diagnosticMode: .diagnostic,
+            runtimeSummaryInterval: 1.0
+        )
+
+        await monitor.startMonitoring()
+        await capture.waitForFrameHandler()
+
+        let frameCount = 60
+        let framesPerSecond = 30.0
+        for index in 0..<frameCount {
+            capture.emitFrame(time: Double(index) / framesPerSecond)
+        }
+
+        await drainMainActor()
+        monitor.stopMonitoring()
+
+        let allowedAnalyses = Int(floor(2.0 * 5.0)) + 2
+        XCTAssertLessThanOrEqual(
+            analyzer.analyzeCount,
+            allowedAnalyses,
+            "fake 30fps monitoring should stay at 5 Hz plus startup/timing tolerance"
+        )
+
+        guard let finalSummary = recorder.events.last(where: { $0.name == .runtimeSummary && fieldValue(.summaryKind, in: $0) == "final" }) else {
+            return XCTFail("Expected a final runtime summary")
+        }
+
+        XCTAssertEqual(fieldValue(.framesReceived, in: finalSummary), "\(frameCount)")
+        XCTAssertEqual(fieldValue(.framesAnalyzed, in: finalSummary), "\(analyzer.analyzeCount)")
+        XCTAssertEqual(fieldValue(.skippedSamples, in: finalSummary), "\(frameCount - analyzer.analyzeCount)")
+        XCTAssertGreaterThan(frameCount - analyzer.analyzeCount, 0)
+
+        guard let periodicSummary = recorder.events.last(where: { $0.name == .runtimeSummary && fieldValue(.summaryKind, in: $0) == "periodic" }),
+              let analyzerRate = fieldValue(.analyzerRateHz, in: periodicSummary).flatMap(Double.init)
+        else {
+            return XCTFail("Expected a periodic runtime summary with analyzerRateHz")
+        }
+        XCTAssertLessThanOrEqual(analyzerRate, 5.5, "analyzerRateHz should stay within 5 Hz plus fake-timestamp tolerance")
+    }
+
     func testDiagnosticModeRecordsAttentionBreadcrumbsAndPeriodicSummary() async {
         let recorder = MonitorDiagnosticRecorder(mode: .diagnostic)
         let monitor = AttentionMonitor(
@@ -677,6 +727,15 @@ private struct FakeVisionAnalyzer: VisionAttentionAnalyzing {
     }
 }
 
+private final class TimestampEchoVisionAnalyzer: VisionAttentionAnalyzing {
+    private(set) var analyzeCount = 0
+
+    func analyze(_ frame: CapturedCameraFrame) -> VisionAttentionObservation {
+        analyzeCount += 1
+        return .pose(makePose(yaw: 0.0, pitch: 0.0, time: frame.time))
+    }
+}
+
 private final class SequencedVisionAnalyzer: VisionAttentionAnalyzing {
     private var observations: [VisionAttentionObservation]
     private(set) var analyzeCount = 0
@@ -720,6 +779,12 @@ private final class MonitorDiagnosticRecorder: DiagnosticRecording {
 
 private func fieldValue(_ name: DiagnosticFieldName, in event: DiagnosticEvent) -> String? {
     event.fields.first { $0.name == name }?.value.logValue
+}
+
+private func drainMainActor() async {
+    await MainActor.run {}
+    await Task.yield()
+    await MainActor.run {}
 }
 
 private func snapshot(_ quality: CalibrationQuality) -> CalibrationSnapshot {

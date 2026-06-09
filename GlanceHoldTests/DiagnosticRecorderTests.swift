@@ -158,6 +158,7 @@ final class DiagnosticRecorderTests: XCTestCase {
             playbackSnapshots: 7,
             playbackCommands: 2,
             droppedSamples: 1,
+            skippedSamples: 96,
             analysisLatencyMillisecondsTotal: 96.0,
             analysisLatencyMillisecondsMax: 8.0
         )
@@ -173,10 +174,12 @@ final class DiagnosticRecorderTests: XCTestCase {
             .playbackSnapshots,
             .playbackCommands,
             .droppedSamples,
+            .skippedSamples,
             .analysisLatencyMillisecondsAverage,
             .analysisLatencyMillisecondsMax,
             .summaryKind
         ])
+        XCTAssertEqual(request.fields.first { $0.name == .skippedSamples }?.value.logValue, "96")
     }
 
     func testDefaultModeCoalescesRepeatedHighVolumeEventsInsteadOfRecordingUnboundedArrays() {
@@ -234,6 +237,7 @@ private extension DiagnosticRuntimeMetrics {
         playbackSnapshots: 2,
         playbackCommands: 1,
         droppedSamples: 0,
+        skippedSamples: 0,
         analysisLatencyMillisecondsTotal: 20.0,
         analysisLatencyMillisecondsMax: 5.0
     )
