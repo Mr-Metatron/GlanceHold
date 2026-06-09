@@ -48,13 +48,22 @@ Phase 5 carry-forward evidence: the user completed the live IINA shortcut check,
 
 App-to-plugin requests carry protocol `version`, request `id`, and the expected bridge token. Requests without the token are rejected before any playback command is considered.
 
-Server-pushed messages use the same protocol version and do not carry a request `id`:
+Server-pushed messages use the same protocol version and do not carry a request `id`.
+`statusChanged` carries the current player snapshot:
 
 ```json
 {"version":1,"type":"statusChanged","snapshot":{"state":"playing","speed":2.0}}
 ```
 
-The pushed stream is for menu/status freshness only. It does not trigger playback commands by itself. GlanceHold's Swift playback policy remains responsible for deciding when to hold speed, restore speed, pause, or resume.
+The bridge also sends a liveness-only heartbeat about every 5 seconds:
+
+```json
+{"version":1,"type":"heartbeat"}
+```
+
+Heartbeat messages carry no snapshot, speed, title, path, token, or request `id`.
+They are only used to keep the pushed status stream alive and cannot satisfy
+snapshot or command request ids.
 
 The monitoring shortcut event is also pushed without a request `id`:
 
@@ -62,7 +71,9 @@ The monitoring shortcut event is also pushed without a request `id`:
 {"version":1,"type":"toggleMonitoringRequested"}
 ```
 
-The plugin listens for IINA file-load/start events and mpv `pause`, `speed`, and `idle-active` property changes. A modest plugin-side fallback refresh helps recover from missed events.
+The pushed stream is for menu/status freshness, liveness, and the monitoring shortcut only. It does not trigger playback commands by itself. GlanceHold's Swift playback policy remains responsible for deciding when to hold speed, restore speed, pause, or resume.
+
+The plugin listens for IINA file-load/start events and mpv `pause`, `speed`, and `idle-active` property changes. A modest plugin-side fallback `statusChanged` refresh helps recover from missed events, while heartbeat remains a separate liveness signal.
 
 ## Troubleshooting
 
@@ -75,4 +86,4 @@ If GlanceHold shows IINA unavailable or setup-needed:
 
 If GlanceHold can send commands but the IINA status row does not update after manual play, pause, speed, or idle changes, restart IINA after copying or linking the latest plugin files and confirm the plugin is enabled.
 
-Expected pushed message types are `statusChanged` and `toggleMonitoringRequested`; request/response messages for `snapshot`, `setSpeed`, `pause`, and `resume` still include request ids.
+Expected pushed message types are `statusChanged`, `heartbeat`, and `toggleMonitoringRequested`; request/response messages for `snapshot`, `setSpeed`, `pause`, and `resume` still include request ids.

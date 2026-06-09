@@ -45,6 +45,13 @@ function statusChangedMessage(snapshot) {
   });
 }
 
+function heartbeatMessage() {
+  return JSON.stringify({
+    version: protocolVersion,
+    type: "heartbeat"
+  });
+}
+
 function toggleMonitoringRequestedMessage() {
   return JSON.stringify({
     version: protocolVersion,
@@ -85,6 +92,17 @@ function broadcastStatusChanged({ force = false } = {}) {
   lastBroadcastSnapshotKey = key;
   for (const conn of activeConnections) {
     sendStatusChanged(conn, snapshot);
+  }
+}
+
+function broadcastHeartbeat() {
+  if (activeConnections.size === 0) {
+    return;
+  }
+
+  const message = heartbeatMessage();
+  for (const conn of activeConnections) {
+    ws.sendText(conn, message);
   }
 }
 
@@ -226,6 +244,7 @@ menu.addItem(menu.item(
 ));
 
 if (typeof setInterval === "function") {
+  setInterval(() => broadcastHeartbeat(), 5000);
   setInterval(() => broadcastStatusChanged(), 5000);
 }
 
