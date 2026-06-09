@@ -3,6 +3,9 @@ import SwiftUI
 @main
 struct GlanceHoldApp: App {
     private let settingsStore: UserDefaultsAttentionSettingsStore
+    private let diagnosticSettingsStore: UserDefaultsDiagnosticSettingsStore
+    private let diagnosticSettings: DiagnosticSettings
+    private let diagnosticRecorder: LiveDiagnosticRecorder
     private let monitor: AttentionMonitor
     private let bridgeClient: IINAPluginBridgeClient
     @State private var glanceHoldState: GlanceHoldState
@@ -10,20 +13,30 @@ struct GlanceHoldApp: App {
 
     init() {
         let settingsStore = UserDefaultsAttentionSettingsStore()
+        let diagnosticSettingsStore = UserDefaultsDiagnosticSettingsStore()
         let loadedSettings = settingsStore.load()
+        let loadedDiagnosticSettings = diagnosticSettingsStore.load()
+        let diagnosticRecorder = LiveDiagnosticRecorder(mode: loadedDiagnosticSettings.diagnosticMode)
         let bridgeClient = IINAPluginBridgeClient(url: URL(string: "ws://127.0.0.1:47873")!)
         self.settingsStore = settingsStore
+        self.diagnosticSettingsStore = diagnosticSettingsStore
+        self.diagnosticSettings = loadedDiagnosticSettings
+        self.diagnosticRecorder = diagnosticRecorder
         self.bridgeClient = bridgeClient
         self.monitor = AttentionMonitor(
             permissionProvider: CameraPermissionClient.live,
             settingsStore: settingsStore,
             capture: LiveCameraFrameCapture(),
-            analyzer: AttentionAnalyzerFactory.live()
+            analyzer: AttentionAnalyzerFactory.live(),
+            diagnosticRecorder: diagnosticRecorder,
+            diagnosticMode: loadedDiagnosticSettings.diagnosticMode
         )
         _glanceHoldState = State(initialValue: GlanceHoldState(mode: loadedSettings.mode, settings: loadedSettings))
         _playbackCoordinator = State(initialValue: PlaybackCoordinator(
             mode: loadedSettings.mode,
-            adapter: IINAPluginBridgeAdapter(client: bridgeClient)
+            adapter: IINAPluginBridgeAdapter(client: bridgeClient),
+            diagnosticRecorder: diagnosticRecorder,
+            diagnosticMode: loadedDiagnosticSettings.diagnosticMode
         ))
     }
 
@@ -33,6 +46,11 @@ struct GlanceHoldApp: App {
                 state: $glanceHoldState,
                 monitor: monitor,
                 bridgeClient: bridgeClient,
+                diagnosticSettingsStore: diagnosticSettingsStore,
+                diagnosticSettings: diagnosticSettings,
+                diagnosticRecorder: diagnosticRecorder,
+                diagnosticMode: diagnosticSettings.diagnosticMode,
+                restartRequester: LiveAppRestartRequester(),
                 playbackCoordinator: $playbackCoordinator
             )
         }
@@ -116,6 +134,11 @@ private struct GlanceHoldMenu: View {
     @Binding var state: GlanceHoldState
     let monitor: AttentionMonitor
     let bridgeClient: IINAPluginBridgeClienting
+    let diagnosticSettingsStore: DiagnosticSettingsStoring
+    let diagnosticSettings: DiagnosticSettings
+    let diagnosticRecorder: DiagnosticRecording
+    let diagnosticMode: DiagnosticMode
+    let restartRequester: AppRestartRequesting
     @Binding var playbackCoordinator: PlaybackCoordinator
     @State private var permissionRequestID: UUID?
     @State private var playbackStatusStreamTask: Task<Void, Never>?
@@ -132,6 +155,10 @@ private struct GlanceHoldMenu: View {
 
     private var tuningPresentation: TuningMenuPresentation {
         TuningMenuPresentation(settings: state.settings)
+    }
+
+    private var diagnosticModePresentation: DiagnosticModeMenuPresentation {
+        DiagnosticModeMenuPresentation(settings: diagnosticSettings)
     }
 
     var body: some View {
@@ -223,6 +250,8 @@ private struct GlanceHoldMenu: View {
 
             Divider()
 
+            Toggle(diagnosticModePresentation.title, isOn: diagnosticModeBinding)
+
             Button(GlanceHoldStrings.text(.menuAbout)) {
                 openWindow(id: "about")
             }
@@ -252,6 +281,17 @@ private struct GlanceHoldMenu: View {
                 settings.mode = mode
                 updateSettings(settings)
                 replacePlaybackCoordinator(mode: mode)
+            }
+        )
+    }
+
+    private var diagnosticModeBinding: Binding<Bool> {
+        Binding(
+            get: {
+                diagnosticModePresentation.isSelected
+            },
+            set: { _ in
+                toggleDiagnosticMode()
             }
         )
     }
@@ -304,6 +344,17 @@ private struct GlanceHoldMenu: View {
                 updateSettings(settings)
             }
         )
+    }
+
+    private func toggleDiagnosticMode() {
+        do {
+            try DiagnosticModeMenuAction.toggle(
+                settingsStore: diagnosticSettingsStore,
+                restartRequester: restartRequester
+            )
+        } catch {
+            state.status = .cameraUnavailable
+        }
     }
 
     private func performPrimaryAction(_ action: GlanceHoldPrimaryAction) {
@@ -587,7 +638,9 @@ private struct GlanceHoldMenu: View {
     private func makePlaybackCoordinator(mode: MonitoringMode) -> PlaybackCoordinator {
         PlaybackCoordinator(
             mode: mode,
-            adapter: IINAPluginBridgeAdapter(client: bridgeClient)
+            adapter: IINAPluginBridgeAdapter(client: bridgeClient),
+            diagnosticRecorder: diagnosticRecorder,
+            diagnosticMode: diagnosticMode
         )
     }
 
