@@ -64,6 +64,8 @@ final class GlanceHoldLocalizationTests: XCTestCase {
             GlanceHoldStrings.format(.menuLastActionFormat, "已将速度保持在 1x", localeIdentifier: "zh-Hans"),
             "上次操作：已将速度保持在 1x"
         )
+        XCTAssertEqual(GlanceHoldStrings.text(.menuDiagnosticMode, localeIdentifier: "en"), "Diagnostic Mode")
+        XCTAssertEqual(GlanceHoldStrings.text(.menuDiagnosticMode, localeIdentifier: "zh-Hans"), "诊断模式")
         XCTAssertEqual(
             GlanceHoldStrings.format(.lastActionRestoredSpeed, "2x", localeIdentifier: "en"),
             "Restored speed to 2x"

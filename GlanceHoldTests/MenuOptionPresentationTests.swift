@@ -65,6 +65,16 @@ final class MenuOptionPresentationTests: XCTestCase {
         )
     }
 
+    func testDiagnosticModePresentationUsesLocalizedTitleAndCheckedState() {
+        let disabled = DiagnosticModeMenuPresentation(settings: .disabled)
+        let enabled = DiagnosticModeMenuPresentation(settings: DiagnosticSettings(isEnabled: true))
+
+        XCTAssertEqual(disabled.title, GlanceHoldStrings.text(.menuDiagnosticMode))
+        XCTAssertFalse(disabled.isSelected)
+        XCTAssertEqual(enabled.title, GlanceHoldStrings.text(.menuDiagnosticMode))
+        XCTAssertTrue(enabled.isSelected)
+    }
+
     private func XCTAssertSingleSelection(
         _ options: [MenuOptionPresentation],
         expectedTitle: String,

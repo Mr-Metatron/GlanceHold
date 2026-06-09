@@ -52,6 +52,29 @@ final class MonitoringToggleControllerTests: XCTestCase {
         )
     }
 
+    func testDiagnosticModeTogglePersistsBeforeRequestingRestart() throws {
+        let store = FakeDiagnosticSettingsStore(settings: .disabled)
+        let requester = FakeAppRestartRequester()
+        requester.store = store
+
+        try DiagnosticModeMenuAction.toggle(settingsStore: store, restartRequester: requester)
+
+        XCTAssertEqual(store.savedSettings, [DiagnosticSettings(isEnabled: true)])
+        XCTAssertEqual(requester.requestCount, 1)
+        XCTAssertEqual(requester.events, ["restart"])
+        XCTAssertEqual(store.events, ["load", "save:true", "restartObserved:true"])
+    }
+
+    func testDiagnosticModeToggleCanDisablePersistedModeAndRequestsOneRestart() throws {
+        let store = FakeDiagnosticSettingsStore(settings: DiagnosticSettings(isEnabled: true))
+        let requester = FakeAppRestartRequester()
+
+        try DiagnosticModeMenuAction.toggle(settingsStore: store, restartRequester: requester)
+
+        XCTAssertEqual(store.savedSettings, [.disabled])
+        XCTAssertEqual(requester.requestCount, 1)
+    }
+
     private func state(status: MonitoringStatus, hasCalibration: Bool) -> GlanceHoldState {
         var settings = AttentionSettings.defaults
         settings.calibration = hasCalibration ? Self.calibration : nil
@@ -63,4 +86,41 @@ final class MonitoringToggleControllerTests: XCTestCase {
         quality: .high,
         createdAt: Date(timeIntervalSince1970: 0)
     )
+}
+
+private final class FakeDiagnosticSettingsStore: DiagnosticSettingsStoring {
+    private var settings: DiagnosticSettings
+    private(set) var savedSettings: [DiagnosticSettings] = []
+    private(set) var events: [String] = []
+
+    init(settings: DiagnosticSettings) {
+        self.settings = settings
+    }
+
+    func load() -> DiagnosticSettings {
+        events.append("load")
+        return settings
+    }
+
+    func save(_ settings: DiagnosticSettings) throws {
+        self.settings = settings
+        savedSettings.append(settings)
+        events.append("save:\(settings.isEnabled)")
+    }
+
+    func noteRestartObserved() {
+        events.append("restartObserved:\(settings.isEnabled)")
+    }
+}
+
+private final class FakeAppRestartRequester: AppRestartRequesting {
+    private(set) var requestCount = 0
+    private(set) var events: [String] = []
+    weak var store: FakeDiagnosticSettingsStore?
+
+    func requestRestart() {
+        requestCount += 1
+        store?.noteRestartObserved()
+        events.append("restart")
+    }
 }

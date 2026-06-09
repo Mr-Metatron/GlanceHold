@@ -2,6 +2,30 @@ import XCTest
 @testable import GlanceHold
 
 final class GlanceHoldStateTests: XCTestCase {
+    func testDiagnosticSettingsDefaultDisabledAndPersistedTogglesRoundTrip() throws {
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: "GlanceHoldStateTests.diagnostics.\(UUID().uuidString)"))
+        let store = UserDefaultsDiagnosticSettingsStore(defaults: defaults)
+
+        XCTAssertEqual(store.load(), .disabled)
+
+        try store.save(DiagnosticSettings(isEnabled: true))
+        XCTAssertTrue(UserDefaultsDiagnosticSettingsStore(defaults: defaults).load().isEnabled)
+
+        try store.save(.disabled)
+        XCTAssertFalse(UserDefaultsDiagnosticSettingsStore(defaults: defaults).load().isEnabled)
+    }
+
+    func testAttentionCalibrationResetDoesNotClearDiagnosticMode() throws {
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: "GlanceHoldStateTests.independent.\(UUID().uuidString)"))
+        let attentionStore = UserDefaultsAttentionSettingsStore(defaults: defaults)
+        let diagnosticStore = UserDefaultsDiagnosticSettingsStore(defaults: defaults)
+
+        try diagnosticStore.save(DiagnosticSettings(isEnabled: true))
+        try attentionStore.reset()
+
+        XCTAssertTrue(diagnosticStore.load().isEnabled)
+    }
+
     func testNewStateReportsOffVisibleStatusText() {
         let state = GlanceHoldState()
 
