@@ -64,6 +64,31 @@ final class IINAPluginBridgeClientTests: XCTestCase {
         XCTAssertEqual(transport.sentMessages.count, 0)
     }
 
+    func testHeartbeatMessageWithoutRequestIDDecodesAsLivenessOnly() async throws {
+        let transport = FakeIINAPluginBridgeTransport(streamMessages: [
+            #"{"version":1,"type":"heartbeat"}"#,
+            #"{"version":1,"type":"statusChanged","snapshot":{"state":"playing","speed":2.0}}"#
+        ])
+        let client = IINAPluginBridgeClient(transport: transport)
+
+        var eventIterator = client.pushedEvents().makeAsyncIterator()
+        let heartbeat = await eventIterator.next()
+        let statusEvent = await eventIterator.next()
+        let nextEvent = await eventIterator.next()
+
+        XCTAssertEqual(heartbeat, .heartbeat)
+        XCTAssertEqual(statusEvent, .status(.playing(speed: 2.0)))
+        XCTAssertNil(nextEvent)
+
+        var statusIterator = client.statusUpdates().makeAsyncIterator()
+        let status = await statusIterator.next()
+        let nextStatus = await statusIterator.next()
+
+        XCTAssertEqual(status, .playing(speed: 2.0))
+        XCTAssertNil(nextStatus)
+        XCTAssertEqual(transport.sentMessages.count, 0)
+    }
+
     func testToggleMonitoringRequestedMessageDecodesAsEventStreamWithoutCommand() async throws {
         let transport = FakeIINAPluginBridgeTransport(streamMessages: [
             #"{"version":1,"type":"toggleMonitoringRequested"}"#
@@ -104,6 +129,19 @@ final class IINAPluginBridgeClientTests: XCTestCase {
         XCTAssertEqual(transport.sentMessages.count, 1)
     }
 
+    func testHeartbeatBeforeSnapshotResponseDoesNotPoisonRequest() async throws {
+        let transport = FakeIINAPluginBridgeTransport(responses: [
+            #"{"version":1,"type":"heartbeat"}"#,
+            #"{"id":1,"version":1,"ok":true,"snapshot":{"state":"playing","speed":1.25}}"#
+        ])
+        let client = IINAPluginBridgeClient(transport: transport)
+
+        let status = await client.status()
+
+        XCTAssertEqual(status, .playing(speed: 1.25))
+        XCTAssertEqual(transport.sentMessages.count, 1)
+    }
+
     func testToggleMonitoringRequestedBeforeSnapshotResponseDoesNotPoisonRequest() async throws {
         let transport = FakeIINAPluginBridgeTransport(responses: [
             #"{"version":1,"type":"toggleMonitoringRequested"}"#,
@@ -134,6 +172,38 @@ final class IINAPluginBridgeClientTests: XCTestCase {
         XCTAssertNotNil(request)
         XCTAssertNil(nextRequest)
         XCTAssertEqual(transport.sentMessages.count, 0)
+    }
+
+    func testHeartbeatStrictlyIgnoresUnsupportedShapes() async throws {
+        let transport = FakeIINAPluginBridgeTransport(streamMessages: [
+            #"{"version":2,"type":"heartbeat"}"#,
+            #"{"id":7,"version":1,"type":"heartbeat"}"#,
+            #"{"version":1,"type":"heartbeat","snapshot":{"state":"playing","speed":2.0}}"#,
+            #"{"version":1,"type":"unknownEvent"}"#,
+            #"not json"#,
+            #"{"version":1,"type":"heartbeat"}"#
+        ])
+        let client = IINAPluginBridgeClient(transport: transport)
+
+        var iterator = client.pushedEvents().makeAsyncIterator()
+        let event = await iterator.next()
+        let nextEvent = await iterator.next()
+
+        XCTAssertEqual(event, .heartbeat)
+        XCTAssertNil(nextEvent)
+        XCTAssertEqual(transport.sentMessages.count, 0)
+    }
+
+    func testRequestIDBearingHeartbeatIsStillTreatedAsResponseMismatch() async throws {
+        let transport = FakeIINAPluginBridgeTransport(responses: [
+            #"{"id":7,"version":1,"type":"heartbeat","ok":true}"#
+        ])
+        let client = IINAPluginBridgeClient(transport: transport)
+
+        let status = await client.status()
+
+        XCTAssertEqual(status, .unavailable)
+        XCTAssertEqual(transport.sentMessages.count, 1)
     }
 
     func testStatusChangedWithRequestIDIsStillTreatedAsResponse() async throws {
