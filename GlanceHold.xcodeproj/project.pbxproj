@@ -50,6 +50,7 @@
 		8D6E7AA92F4C4D0E9A1B2C3D /* DiagnosticRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7AA82F4C4D0E9A1B2C3D /* DiagnosticRecorder.swift */; };
 		8D6E7AAB2F4C4D0E9A1B2C3D /* DiagnosticSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7AAA2F4C4D0E9A1B2C3D /* DiagnosticSettingsStore.swift */; };
 		8D6E7AAD2F4C4D0E9A1B2C3D /* AppRestartRequester.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7AAC2F4C4D0E9A1B2C3D /* AppRestartRequester.swift */; };
+		8D6E7AAF2F4C4D0E9A1B2C3D /* PlaybackSemanticDeduperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7AAE2F4C4D0E9A1B2C3D /* PlaybackSemanticDeduperTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -111,6 +112,7 @@
 		8D6E7AA82F4C4D0E9A1B2C3D /* DiagnosticRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticRecorder.swift; sourceTree = "<group>"; };
 		8D6E7AAA2F4C4D0E9A1B2C3D /* DiagnosticSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticSettingsStore.swift; sourceTree = "<group>"; };
 		8D6E7AAC2F4C4D0E9A1B2C3D /* AppRestartRequester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRestartRequester.swift; sourceTree = "<group>"; };
+		8D6E7AAE2F4C4D0E9A1B2C3D /* PlaybackSemanticDeduperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackSemanticDeduperTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -204,6 +206,7 @@
 				8D6E7A982F4C4D0E9A1B2C3D /* MonitoringToggleControllerTests.swift */,
 				8D6E7A9C2F4C4D0E9A1B2C3D /* GlanceHoldLocalizationTests.swift */,
 				8D6E7AA62F4C4D0E9A1B2C3D /* DiagnosticRecorderTests.swift */,
+				8D6E7AAE2F4C4D0E9A1B2C3D /* PlaybackSemanticDeduperTests.swift */,
 			);
 			path = GlanceHoldTests;
 			sourceTree = "<group>";
@@ -357,6 +360,7 @@
 				8D6E7A992F4C4D0E9A1B2C3D /* MonitoringToggleControllerTests.swift in Sources */,
 				8D6E7A9D2F4C4D0E9A1B2C3D /* GlanceHoldLocalizationTests.swift in Sources */,
 				8D6E7AA72F4C4D0E9A1B2C3D /* DiagnosticRecorderTests.swift in Sources */,
+				8D6E7AAF2F4C4D0E9A1B2C3D /* PlaybackSemanticDeduperTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
