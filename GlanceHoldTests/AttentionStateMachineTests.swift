@@ -121,7 +121,7 @@ final class AttentionStateMachineTests: XCTestCase {
         XCTAssertEqual(pending.nextState, .facing)
         XCTAssertEqual(pending.candidateSignal, .away)
         XCTAssertEqual(pending.candidateStartedAt, 0.2)
-        XCTAssertEqual(pending.elapsedSinceCandidateStart, 0.9, accuracy: 0.000_001)
+        XCTAssertEqual(pending.elapsedSinceCandidateStart ?? -1.0, 0.9, accuracy: 0.000_001)
         XCTAssertEqual(pending.requiredThreshold, 1.0)
         XCTAssertEqual(pending.reason, .thresholdPending)
 
@@ -153,7 +153,7 @@ final class AttentionStateMachineTests: XCTestCase {
         XCTAssertEqual(reached.previousState, .recovering)
         XCTAssertEqual(reached.nextState, .facing)
         XCTAssertNil(reached.candidateSignal)
-        XCTAssertEqual(reached.elapsedSinceCandidateStart, 0.6, accuracy: 0.000_001)
+        XCTAssertEqual(reached.elapsedSinceCandidateStart ?? -1.0, 0.6, accuracy: 0.000_001)
         XCTAssertEqual(reached.requiredThreshold, 0.6)
         XCTAssertEqual(reached.reason, .thresholdReached)
     }
