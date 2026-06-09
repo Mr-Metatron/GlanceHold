@@ -544,6 +544,9 @@ private struct GlanceHoldMenu: View {
                 }
 
                 guard playbackSemanticDeduper.shouldEmit(attentionState) else {
+                    if playbackSemanticDeduper.suppressionReason(for: attentionState) == .repeatedStableStateNoCommand {
+                        coordinator.recordSuppressedRepeatedStableStateNoCommand(attentionState)
+                    }
                     return
                 }
 

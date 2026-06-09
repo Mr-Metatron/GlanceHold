@@ -703,6 +703,68 @@ final class PlaybackCoordinatorTests: XCTestCase {
         }
     }
 
+    func testRepeatedStableSuppressionRecordsBoundedNoOpEvidenceWithoutPlaybackWork() async throws {
+        let recorder = PlaybackDiagnosticRecorder(mode: .diagnostic)
+        let session = DiagnosticSession(kind: .monitoring)
+        let adapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5)])
+        let coordinator = PlaybackCoordinator(
+            mode: .speedControl,
+            adapter: adapter,
+            diagnosticRecorder: recorder,
+            diagnosticMode: .diagnostic,
+            diagnosticSession: session
+        )
+        var deduper = PlaybackSemanticDeduper()
+        deduper.startSession(session.id)
+
+        for state in [DebouncedAttentionState.facing, .facing, .facing] {
+            if deduper.shouldEmit(state) {
+                await coordinator.handleAttentionState(state)
+            } else if deduper.suppressionReason(for: state) == .repeatedStableStateNoCommand {
+                coordinator.recordSuppressedRepeatedStableStateNoCommand(state)
+            }
+        }
+        coordinator.stopMonitoring()
+
+        XCTAssertEqual(adapter.snapshotReadCount, 1)
+        XCTAssertEqual(adapter.commands, [])
+
+        let repeatedSummary = try XCTUnwrap(
+            recorder.events.first {
+                $0.name == .playbackNoOpSummary &&
+                    fieldValue(.noOpReason, in: $0) == "repeatedStableStateNoCommand"
+            }
+        )
+        XCTAssertEqual(fieldValue(.noOpCount, in: repeatedSummary), "2")
+        XCTAssertEqual(fieldValue(.firstAttentionState, in: repeatedSummary), "facing")
+        XCTAssertEqual(fieldValue(.latestAttentionState, in: repeatedSummary), "facing")
+        XCTAssertEqual(fieldValue(.firstSnapshotState, in: repeatedSummary), "notRead")
+        XCTAssertEqual(fieldValue(.latestSnapshotState, in: repeatedSummary), "notRead")
+        XCTAssertEqual(fieldValue(.firstIntentType, in: repeatedSummary), "none")
+        XCTAssertEqual(fieldValue(.latestIntentType, in: repeatedSummary), "none")
+    }
+
+    func testRepeatedStableSuppressionStaysQuietInDefaultMode() async {
+        let recorder = PlaybackDiagnosticRecorder(mode: .default)
+        let session = DiagnosticSession(kind: .monitoring)
+        let adapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5)])
+        let coordinator = PlaybackCoordinator(
+            mode: .speedControl,
+            adapter: adapter,
+            diagnosticRecorder: recorder,
+            diagnosticMode: .default,
+            diagnosticSession: session
+        )
+
+        coordinator.recordSuppressedRepeatedStableStateNoCommand(.facing)
+        coordinator.recordSuppressedRepeatedStableStateNoCommand(.facing)
+        coordinator.stopMonitoring()
+
+        XCTAssertEqual(adapter.snapshotReadCount, 0)
+        XCTAssertEqual(adapter.commands, [])
+        XCTAssertFalse(recorder.events.contains { $0.name == .playbackNoOpSummary })
+    }
+
     func testNoIntentPlaybackEvaluationsEmitBoundedNoOpSummaryInDiagnosticMode() async {
         let recorder = PlaybackDiagnosticRecorder(mode: .diagnostic)
         let adapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5), .playing(speed: 1.5)])

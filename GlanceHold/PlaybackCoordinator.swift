@@ -102,6 +102,18 @@ final class PlaybackCoordinator {
         }
     }
 
+    func recordSuppressedRepeatedStableStateNoCommand(_ state: DebouncedAttentionState) {
+        recordPlaybackNoOp(
+            reason: .repeatedStableStateNoCommand,
+            breadcrumb: PlaybackNoOpBreadcrumb(
+                attentionState: state.diagnosticName,
+                snapshotState: "notRead",
+                speedPresent: false,
+                intentType: "none"
+            )
+        )
+    }
+
     func handleAttentionState(_ state: DebouncedAttentionState) async {
         monitoringSessionActive = true
         let snapshot = await readSnapshot()
@@ -369,6 +381,14 @@ final class PlaybackCoordinator {
             speedPresent: snapshot.speed != nil,
             intentType: intent?.diagnosticName ?? "none"
         )
+        recordPlaybackNoOp(reason: reason, breadcrumb: breadcrumb)
+    }
+
+    private func recordPlaybackNoOp(reason: PlaybackNoOpReason, breadcrumb: PlaybackNoOpBreadcrumb) {
+        guard diagnosticMode == .diagnostic, activeDiagnosticSession != nil else {
+            return
+        }
+
         playbackNoOpAggregates[reason, default: PlaybackNoOpAggregate(first: breadcrumb)].record(breadcrumb)
     }
 
