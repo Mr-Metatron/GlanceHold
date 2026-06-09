@@ -452,6 +452,26 @@ final class AttentionMonitorTests: XCTestCase {
         XCTAssertEqual(Set(monitoringEvents.map(\.category)), [.monitoring, .attention, .runtimeSummary])
     }
 
+    func testMonitoringDiagnosticSessionLifecycleNotifiesPlaybackBridge() async {
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: MonitorSettingsStore(settings: .defaults.withCalibration(snapshot(.high))),
+            capture: FakeCameraFrameCapture(),
+            analyzer: FakeVisionAnalyzer()
+        )
+        var sessionChanges: [DiagnosticSession?] = []
+        monitor.diagnosticSessionDidChange = { session in
+            sessionChanges.append(session)
+        }
+
+        await monitor.startMonitoring()
+        monitor.stopMonitoring()
+
+        XCTAssertEqual(sessionChanges.count, 2)
+        XCTAssertEqual(sessionChanges.first??.kind, .monitoring)
+        XCTAssertNil(sessionChanges.last!)
+    }
+
     func testCalibrationDiagnosticsAreScalarAndUseCalibrationSession() async {
         let recorder = MonitorDiagnosticRecorder(mode: .default)
         let monitor = AttentionMonitor(

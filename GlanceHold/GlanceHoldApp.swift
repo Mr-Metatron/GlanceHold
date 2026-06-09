@@ -506,17 +506,21 @@ private struct GlanceHoldMenu: View {
         if plan.stopMonitoringToggleRequests {
             stopMonitoringToggleRequestHandling()
         }
-        if plan.stopAttentionMonitor {
-            monitor.stopMonitoring()
-        }
         if plan.stopPlaybackCoordinator {
             playbackCoordinator.stopMonitoring()
+        }
+        if plan.stopAttentionMonitor {
+            monitor.stopMonitoring()
         }
     }
 
     private func installMonitorStateHandler() {
         installPlaybackCoordinatorStateHandler()
         let coordinator = playbackCoordinator
+        coordinator.setDiagnosticSession(monitor.currentDiagnosticSession)
+        monitor.diagnosticSessionDidChange = { session in
+            coordinator.setDiagnosticSession(session)
+        }
         refreshPlaybackCoordinator(coordinator)
         monitor.stateDidChange = { monitorState, settings in
             Task { @MainActor in

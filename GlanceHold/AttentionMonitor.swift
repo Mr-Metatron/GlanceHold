@@ -72,6 +72,10 @@ final class AttentionMonitor {
     private(set) var state: AttentionMonitorState
     private(set) var settings: AttentionSettings
     var stateDidChange: ((AttentionMonitorState, AttentionSettings) -> Void)?
+    var currentDiagnosticSession: DiagnosticSession? {
+        activeDiagnosticSession
+    }
+    var diagnosticSessionDidChange: ((DiagnosticSession?) -> Void)?
 
     init(
         permissionProvider: CameraPermissionProviding,
@@ -149,6 +153,7 @@ final class AttentionMonitor {
         do {
             try await capture.start()
             isCaptureRunning = true
+            diagnosticSessionDidChange?(diagnosticSession)
             setState(.ready)
         } catch CameraFrameCaptureError.unavailable {
             recordFailure(category: .camera, in: diagnosticSession)
@@ -473,6 +478,7 @@ final class AttentionMonitor {
             in: diagnosticSession
         )
         activeDiagnosticSession = nil
+        diagnosticSessionDidChange?(nil)
         monitoringStartedAt = nil
         lastPeriodicSummaryAt = nil
     }
