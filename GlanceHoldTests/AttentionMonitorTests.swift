@@ -466,6 +466,35 @@ final class AttentionMonitorTests: XCTestCase {
         XCTAssertLessThanOrEqual(analyzerRate, 5.5, "analyzerRateHz should stay within 5 Hz plus fake-timestamp tolerance")
     }
 
+    func testMonitoringHotPathPerformanceBudgetUsesCPUMetric() async {
+        let capture = FakeCameraFrameCapture()
+        let analyzer = TimestampEchoVisionAnalyzer()
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: MonitorSettingsStore(settings: .defaults.withCalibration(snapshot(.high))),
+            capture: capture,
+            analyzer: analyzer,
+            diagnosticMode: .diagnostic
+        )
+
+        await monitor.startMonitoring()
+        await capture.waitForFrameHandler()
+
+        var baseTime = 0.0
+        measure(metrics: [XCTCPUMetric()]) {
+            let start = baseTime
+            for index in 0..<300 {
+                capture.emitFrame(time: start + Double(index) / 30.0)
+            }
+            baseTime += 20.0
+        }
+
+        await drainMainActor()
+        monitor.stopMonitoring()
+
+        XCTAssertGreaterThan(analyzer.analyzeCount, 0)
+    }
+
     func testDiagnosticModeRecordsAttentionBreadcrumbsAndPeriodicSummary() async {
         let recorder = MonitorDiagnosticRecorder(mode: .diagnostic)
         let monitor = AttentionMonitor(
