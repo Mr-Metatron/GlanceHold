@@ -22,7 +22,7 @@
 <details open>
 <summary>🚧 v1.1 Runtime Reliability and Power Budget (Phases 7-11) — EXECUTING</summary>
 
-- [ ] Phase 7: Structured Runtime Logging and Diagnostics Foundation (1/5 plans)
+- [ ] Phase 7: Structured Runtime Logging and Diagnostics Foundation (2/5 plans)
 - [ ] Phase 8: Power Hot Path Sampling and Notification Deduplication
 - [ ] Phase 9: Playback Coordinator Ownership and Async Safety
 - [ ] Phase 10: Attention Semantics, Calibration Robustness, and Settings Validation
@@ -114,7 +114,7 @@
 | 4. IINA Adapter Spike and End-to-End Playback Control | v1.0 | 10/10 | Complete | 2026-06-07 |
 | 5. Control Polish, IINA Shortcut, and i18n | v1.0 | 5/5 | Complete | 2026-06-08 |
 | 6. End-to-End UX Hardening and Manual UAT | v1.0 | 4/4 | Complete | 2026-06-08 |
-| 7. Structured Runtime Logging and Diagnostics Foundation | v1.1 | 1/5 | Executing | — |
+| 7. Structured Runtime Logging and Diagnostics Foundation | v1.1 | 2/5 | Executing | — |
 | 8. Power Hot Path Sampling and Notification Deduplication | v1.1 | 0/? | Planned | — |
 | 9. Playback Coordinator Ownership and Async Safety | v1.1 | 0/? | Planned | — |
 | 10. Attention Semantics, Calibration Robustness, and Settings Validation | v1.1 | 0/? | Planned | — |
