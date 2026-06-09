@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Runtime Reliability and Power Budget
 status: executing
-stopped_at: Phase 8 context gathered
-last_updated: "2026-06-09T16:34:35.210Z"
+stopped_at: Completed 08-03-PLAN.md
+last_updated: "2026-06-09T16:43:12.672Z"
 last_activity: 2026-06-09
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 11
-  completed_plans: 8
+  completed_plans: 9
   percent: 20
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-09 after completing Phase 7)
 ## Current Position
 
 Phase: 08 (power-hot-path-sampling-and-notification-deduplication) — EXECUTING
-Plan: 4 of 6
+Plan: 5 of 6
 Status: Ready to execute
 Last activity: 2026-06-09
 
@@ -86,6 +86,7 @@ Last activity: 2026-06-09
 | Phase 07 P04 | 8 min | 3 tasks | 12 files |
 | Phase 07 P05 | 7 min | 3 tasks | 4 files |
 | Phase 08 P02 | 2min | 3 tasks | 6 files |
+| Phase 08 P03 | 6min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -104,6 +105,8 @@ Recent decisions affecting current work:
 - [Phase 08]: 08-02 keeps semantic playback deduplication in GlanceHoldApp before sendAttentionState so repeated stable states do not create playback tasks.
 - [Phase 08]: 08-02 resets playback semantic dedup state only from monitoring diagnostic session start/end.
 - [Phase 08]: 08-02 treats recovering as playback-relevant by allowing it through once per semantic transition.
+- [Phase 08]: 08-03 treats heartbeat as id-less liveness only; statusChanged remains the snapshot-carrying pushed status event.
+- [Phase 08]: 08-03 removes fixed 10-second playback fallback snapshot polling during stable monitoring in favor of heartbeat/status stream stale reconnect.
 
 ### Roadmap Evolution
 
@@ -155,8 +158,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-09T16:34:02.616Z
-Stopped at: Phase 8 context gathered
+Last session: 2026-06-09T16:43:12.668Z
+Stopped at: Completed 08-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
