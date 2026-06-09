@@ -60,6 +60,8 @@ enum MonitoringStatus: Equatable {
             self = .calibratingFacingPose
         case .ready:
             self = .readyAfterCalibration
+        case .monitoringPendingFirstSample:
+            self = .facing
         case .facing:
             self = .facing
         case .lookingAway:

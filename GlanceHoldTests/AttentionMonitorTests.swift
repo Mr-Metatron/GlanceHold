@@ -69,6 +69,23 @@ final class AttentionMonitorTests: XCTestCase {
         XCTAssertEqual(monitor.state, .off)
     }
 
+    func testStartMonitoringDoesNotReenterWhileWaitingForFirstSample() async {
+        let capture = FakeCameraFrameCapture()
+        let store = MonitorSettingsStore(settings: .defaults.withCalibration(snapshot(.high)))
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: store,
+            capture: capture,
+            analyzer: FakeVisionAnalyzer()
+        )
+
+        await monitor.startMonitoring()
+        await monitor.startMonitoring()
+
+        XCTAssertEqual(capture.startCount, 1)
+        XCTAssertEqual(monitor.state, .monitoringPendingFirstSample)
+    }
+
     func testCalibrationSavesHighAndMarginalScalarSnapshots() async throws {
         let store = MonitorSettingsStore()
         let monitor = AttentionMonitor(

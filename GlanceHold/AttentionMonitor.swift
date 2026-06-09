@@ -6,6 +6,7 @@ enum AttentionMonitorState: Equatable {
     case needsCalibration
     case calibrating
     case ready
+    case monitoringPendingFirstSample
     case facing
     case lookingAway
     case noFaceDetected
@@ -101,6 +102,10 @@ final class AttentionMonitor {
     }
 
     func startMonitoring() async {
+        guard !isCaptureRunning else {
+            return
+        }
+
         guard await resolvePermission() else {
             setState(.cameraPermissionDenied)
             return
@@ -154,7 +159,7 @@ final class AttentionMonitor {
             try await capture.start()
             isCaptureRunning = true
             diagnosticSessionDidChange?(diagnosticSession)
-            setState(.ready)
+            setState(.monitoringPendingFirstSample)
         } catch CameraFrameCaptureError.unavailable {
             recordFailure(category: .camera, in: diagnosticSession)
             clearActiveCapture(sessionID: sessionID)

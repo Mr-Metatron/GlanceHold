@@ -673,7 +673,8 @@ private struct GlanceHoldMenu: View {
             .recovering
         case .unavailable:
             .unavailable
-        case .off, .needsCalibration, .calibrating, .ready, .cameraPermissionDenied, .cameraUnavailable, .calibrationFailed:
+        case .off, .needsCalibration, .calibrating, .ready, .monitoringPendingFirstSample,
+            .cameraPermissionDenied, .cameraUnavailable, .calibrationFailed:
             nil
         }
     }

@@ -293,6 +293,7 @@ final class GlanceHoldStateTests: XCTestCase {
         XCTAssertEqual(MonitoringStatus(monitorState: .needsCalibration), .needsCalibration)
         XCTAssertEqual(MonitoringStatus(monitorState: .calibrating), .calibratingFacingPose)
         XCTAssertEqual(MonitoringStatus(monitorState: .ready), .readyAfterCalibration)
+        XCTAssertEqual(MonitoringStatus(monitorState: .monitoringPendingFirstSample), .facing)
         XCTAssertEqual(MonitoringStatus(monitorState: .facing), .facing)
         XCTAssertEqual(MonitoringStatus(monitorState: .lookingAway), .lookingAway)
         XCTAssertEqual(MonitoringStatus(monitorState: .noFaceDetected), .noFaceDetected)
