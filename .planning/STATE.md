@@ -4,13 +4,13 @@ milestone: v1.1
 milestone_name: Runtime Reliability and Power Budget
 status: executing
 stopped_at: Phase 8 context gathered
-last_updated: "2026-06-09T16:21:05.654Z"
+last_updated: "2026-06-09T16:34:35.210Z"
 last_activity: 2026-06-09
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 11
-  completed_plans: 6
+  completed_plans: 8
   percent: 20
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-09 after completing Phase 7)
 ## Current Position
 
 Phase: 08 (power-hot-path-sampling-and-notification-deduplication) — EXECUTING
-Plan: 2 of 6
+Plan: 4 of 6
 Status: Ready to execute
 Last activity: 2026-06-09
 
@@ -85,6 +85,7 @@ Last activity: 2026-06-09
 | Phase 07 P03 | 9 min | 3 tasks | 4 files |
 | Phase 07 P04 | 8 min | 3 tasks | 12 files |
 | Phase 07 P05 | 7 min | 3 tasks | 4 files |
+| Phase 08 P02 | 2min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -100,6 +101,9 @@ Recent decisions affecting current work:
 - [Roadmap]: SemiUHPE remains out of v1 implementation.
 - [Roadmap]: v1.1 prioritizes runtime reliability, power budget, and diagnostics before distribution or player expansion.
 - [Roadmap]: v1.1 continues numbering from Phase 7 and starts with logging/metrics so power and ownership fixes are measurable.
+- [Phase 08]: 08-02 keeps semantic playback deduplication in GlanceHoldApp before sendAttentionState so repeated stable states do not create playback tasks.
+- [Phase 08]: 08-02 resets playback semantic dedup state only from monitoring diagnostic session start/end.
+- [Phase 08]: 08-02 treats recovering as playback-relevant by allowing it through once per semantic transition.
 
 ### Roadmap Evolution
 
@@ -151,9 +155,9 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-09T15:38:45.243Z
+Last session: 2026-06-09T16:34:02.616Z
 Stopped at: Phase 8 context gathered
-Resume file: .planning/phases/08-power-hot-path-sampling-and-notification-deduplication/08-CONTEXT.md
+Resume file: None
 
 ## Operator Next Steps
 
