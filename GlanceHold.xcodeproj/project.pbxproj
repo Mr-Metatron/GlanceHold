@@ -51,6 +51,7 @@
 		8D6E7AAB2F4C4D0E9A1B2C3D /* DiagnosticSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7AAA2F4C4D0E9A1B2C3D /* DiagnosticSettingsStore.swift */; };
 		8D6E7AAD2F4C4D0E9A1B2C3D /* AppRestartRequester.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7AAC2F4C4D0E9A1B2C3D /* AppRestartRequester.swift */; };
 		8D6E7AAF2F4C4D0E9A1B2C3D /* PlaybackSemanticDeduperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7AAE2F4C4D0E9A1B2C3D /* PlaybackSemanticDeduperTests.swift */; };
+		8D6E7AB12F4C4D0E9A1B2C3D /* PlaybackSemanticDeduper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6E7AB02F4C4D0E9A1B2C3D /* PlaybackSemanticDeduper.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -113,6 +114,7 @@
 		8D6E7AAA2F4C4D0E9A1B2C3D /* DiagnosticSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticSettingsStore.swift; sourceTree = "<group>"; };
 		8D6E7AAC2F4C4D0E9A1B2C3D /* AppRestartRequester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRestartRequester.swift; sourceTree = "<group>"; };
 		8D6E7AAE2F4C4D0E9A1B2C3D /* PlaybackSemanticDeduperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackSemanticDeduperTests.swift; sourceTree = "<group>"; };
+		8D6E7AB02F4C4D0E9A1B2C3D /* PlaybackSemanticDeduper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackSemanticDeduper.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -169,6 +171,7 @@
 				8D6E7A7C2F4C4D0E9A1B2C3D /* VisionAttentionAnalyzer.swift */,
 				8D6E7A7E2F4C4D0E9A1B2C3D /* AttentionMonitor.swift */,
 				8D6E7AA82F4C4D0E9A1B2C3D /* DiagnosticRecorder.swift */,
+				8D6E7AB02F4C4D0E9A1B2C3D /* PlaybackSemanticDeduper.swift */,
 				8D6E7A842F4C4D0E9A1B2C3D /* IINAPlaybackAdapter.swift */,
 				8D6E7A862F4C4D0E9A1B2C3D /* MPVJSONIPCClient.swift */,
 				8D6E7A902F4C4D0E9A1B2C3D /* IINAPluginBridgeClient.swift */,
@@ -326,6 +329,7 @@
 				8D6E7A7D2F4C4D0E9A1B2C3D /* VisionAttentionAnalyzer.swift in Sources */,
 				8D6E7A7F2F4C4D0E9A1B2C3D /* AttentionMonitor.swift in Sources */,
 				8D6E7AA92F4C4D0E9A1B2C3D /* DiagnosticRecorder.swift in Sources */,
+				8D6E7AB12F4C4D0E9A1B2C3D /* PlaybackSemanticDeduper.swift in Sources */,
 				8D6E7A852F4C4D0E9A1B2C3D /* IINAPlaybackAdapter.swift in Sources */,
 				8D6E7A872F4C4D0E9A1B2C3D /* MPVJSONIPCClient.swift in Sources */,
 				8D6E7A912F4C4D0E9A1B2C3D /* IINAPluginBridgeClient.swift in Sources */,

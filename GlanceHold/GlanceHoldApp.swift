@@ -145,6 +145,7 @@ private struct GlanceHoldMenu: View {
     @State private var playbackFallbackRefreshTask: Task<Void, Never>?
     @State private var playbackAttentionTask: Task<Void, Never>?
     @State private var monitoringToggleRequestTask: Task<Void, Never>?
+    @State private var playbackSemanticDeduper = PlaybackSemanticDeduper()
     @Environment(\.openWindow) private var openWindow
 
     private let playbackFallbackRefreshIntervalNanoseconds: UInt64 = 10_000_000_000
@@ -524,9 +525,14 @@ private struct GlanceHoldMenu: View {
     private func installMonitorStateHandler() {
         installPlaybackCoordinatorStateHandler()
         let coordinator = playbackCoordinator
-        coordinator.setDiagnosticSession(monitor.currentDiagnosticSession)
+        let currentDiagnosticSession = monitor.currentDiagnosticSession
+        coordinator.setDiagnosticSession(currentDiagnosticSession)
+        resetPlaybackSemanticDeduper(for: currentDiagnosticSession)
         monitor.diagnosticSessionDidChange = { session in
             coordinator.setDiagnosticSession(session)
+            Task { @MainActor in
+                resetPlaybackSemanticDeduper(for: session)
+            }
         }
         refreshPlaybackCoordinator(coordinator)
         monitor.stateDidChange = { monitorState, settings in
@@ -538,9 +544,22 @@ private struct GlanceHoldMenu: View {
                     return
                 }
 
+                guard playbackSemanticDeduper.shouldEmit(attentionState) else {
+                    return
+                }
+
                 sendAttentionState(attentionState, to: coordinator)
             }
         }
+    }
+
+    private func resetPlaybackSemanticDeduper(for session: DiagnosticSession?) {
+        guard let session else {
+            playbackSemanticDeduper.endSession()
+            return
+        }
+
+        playbackSemanticDeduper.startSession(session.id)
     }
 
     private func installPlaybackCoordinatorStateHandler() {

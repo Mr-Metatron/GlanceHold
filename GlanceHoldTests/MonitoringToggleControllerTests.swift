@@ -121,6 +121,20 @@ final class MonitoringToggleControllerTests: XCTestCase {
         XCTAssertLessThan(relaunchGuardRange.lowerBound, terminateRange.lowerBound)
     }
 
+    func testAppSourceDeduplicatesPlaybackSemanticsBeforeSendingAttentionState() throws {
+        let source = try String(contentsOf: projectFileURL("GlanceHold/GlanceHoldApp.swift"), encoding: .utf8)
+
+        XCTAssertTrue(source.contains("@State private var playbackSemanticDeduper = PlaybackSemanticDeduper()"))
+        XCTAssertTrue(source.contains("resetPlaybackSemanticDeduper(for: currentDiagnosticSession)"))
+        XCTAssertTrue(source.contains("resetPlaybackSemanticDeduper(for: session)"))
+        XCTAssertTrue(source.contains("playbackSemanticDeduper.endSession()"))
+        XCTAssertTrue(source.contains("playbackSemanticDeduper.startSession(session.id)"))
+
+        let dedupRange = try XCTUnwrap(source.range(of: "playbackSemanticDeduper.shouldEmit(attentionState)"))
+        let sendRange = try XCTUnwrap(source.range(of: "sendAttentionState(attentionState, to: coordinator)"))
+        XCTAssertLessThan(dedupRange.lowerBound, sendRange.lowerBound)
+    }
+
     private func state(status: MonitoringStatus, hasCalibration: Bool) -> GlanceHoldState {
         var settings = AttentionSettings.defaults
         settings.calibration = hasCalibration ? Self.calibration : nil
