@@ -115,7 +115,7 @@
 | 5. Control Polish, IINA Shortcut, and i18n | v1.0 | 5/5 | Complete | 2026-06-08 |
 | 6. End-to-End UX Hardening and Manual UAT | v1.0 | 4/4 | Complete | 2026-06-08 |
 | 7. Structured Runtime Logging and Diagnostics Foundation | v1.1 | 5/5 | Complete    | 2026-06-09 |
-| 8. Power Hot Path Sampling and Notification Deduplication | v1.1 | 0/? | Planned | — |
+| 8. Power Hot Path Sampling and Notification Deduplication | v1.1 | 1/6 | In Progress|  |
 | 9. Playback Coordinator Ownership and Async Safety | v1.1 | 0/? | Planned | — |
 | 10. Attention Semantics, Calibration Robustness, and Settings Validation | v1.1 | 0/? | Planned | — |
 | 11. IINA Bridge Security, Legacy Boundary, and Reliability Verification | v1.1 | 0/? | Planned | — |
