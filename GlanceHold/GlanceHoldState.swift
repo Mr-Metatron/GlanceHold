@@ -168,6 +168,8 @@ enum PlayerControlStatus: Equatable {
                 self = .notControllable
             case .playerUnavailable:
                 self = .unavailable
+            case .pluginUpdateRequired:
+                self = .setupNeeded
             }
             return
         }
@@ -183,6 +185,8 @@ enum PlayerControlStatus: Equatable {
             self = .setupNeeded
         case .playerUnavailable:
             self = .unavailable
+        case .pluginUpdateRequired:
+            self = .setupNeeded
         }
     }
 

@@ -3,6 +3,7 @@ import Foundation
 enum IINAPlayerStatus: Equatable {
     case setupNeeded
     case unavailable
+    case pluginUpdateRequired
     case idle
     case paused(speed: Double)
     case playing(speed: Double)
@@ -109,6 +110,8 @@ private extension IINAPlayerStatus {
             return .setupNeeded
         case .unavailable:
             return .playerUnavailable
+        case .pluginUpdateRequired:
+            return .pluginUpdateRequired
         case .idle:
             return .idle
         case let .paused(speed):

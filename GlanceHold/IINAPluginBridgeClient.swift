@@ -138,6 +138,8 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
             return try await snapshot()
         } catch IINAPluginBridgeClientError.pluginNeeded {
             return .setupNeeded
+        } catch IINAPluginBridgeClientError.protocolFailure(.pluginUpdateRequired) {
+            return .pluginUpdateRequired
         } catch {
             return .unavailable
         }
@@ -306,6 +308,8 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
             return .paused(speed: speed)
         case "idle":
             return .idle
+        case "pluginUpdateRequired":
+            return .pluginUpdateRequired
         default:
             throw IINAPluginBridgeClientError.unavailable
         }

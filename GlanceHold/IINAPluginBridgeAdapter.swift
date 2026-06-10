@@ -69,6 +69,8 @@ private extension IINAPlayerStatus {
             return .setupNeeded
         case .unavailable:
             return .playerUnavailable
+        case .pluginUpdateRequired:
+            return .pluginUpdateRequired
         case .idle:
             return .idle
         case let .paused(speed):

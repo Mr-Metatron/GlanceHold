@@ -244,7 +244,7 @@ final class PlaybackCoordinator {
         switch snapshot.playbackState {
         case .playing, .paused:
             return snapshot.speed != nil
-        case .idle, .setupNeeded, .playerUnavailable:
+        case .idle, .setupNeeded, .playerUnavailable, .pluginUpdateRequired:
             return false
         }
     }
@@ -369,7 +369,7 @@ final class PlaybackCoordinator {
         switch snapshot.playbackState {
         case .playing, .paused:
             snapshot.speed == nil ? .missingSpeed : .playerNotControllable
-        case .idle, .setupNeeded, .playerUnavailable:
+        case .idle, .setupNeeded, .playerUnavailable, .pluginUpdateRequired:
             .playerNotControllable
         }
     }
@@ -525,6 +525,8 @@ private extension PlayerPlaybackState {
             "setupNeeded"
         case .playerUnavailable:
             "playerUnavailable"
+        case .pluginUpdateRequired:
+            "pluginUpdateRequired"
         }
     }
 }

@@ -6,6 +6,7 @@ enum PlayerPlaybackState: Equatable {
     case idle
     case setupNeeded
     case playerUnavailable
+    case pluginUpdateRequired
 }
 
 enum PlayerManualAction: Equatable {
@@ -43,6 +44,10 @@ struct PlayerSnapshot: Equatable {
 
     static var playerUnavailable: PlayerSnapshot {
         PlayerSnapshot(playbackState: .playerUnavailable, speed: nil)
+    }
+
+    static var pluginUpdateRequired: PlayerSnapshot {
+        PlayerSnapshot(playbackState: .pluginUpdateRequired, speed: nil)
     }
 }
 
@@ -243,7 +248,7 @@ struct PlaybackPolicy: Equatable {
         }
 
         switch player.playbackState {
-        case .idle, .setupNeeded, .playerUnavailable:
+        case .idle, .setupNeeded, .playerUnavailable, .pluginUpdateRequired:
             return false
         case .playing, .paused:
             return player.speed != nil
