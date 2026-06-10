@@ -454,6 +454,10 @@ private struct GlanceHoldMenu: View {
             return
         }
 
+        if CalibrationStartController.requiresLifecycleCleanupBeforeStarting(from: state) {
+            stopMonitoring(source: .userRequested)
+        }
+
         do {
             try monitor.resetCalibration()
             state.updateSettings(monitor.settings)

@@ -191,6 +191,22 @@ final class MonitoringToggleControllerTests: XCTestCase {
         XCTAssertLessThan(cleanupRange.lowerBound, captureRange.lowerBound)
     }
 
+    func testAppSourceCleansMonitoringLifecycleBeforeResettingCalibration() throws {
+        let source = try String(contentsOf: projectFileURL("GlanceHold/GlanceHoldApp.swift"), encoding: .utf8)
+        let resetStart = try XCTUnwrap(source.range(of: "private func resetCalibrationWithConfirmation"))
+        let nextFunction = try XCTUnwrap(source.range(of: "private func handleCalibrationResult"))
+        let resetBody = source[resetStart.lowerBound..<nextFunction.lowerBound]
+
+        XCTAssertTrue(resetBody.contains("CalibrationStartController.requiresLifecycleCleanupBeforeStarting(from: state)"))
+        XCTAssertTrue(resetBody.contains("stopMonitoring(source: .userRequested)"))
+
+        let confirmationRange = try XCTUnwrap(resetBody.range(of: "guard alert.runModal() == .alertSecondButtonReturn"))
+        let cleanupRange = try XCTUnwrap(resetBody.range(of: "stopMonitoring(source: .userRequested)"))
+        let resetRange = try XCTUnwrap(resetBody.range(of: "monitor.resetCalibration()"))
+        XCTAssertLessThan(confirmationRange.lowerBound, cleanupRange.lowerBound)
+        XCTAssertLessThan(cleanupRange.lowerBound, resetRange.lowerBound)
+    }
+
     func testAppSourceUsesStatusStreamLivenessInsteadOfFixedSnapshotFallbackPolling() throws {
         let source = try String(contentsOf: projectFileURL("GlanceHold/GlanceHoldApp.swift"), encoding: .utf8)
 
