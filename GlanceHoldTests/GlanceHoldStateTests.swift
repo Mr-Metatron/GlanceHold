@@ -187,6 +187,7 @@ final class GlanceHoldStateTests: XCTestCase {
         XCTAssertEqual(phrases, [
             GlanceHoldStrings.text(.playerUnavailableTitle),
             GlanceHoldStrings.text(.playerSetupNeededTitle),
+            GlanceHoldStrings.text(.playerPluginUpdateRequiredTitle),
             GlanceHoldStrings.text(.playerIdleTitle),
             GlanceHoldStrings.text(.playerPausedTitle),
             GlanceHoldStrings.text(.playerPlayingTitle),
@@ -212,7 +213,44 @@ final class GlanceHoldStateTests: XCTestCase {
     func testSetupNeededStatusUsesNeutralBridgeWaitingCopy() {
         XCTAssertEqual(PlayerControlStatus.setupNeeded.visibleTitle, GlanceHoldStrings.text(.playerSetupNeededTitle))
         XCTAssertEqual(PlayerControlStatus.setupNeeded.detailText, GlanceHoldStrings.text(.playerSetupNeededDetail))
+        XCTAssertEqual(PlayerControlStatus.setupNeeded.visibleTitle, "IINA Bridge Waiting")
         XCTAssertFalse(PlayerControlStatus.setupNeeded.detailText.isEmpty)
+    }
+
+    func testPluginUpdateRequiredCoordinatorStateMapsToUpdateNeededStatus() {
+        let state = PlaybackCoordinatorState(
+            isPlayerControllable: false,
+            playerSnapshot: .pluginUpdateRequired
+        )
+
+        XCTAssertEqual(PlayerControlStatus(coordinatorState: state), .pluginUpdateRequired)
+    }
+
+    func testPluginUpdateRequiredStatusUsesExactEnglishCopy() {
+        XCTAssertEqual(
+            PlayerControlStatus.pluginUpdateRequired.visibleTitle,
+            GlanceHoldStrings.text(.playerPluginUpdateRequiredTitle)
+        )
+        XCTAssertEqual(
+            PlayerControlStatus.pluginUpdateRequired.detailText,
+            GlanceHoldStrings.text(.playerPluginUpdateRequiredDetail)
+        )
+        XCTAssertEqual(PlayerControlStatus.pluginUpdateRequired.visibleTitle, "IINA Bridge Update Needed")
+        XCTAssertEqual(
+            PlayerControlStatus.pluginUpdateRequired.detailText,
+            "Update or reinstall the GlanceHold IINA plugin, then restart IINA."
+        )
+    }
+
+    func testPluginUpdateRequiredStatusUsesExactSimplifiedChineseCopy() {
+        XCTAssertEqual(
+            GlanceHoldStrings.text(.playerPluginUpdateRequiredTitle, localeIdentifier: "zh-Hans"),
+            "需要更新 IINA Bridge"
+        )
+        XCTAssertEqual(
+            GlanceHoldStrings.text(.playerPluginUpdateRequiredDetail, localeIdentifier: "zh-Hans"),
+            "请更新或重新安装 GlanceHold IINA 插件，然后重启 IINA。"
+        )
     }
 
     func testPhase3StatusTitlesAreExact() {
