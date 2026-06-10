@@ -2,7 +2,9 @@
 
 `GlanceHoldBridge.iinaplugin` is the local companion plugin used by GlanceHold v1 to control IINA from the sandboxed status-bar app.
 
-The bridge opens a local WebSocket server on `ws://127.0.0.1:47873`, accepts authenticated GlanceHold protocol requests, and pushes player status changes to connected GlanceHold clients. It is intentionally narrow: GlanceHold can request a `snapshot`, `setSpeed`, `pause`, or `resume`, and the plugin can notify GlanceHold about status changes or the monitoring shortcut.
+The bridge is a local single-user loopback integration. GlanceHold connects to `ws://127.0.0.1:47873`; the plugin does not expose a general remote-control API. There is no remote host configuration.
+
+The request surface is intentionally narrow: GlanceHold can request `snapshot`, `setSpeed`, `pause`, or `resume`, and the plugin can push status, heartbeat, and monitoring shortcut events back to connected GlanceHold clients.
 
 ## Install And Enable
 
@@ -17,11 +19,13 @@ Restart IINA, then enable `GlanceHold Bridge` in IINA's plugin UI if it is not e
 
 When the bridge is connected, GlanceHold's status-bar menu should show an IINA status row such as `IINA Playing`, `IINA Paused`, `IINA Idle`, or `IINA Not Controllable` instead of an unavailable/setup-needed state.
 
-## Bridge Token
+## Local Trust Model
 
-Playback-control requests require a per-install bridge token. The Swift app generates and stores its token locally; the IINA plugin reads the expected token from its plugin preference named `bridgeToken`. After launching GlanceHold once, copy the token with `defaults read com.metatron.GlanceHold iinaPluginBridgeToken`, then open IINA's plugin preferences for GlanceHold Bridge and paste it into the Bridge token field. Keep this value private and at least 32 characters long.
+No request token is required.
+Do not copy or paste a bridge token.
+There is no remote host configuration.
 
-If the plugin preference is empty or too short, command requests are rejected as unauthorized. Heartbeat and status pushes still use id-less messages and do not carry the token.
+The security boundary for v1.1 is local loopback plus the plugin's command whitelist. Any process on the same Mac can attempt to connect to the local port, so the plugin accepts only the GlanceHold protocol shape and only the `snapshot`, `setSpeed`, `pause`, and `resume` request names. It does not forward arbitrary mpv commands.
 
 ## Development Link
 
@@ -48,33 +52,37 @@ The shortcut does not send playback commands. It broadcasts a local `toggleMonit
 
 If GlanceHold is not running or no local client is connected, the shortcut is a plugin-side no-op apart from a diagnostic log. The plugin does not launch GlanceHold.
 
-Phase 5 carry-forward evidence: the user completed the live IINA shortcut check, selected-state menu visual check, and English/Simplified Chinese readability check after Phase 5. Phase 6 records that as prior evidence and still keeps a final smoke retest path for related docs or copy changes.
-
 ## Bridge Protocol
 
-App-to-plugin requests carry protocol `version`, request `id`, and the configured per-install bridge token. Requests without the token are rejected before any playback command is considered.
+App-to-plugin requests carry protocol `version`, request `id`, request `type`, and any type-specific fields. Protocol version 2 is the supported no-token schema.
+
+Supported request types are:
+
+- `snapshot` returns the current IINA playback state and speed.
+- `command` accepts only `setSpeed`, `pause`, or `resume`.
+- `setSpeed` requires a finite numeric `speed`.
 
 Server-pushed messages use the same protocol version and do not carry a request `id`.
 `statusChanged` carries the current player snapshot:
 
 ```json
-{"version":1,"type":"statusChanged","snapshot":{"state":"playing","speed":2.0}}
+{"version":2,"type":"statusChanged","snapshot":{"state":"playing","speed":2.0}}
 ```
 
 The bridge also sends a liveness-only heartbeat about every 5 seconds:
 
 ```json
-{"version":1,"type":"heartbeat"}
+{"version":2,"type":"heartbeat"}
 ```
 
-Heartbeat messages carry no snapshot, speed, title, path, token, or request `id`.
+Heartbeat messages carry no snapshot, speed, title, path, or request `id`.
 They are only used to keep the pushed status stream alive and cannot satisfy
 snapshot or command request ids.
 
 The monitoring shortcut event is also pushed without a request `id`:
 
 ```json
-{"version":1,"type":"toggleMonitoringRequested"}
+{"version":2,"type":"toggleMonitoringRequested"}
 ```
 
 The pushed stream is for menu/status freshness, liveness, and the monitoring shortcut only. It does not trigger playback commands by itself. GlanceHold's Swift playback policy remains responsible for deciding when to hold speed, restore speed, pause, or resume.
@@ -90,6 +98,10 @@ If GlanceHold shows IINA unavailable or setup-needed:
 - Restart IINA after copying the plugin or changing the development link.
 - Load a playable video when you expect `IINA Playing` or `IINA Paused`.
 
+If GlanceHold reports an update-needed or protocol mismatch state, use the current plugin files with the current GlanceHold app. Update or reinstall the GlanceHold IINA plugin, then restart IINA.
+
 If GlanceHold can send commands but the IINA status row does not update after manual play, pause, speed, or idle changes, restart IINA after copying or linking the latest plugin files and confirm the plugin is enabled.
 
 Expected pushed message types are `statusChanged`, `heartbeat`, and `toggleMonitoringRequested`; request/response messages for `snapshot`, `setSpeed`, `pause`, and `resume` still include request ids.
+
+Phase 11 inherits this no-token local loopback trust model.
