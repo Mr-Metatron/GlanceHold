@@ -140,8 +140,8 @@
 
 ## Next
 
-Execute the Phase 08.1 gap-closure plan before Phase 9:
+Start Phase 9 when ready:
 
 ```bash
-$gsd-execute-phase 08.1
+$gsd-discuss-phase 9
 ```
