@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Runtime Reliability and Power Budget
-status: verifying
-stopped_at: Completed 08-06-PLAN.md with pending post-change resource evidence
-last_updated: "2026-06-09T17:00:01.700Z"
+status: planning
+stopped_at: Phase 08.1 context gathered
+last_updated: "2026-06-10T11:57:02.863Z"
 last_activity: 2026-06-10
 progress:
-  total_phases: 5
+  total_phases: 6
   completed_phases: 2
   total_plans: 11
   completed_plans: 11
-  percent: 40
+  percent: 33
 ---
 
 # Project State
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-09 after completing Phase 7)
 
 **Core value:** 当用户注意力离开屏幕时，GlanceHold 能可靠、克制地替用户处理视频速度或播放状态，并在用户回来时恢复到合适状态，且不误恢复用户手动暂停的视频。
-**Current focus:** Phase 08 — power-hot-path-sampling-and-notification-deduplication
+**Current focus:** Phase 08.1 — IINA bridge local trust model and setup-error UX
 
 ## Current Position
 
-Phase: 08 (power-hot-path-sampling-and-notification-deduplication) — EXECUTING
-Plan: 6 of 6
-Status: Phase complete — ready for verification
+Phase: 08.1 (iina-bridge-local-trust-model-and-setup-error-ux) — READY TO PLAN
+Plan: 0 of ?
+Status: Urgent inserted phase ready for discussion/planning
 Last activity: 2026-06-10
 
 ## Performance Metrics
@@ -129,11 +129,11 @@ Recent decisions affecting current work:
 - Phase 5 edited: Control Polish, IINA Shortcut, and i18n.
 - Phase 5/6 split accepted by user on 2026-06-07 so shortcut/localization work can be planned separately from final MVP hardening.
 - Phase 5 shortcut scope revised on 2026-06-07: use the existing IINA plugin bridge/menu key binding path instead of a macOS-wide global hotkey.
+- Phase 08.1 inserted after Phase 8: IINA bridge local trust model and setup-error UX (URGENT)
 
 ### Pending Todos
 
-- [Phase 8]: Begin power hot path sampling and notification deduplication work.
-- [Bridge UX]: Remove or radically simplify the IINA bridge manual token requirement in the next phase; see `.planning/todos/pending/2026-06-10-remove-iina-bridge-manual-token-friction.md`.
+- [Phase 08.1]: Plan and execute the low-friction local IINA bridge trust model; see `.planning/todos/pending/2026-06-10-remove-iina-bridge-manual-token-friction.md`.
 
 ### Blockers/Concerns
 
@@ -142,7 +142,7 @@ Recent decisions affecting current work:
 - [Phase 6]: Final hardening covered disable/quit flows, last-action feedback, final manual checklist coverage, localization sanity, shortcut toggle sanity, and build verification.
 - [v1.1]: User observed roughly 5W additional power draw during real monitoring; Phase 8 and Phase 11 must verify before/after behavior.
 - [v1.1]: Logging must be default-quiet and privacy-safe; diagnostic mode may add detail but must not store frames or upload visual data.
-- [v1.1]: Bridge token/pairing strategy needs an explicit design choice before implementation.
+- [v1.1]: Bridge token/pairing strategy needs an explicit low-friction local-trust design choice in inserted Phase 08.1 before implementation.
 - [v1.1]: Current user direction is to cancel the manual per-install IINA bridge token/paste workflow because it blocks normal local use with low-value friction.
 - [Phase 7]: Live Diagnostic Mode unified-log evidence passed. Pre-paused IINA startup semantics were fixed in quick task 260609-jit.
 - [Phase 08]: Post-change 1-minute stable-viewing resource observation is pending; need IINA/plugin/camera state plus CPU, energy impact if available, wakeups if available, WebSocket/network scalar, and analyzer received/analyzed/skipped/rate counters before marking verification passed or nyquist_compliant true.
@@ -170,9 +170,9 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-09T16:59:34.946Z
-Stopped at: Completed 08-06-PLAN.md with pending post-change resource evidence
-Resume file: None
+Last session: 2026-06-10T11:57:02.859Z
+Stopped at: Phase 08.1 context gathered
+Resume file: .planning/phases/08.1-iina-bridge-local-trust-model-and-setup-error-ux/08.1-CONTEXT.md
 
 ## Operator Next Steps
 
