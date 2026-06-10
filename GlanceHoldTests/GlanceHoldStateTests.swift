@@ -213,7 +213,10 @@ final class GlanceHoldStateTests: XCTestCase {
     func testSetupNeededStatusUsesNeutralBridgeWaitingCopy() {
         XCTAssertEqual(PlayerControlStatus.setupNeeded.visibleTitle, GlanceHoldStrings.text(.playerSetupNeededTitle))
         XCTAssertEqual(PlayerControlStatus.setupNeeded.detailText, GlanceHoldStrings.text(.playerSetupNeededDetail))
-        XCTAssertEqual(PlayerControlStatus.setupNeeded.visibleTitle, "IINA Bridge Waiting")
+        XCTAssertEqual(
+            GlanceHoldStrings.text(.playerSetupNeededTitle, localeIdentifier: "en"),
+            "IINA Bridge Waiting"
+        )
         XCTAssertFalse(PlayerControlStatus.setupNeeded.detailText.isEmpty)
     }
 
@@ -235,9 +238,12 @@ final class GlanceHoldStateTests: XCTestCase {
             PlayerControlStatus.pluginUpdateRequired.detailText,
             GlanceHoldStrings.text(.playerPluginUpdateRequiredDetail)
         )
-        XCTAssertEqual(PlayerControlStatus.pluginUpdateRequired.visibleTitle, "IINA Bridge Update Needed")
         XCTAssertEqual(
-            PlayerControlStatus.pluginUpdateRequired.detailText,
+            GlanceHoldStrings.text(.playerPluginUpdateRequiredTitle, localeIdentifier: "en"),
+            "IINA Bridge Update Needed"
+        )
+        XCTAssertEqual(
+            GlanceHoldStrings.text(.playerPluginUpdateRequiredDetail, localeIdentifier: "en"),
             "Update or reinstall the GlanceHold IINA plugin, then restart IINA."
         )
     }

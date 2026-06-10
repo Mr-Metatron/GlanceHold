@@ -528,6 +528,23 @@
         }
       }
     },
+    "detail.player.pluginUpdateRequired" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update or reinstall the GlanceHold IINA plugin, then restart IINA."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请更新或重新安装 GlanceHold IINA 插件，然后重启 IINA。"
+          }
+        }
+      }
+    },
     "detail.player.setupNeeded" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -699,6 +716,7 @@
       }
     },
     "menu.diagnosticMode" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1186,6 +1204,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "IINA 播放中"
+          }
+        }
+      }
+    },
+    "status.player.pluginUpdateRequired" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IINA Bridge Update Needed"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要更新 IINA Bridge"
           }
         }
       }
