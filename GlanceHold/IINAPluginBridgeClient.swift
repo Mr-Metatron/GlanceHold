@@ -138,7 +138,7 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
             return try await snapshot()
         } catch IINAPluginBridgeClientError.pluginNeeded {
             return .setupNeeded
-        } catch IINAPluginBridgeClientError.protocolFailure(.pluginUpdateRequired) {
+        } catch IINAPluginBridgeClientError.protocolFailure {
             return .pluginUpdateRequired
         } catch {
             return .unavailable

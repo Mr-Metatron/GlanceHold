@@ -143,7 +143,7 @@ final class IINAPluginBridgeClientTests: XCTestCase {
         XCTAssertEqual(transport.sentMessages.count, 0)
     }
 
-    func testStatusChangedMessageDoesNotSatisfySnapshotRequest() async throws {
+    func testStatusChangedMessageWithoutSnapshotResponseMapsToPluginUpdateRequired() async throws {
         let transport = FakeIINAPluginBridgeTransport(responses: [
             #"{"version":2,"type":"statusChanged","snapshot":{"state":"playing","speed":2.0}}"#
         ])
@@ -151,7 +151,7 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
         let status = await client.status()
 
-        XCTAssertEqual(status, .unavailable)
+        XCTAssertEqual(status, .pluginUpdateRequired)
         XCTAssertEqual(transport.sentMessages.count, 1)
     }
 
@@ -233,7 +233,7 @@ final class IINAPluginBridgeClientTests: XCTestCase {
         XCTAssertEqual(transport.sentMessages.count, 0)
     }
 
-    func testRequestIDBearingHeartbeatIsStillTreatedAsResponseMismatch() async throws {
+    func testRequestIDBearingHeartbeatResponseMismatchMapsToPluginUpdateRequired() async throws {
         let transport = FakeIINAPluginBridgeTransport(responses: [
             #"{"id":7,"version":2,"type":"heartbeat","ok":true}"#
         ])
@@ -241,7 +241,7 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
         let status = await client.status()
 
-        XCTAssertEqual(status, .unavailable)
+        XCTAssertEqual(status, .pluginUpdateRequired)
         XCTAssertEqual(transport.sentMessages.count, 1)
     }
 
