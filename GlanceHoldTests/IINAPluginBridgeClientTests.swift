@@ -317,11 +317,56 @@ final class IINAPluginBridgeClientTests: XCTestCase {
         XCTAssertEqual(status, .pluginUpdateRequired)
     }
 
+    func testStatusMapsUnsupportedVersionResponseToPluginUpdateRequired() async throws {
+        let client = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
+            #"{"id":1,"version":2,"ok":false,"error":"unsupported_version"}"#
+        ]))
+
+        let status = await client.status()
+
+        XCTAssertEqual(status, .pluginUpdateRequired)
+    }
+
+    func testStatusMapsNonJSONResponseToPluginUpdateRequired() async throws {
+        let client = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
+            "not json"
+        ]))
+
+        let status = await client.status()
+
+        XCTAssertEqual(status, .pluginUpdateRequired)
+    }
+
+    func testStatusMapsMismatchedResponseIDToPluginUpdateRequired() async throws {
+        let client = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
+            #"{"id":999,"version":2,"ok":true,"snapshot":{"state":"playing","speed":1.5}}"#
+        ]))
+
+        let status = await client.status()
+
+        XCTAssertEqual(status, .pluginUpdateRequired)
+    }
+
+    func testStatusMapsMismatchedResponseVersionToPluginUpdateRequired() async throws {
+        let client = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
+            #"{"id":1,"version":3,"ok":true,"snapshot":{"state":"playing","speed":1.5}}"#
+        ]))
+
+        let status = await client.status()
+
+        XCTAssertEqual(status, .pluginUpdateRequired)
+    }
+
     func testUnavailableResponseAndUnknownSnapshotStateStillMapToUnavailable() async throws {
         let unknownState = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
             #"{"id":1,"version":2,"ok":true,"snapshot":{"state":"buffering","speed":1.5}}"#
         ]))
         await XCTAssertEqualAsync(await unknownState.status(), .unavailable)
+
+        let unavailableStatus = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
+            #"{"id":1,"version":2,"ok":false,"error":"unavailable"}"#
+        ]))
+        await XCTAssertEqualAsync(await unavailableStatus.status(), .unavailable)
 
         let unavailable = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
             #"{"id":1,"version":2,"ok":false,"error":"unavailable"}"#
