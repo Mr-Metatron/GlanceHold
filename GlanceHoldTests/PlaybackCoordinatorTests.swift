@@ -64,6 +64,75 @@ final class PlaybackCoordinatorTests: XCTestCase {
         }
     }
 
+    func testPluginUpdateRequiredSnapshotsSendNoCommandAndAreNotControllable() async {
+        let speedAdapter = FakeIINAPlaybackAdapter(snapshots: [.pluginUpdateRequired])
+        let speedCoordinator = PlaybackCoordinator(mode: .speedControl, adapter: speedAdapter)
+
+        await speedCoordinator.handleAttentionState(.lookingAway)
+
+        XCTAssertEqual(speedAdapter.commands, [])
+        XCTAssertFalse(speedCoordinator.state.isPlayerControllable)
+        XCTAssertEqual(speedCoordinator.state.playerSnapshot, .pluginUpdateRequired)
+
+        let pauseAdapter = FakeIINAPlaybackAdapter(snapshots: [.pluginUpdateRequired])
+        let pauseCoordinator = PlaybackCoordinator(mode: .pauseResume, adapter: pauseAdapter)
+
+        await pauseCoordinator.handleAttentionState(.lookingAway)
+
+        XCTAssertEqual(pauseAdapter.commands, [])
+        XCTAssertFalse(pauseCoordinator.state.isPlayerControllable)
+        XCTAssertEqual(pauseCoordinator.state.playerSnapshot, .pluginUpdateRequired)
+    }
+
+    func testPluginUpdateRequiredDoesNotRestoreOrResumeOwnedPlayback() async {
+        let speedAdapter = FakeIINAPlaybackAdapter(
+            snapshots: [
+                .playing(speed: 1.75),
+                .playing(speed: 1.0),
+                .pluginUpdateRequired
+            ]
+        )
+        let speedCoordinator = PlaybackCoordinator(mode: .speedControl, adapter: speedAdapter)
+
+        await speedCoordinator.handleAttentionState(.lookingAway)
+        await speedCoordinator.handleAttentionState(.facing)
+
+        XCTAssertEqual(speedAdapter.commands, [.holdSpeedAtOne])
+        XCTAssertFalse(speedCoordinator.state.isPlayerControllable)
+        XCTAssertEqual(speedCoordinator.state.playerSnapshot, .pluginUpdateRequired)
+        assertNoRestoreOrResume(speedAdapter.commands)
+
+        let pauseAdapter = FakeIINAPlaybackAdapter(
+            snapshots: [
+                .playing(speed: 1.5),
+                .paused(speed: 1.5),
+                .pluginUpdateRequired
+            ]
+        )
+        let pauseCoordinator = PlaybackCoordinator(mode: .pauseResume, adapter: pauseAdapter)
+
+        await pauseCoordinator.handleAttentionState(.lookingAway)
+        await pauseCoordinator.handleAttentionState(.facing)
+
+        XCTAssertEqual(pauseAdapter.commands, [.pause])
+        XCTAssertFalse(pauseCoordinator.state.isPlayerControllable)
+        XCTAssertEqual(pauseCoordinator.state.playerSnapshot, .pluginUpdateRequired)
+        assertNoRestoreOrResume(pauseAdapter.commands)
+    }
+
+    func testPluginUpdateRequiredCoordinatorStateMapsToPluginUpdateStatus() {
+        let coordinatorState = PlaybackCoordinatorState(
+            isPlayerControllable: false,
+            playerSnapshot: .pluginUpdateRequired
+        )
+
+        let status = PlayerControlStatus(coordinatorState: coordinatorState)
+
+        XCTAssertEqual(status, .pluginUpdateRequired)
+        XCTAssertFalse(status.visibleTitle.isEmpty)
+        XCTAssertFalse(status.detailText.isEmpty)
+    }
+
     func testEachIntentIsFollowedByConfirmationSnapshot() async {
         let adapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5), .playing(speed: 1.0)])
         let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
@@ -737,6 +806,47 @@ final class PlaybackCoordinatorTests: XCTestCase {
             "recoveringNoCommand",
             "policyEvaluatedWithoutIntent"
         ])
+    }
+
+    func testPluginUpdateRequiredDiagnosticNameIsScalarAndPrivacySafe() async throws {
+        let recorder = PlaybackDiagnosticRecorder(mode: .diagnostic)
+        let coordinator = PlaybackCoordinator(
+            mode: .speedControl,
+            adapter: FakeIINAPlaybackAdapter(snapshots: [.pluginUpdateRequired]),
+            diagnosticRecorder: recorder,
+            diagnosticMode: .diagnostic,
+            diagnosticSession: DiagnosticSession(kind: .monitoring)
+        )
+
+        await coordinator.handleAttentionState(.lookingAway)
+        coordinator.stopMonitoring()
+
+        let summary = try XCTUnwrap(recorder.events.first { $0.name == .playbackNoOpSummary })
+        XCTAssertEqual(fieldValue(.noOpReason, in: summary), "playerNotControllable")
+        XCTAssertEqual(fieldValue(.firstSnapshotState, in: summary), "pluginUpdateRequired")
+        XCTAssertEqual(fieldValue(.latestSnapshotState, in: summary), "pluginUpdateRequired")
+        XCTAssertEqual(fieldValue(.firstIntentType, in: summary), "none")
+        XCTAssertEqual(fieldValue(.latestIntentType, in: summary), "none")
+
+        let forbiddenFragments = [
+            "unauthorized",
+            "payload",
+            "token",
+            "media",
+            "title",
+            "path",
+            "frame",
+            "camera",
+            "vision"
+        ]
+        let loggedValues = summary.fields.map { $0.value.logValue.lowercased() }
+
+        for fragment in forbiddenFragments {
+            XCTAssertFalse(
+                loggedValues.contains { $0.contains(fragment) },
+                "Diagnostic values must not contain private/raw fragment: \(fragment)"
+            )
+        }
     }
 
     func testDefaultModeRecordsNoNoOpReasonDetailsIncludingFinalSummaries() async {
