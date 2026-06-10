@@ -7,9 +7,5 @@
     "name": "Metatron"
   },
   "permissions": ["network-request"],
-  "preferencesPage": "preferences.html",
-  "preferenceDefaults": {
-    "bridgeToken": ""
-  },
   "entry": "main.js"
 }
