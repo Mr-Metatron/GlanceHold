@@ -132,11 +132,21 @@ final class GlanceHoldLocalizationTests: XCTestCase {
 
     func testIINAPluginUsesLocalizedShortcutLabelAndRejectsUnauthenticatedRequests() throws {
         let source = try String(contentsOf: projectFileURL("IINAPlugin/GlanceHoldBridge.iinaplugin/main.js"), encoding: .utf8)
+        let infoData = try Data(contentsOf: projectFileURL("IINAPlugin/GlanceHoldBridge.iinaplugin/Info.json"))
+        let pluginInfo = try XCTUnwrap(try JSONSerialization.jsonObject(with: infoData) as? [String: Any])
+        let preferenceDefaults = try XCTUnwrap(pluginInfo["preferenceDefaults"] as? [String: Any])
+        let preferencesPage = try String(
+            contentsOf: projectFileURL("IINAPlugin/GlanceHoldBridge.iinaplugin/preferences.html"),
+            encoding: .utf8
+        )
 
         XCTAssertTrue(source.contains(#""zh-Hans": "切换 GlanceHold 监控""#))
         XCTAssertTrue(source.contains("localizedToggleMonitoringTitle()"))
         XCTAssertTrue(source.contains(#""unauthorized""#))
         XCTAssertFalse(source.contains("menu.item(\n  \"Toggle GlanceHold Monitoring\""))
+        XCTAssertEqual(pluginInfo["preferencesPage"] as? String, "preferences.html")
+        XCTAssertEqual(preferenceDefaults["bridgeToken"] as? String, "")
+        XCTAssertTrue(preferencesPage.contains(#"data-pref-key="bridgeToken""#))
     }
 
     private func localizationCatalog() throws -> [String: Any] {

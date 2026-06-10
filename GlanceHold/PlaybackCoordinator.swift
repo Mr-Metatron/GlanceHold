@@ -164,20 +164,10 @@ final class PlaybackCoordinator {
             return
         }
 
-        guard !Task.isCancelled else {
-            return
-        }
-
         do {
             playbackMetrics.playbackCommands += 1
             try await adapter.execute(intent)
-            guard !Task.isCancelled else {
-                return
-            }
             let confirmation = await readSnapshot()
-            guard !Task.isCancelled else {
-                return
-            }
             guard confirms(intent: intent, with: confirmation) else {
                 recordPlaybackAction(
                     snapshot: snapshot,
@@ -202,9 +192,6 @@ final class PlaybackCoordinator {
                 playbackActionDidComplete?(completedAction)
             }
         } catch {
-            guard !Task.isCancelled else {
-                return
-            }
             recordPlaybackAction(
                 snapshot: snapshot,
                 intent: intent,
@@ -340,7 +327,7 @@ final class PlaybackCoordinator {
 
         recordPlaybackNoOpSummaries(in: diagnosticSession)
         diagnosticRecorder.record(
-            DiagnosticEventRequest.runtimeSummary(playbackMetrics, periodic: false),
+            DiagnosticEventRequest.runtimeSummary(playbackMetrics, periodic: false, source: .playback),
             in: diagnosticSession
         )
         activeDiagnosticSession = nil

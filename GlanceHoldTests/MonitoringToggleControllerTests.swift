@@ -135,6 +135,17 @@ final class MonitoringToggleControllerTests: XCTestCase {
         XCTAssertLessThan(dedupRange.lowerBound, sendRange.lowerBound)
     }
 
+    func testAppSourceQueuesPlaybackAttentionWithoutCancelingPreviousSideEffectTask() throws {
+        let source = try String(contentsOf: projectFileURL("GlanceHold/GlanceHoldApp.swift"), encoding: .utf8)
+        let sendStart = try XCTUnwrap(source.range(of: "private func sendAttentionState"))
+        let nextFunction = try XCTUnwrap(source.range(of: "private func startPlaybackStatusUpdates"))
+        let sendBody = source[sendStart.lowerBound..<nextFunction.lowerBound]
+
+        XCTAssertTrue(sendBody.contains("let previousTask = playbackAttentionTask"))
+        XCTAssertTrue(sendBody.contains("await previousTask?.value"))
+        XCTAssertFalse(sendBody.contains("playbackAttentionTask?.cancel()"))
+    }
+
     func testAppSourceUsesStatusStreamLivenessInsteadOfFixedSnapshotFallbackPolling() throws {
         let source = try String(contentsOf: projectFileURL("GlanceHold/GlanceHoldApp.swift"), encoding: .utf8)
 

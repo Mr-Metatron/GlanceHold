@@ -34,7 +34,7 @@ final class DiagnosticRecorderTests: XCTestCase {
             DiagnosticEventRequest(category: .calibration, name: .calibrationEnded),
             DiagnosticEventRequest(category: .playback, name: .playbackAction),
             DiagnosticEventRequest(category: .bridge, name: .failure),
-            DiagnosticEventRequest.runtimeSummary(.sample, periodic: false)
+            DiagnosticEventRequest.runtimeSummary(.sample, periodic: false, source: .attention)
         ]
 
         for event in events {
@@ -69,8 +69,8 @@ final class DiagnosticRecorderTests: XCTestCase {
         XCTAssertNil(recorder.record(DiagnosticEventRequest(category: .attention, name: .analysisCompleted), in: session))
         XCTAssertNil(recorder.record(DiagnosticEventRequest(category: .attention, name: .repeatedStableState), in: session))
         XCTAssertNil(recorder.record(DiagnosticEventRequest(category: .attention, name: .attentionTransition), in: session))
-        XCTAssertNil(recorder.record(DiagnosticEventRequest.runtimeSummary(.sample, periodic: true), in: session))
-        XCTAssertNotNil(recorder.record(DiagnosticEventRequest.runtimeSummary(.sample, periodic: false), in: session))
+        XCTAssertNil(recorder.record(DiagnosticEventRequest.runtimeSummary(.sample, periodic: true, source: .attention), in: session))
+        XCTAssertNotNil(recorder.record(DiagnosticEventRequest.runtimeSummary(.sample, periodic: false, source: .attention), in: session))
 
         XCTAssertEqual(recorder.events.map(\.name), [.sessionStarted, .failure, .runtimeSummary])
         XCTAssertEqual(recorder.droppedEventCounts[.frameReceived], 1)
@@ -104,7 +104,7 @@ final class DiagnosticRecorderTests: XCTestCase {
 
         XCTAssertNotNil(recorder.record(transition, in: session))
         XCTAssertNotNil(recorder.record(action, in: session))
-        XCTAssertNotNil(recorder.record(DiagnosticEventRequest.runtimeSummary(.sample, periodic: true), in: session))
+        XCTAssertNotNil(recorder.record(DiagnosticEventRequest.runtimeSummary(.sample, periodic: true, source: .attention), in: session))
 
         XCTAssertEqual(recorder.events.map(\.name), [.attentionTransition, .playbackAction, .runtimeSummary])
     }
@@ -244,7 +244,7 @@ final class DiagnosticRecorderTests: XCTestCase {
             analysisLatencyMillisecondsTotal: 96.0,
             analysisLatencyMillisecondsMax: 8.0
         )
-        let request = DiagnosticEventRequest.runtimeSummary(metrics, periodic: false)
+        let request = DiagnosticEventRequest.runtimeSummary(metrics, periodic: false, source: .attention)
 
         XCTAssertEqual(request.category, .runtimeSummary)
         XCTAssertEqual(request.name, .runtimeSummary)
@@ -259,9 +259,11 @@ final class DiagnosticRecorderTests: XCTestCase {
             .skippedSamples,
             .analysisLatencyMillisecondsAverage,
             .analysisLatencyMillisecondsMax,
-            .summaryKind
+            .summaryKind,
+            .summarySource
         ])
         XCTAssertEqual(request.fields.first { $0.name == .skippedSamples }?.value.logValue, "96")
+        XCTAssertEqual(request.fields.first { $0.name == .summarySource }?.value.logValue, "attention")
     }
 
     func testDefaultModeCoalescesRepeatedHighVolumeEventsInsteadOfRecordingUnboundedArrays() {

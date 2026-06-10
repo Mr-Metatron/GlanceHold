@@ -6,14 +6,14 @@ final class IINAPluginBridgeClientTests: XCTestCase {
         let transport = FakeIINAPluginBridgeTransport(responses: [
             #"{"id":1,"version":1,"ok":true,"snapshot":{"state":"playing","speed":1.5}}"#
         ])
-        let client = IINAPluginBridgeClient(transport: transport)
+        let client = IINAPluginBridgeClient(transport: transport, bridgeToken: "unit-test-token")
 
         _ = try await client.snapshot()
 
         let request = try XCTUnwrap(transport.sentMessages.first)
         XCTAssertEqual(request["id"] as? Int, 1)
         XCTAssertEqual(request["version"] as? Int, 1)
-        XCTAssertEqual(request["token"] as? String, IINAPluginBridgeClient.bridgeToken)
+        XCTAssertEqual(request["token"] as? String, "unit-test-token")
         XCTAssertEqual(request["type"] as? String, "snapshot")
     }
 
@@ -24,7 +24,7 @@ final class IINAPluginBridgeClientTests: XCTestCase {
             #"{"id":3,"version":1,"ok":true}"#,
             #"{"id":4,"version":1,"ok":true}"#
         ])
-        let client = IINAPluginBridgeClient(transport: transport)
+        let client = IINAPluginBridgeClient(transport: transport, bridgeToken: "unit-test-token")
 
         try await client.execute(.holdSpeedAtOne)
         try await client.execute(.restoreSpeed(1.25))
@@ -39,7 +39,18 @@ final class IINAPluginBridgeClientTests: XCTestCase {
         ])
         XCTAssertEqual(transport.sentMessages[0]["speed"] as? Double, 1.0)
         XCTAssertEqual(transport.sentMessages[1]["speed"] as? Double, 1.25)
-        XCTAssertTrue(transport.sentMessages.allSatisfy { $0["token"] as? String == IINAPluginBridgeClient.bridgeToken })
+        XCTAssertTrue(transport.sentMessages.allSatisfy { $0["token"] as? String == "unit-test-token" })
+    }
+
+    func testDefaultBridgeTokenStoreGeneratesPersistedNonPublicToken() throws {
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: "IINAPluginBridgeClientTests.\(UUID().uuidString)"))
+        let store = IINAPluginBridgeTokenStore(defaults: defaults)
+
+        let token = store.loadOrCreateToken()
+
+        XCTAssertGreaterThanOrEqual(token.count, 32)
+        XCTAssertNotEqual(token, "glancehold-iina-bridge-v1")
+        XCTAssertEqual(store.loadOrCreateToken(), token)
     }
 
     func testConnectionRefusedMapsToPluginNeeded() async throws {
@@ -101,6 +112,26 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
         XCTAssertNotNil(request)
         XCTAssertNil(nextRequest)
+        XCTAssertEqual(transport.sentMessages.count, 0)
+    }
+
+    func testToggleMonitoringStreamUsesLivenessTimeoutAndSurvivesHeartbeatIdleWindow() async throws {
+        let transport = FakeIINAPluginBridgeTransport(streamMessages: [
+            #"{"version":1,"type":"heartbeat"}"#,
+            #"{"version":1,"type":"heartbeat"}"#,
+            #"{"version":1,"type":"toggleMonitoringRequested"}"#
+        ])
+        let client = IINAPluginBridgeClient(
+            transport: transport,
+            timeout: 1.0,
+            streamStaleTimeout: 15.0
+        )
+
+        var iterator = client.monitoringToggleRequests().makeAsyncIterator()
+        let request: Void? = await iterator.next()
+
+        XCTAssertNotNil(request)
+        XCTAssertEqual(transport.messageTimeouts, [15.0])
         XCTAssertEqual(transport.sentMessages.count, 0)
     }
 
@@ -250,6 +281,7 @@ final class FakeIINAPluginBridgeTransport: IINAPluginBridgeTransporting {
     private var streamMessages: [String]
     private let error: IINAPluginBridgeClientError?
     private(set) var sentMessages: [[String: Any]] = []
+    private(set) var messageTimeouts: [TimeInterval] = []
 
     init(
         responses: [String] = [],
@@ -286,7 +318,8 @@ final class FakeIINAPluginBridgeTransport: IINAPluginBridgeTransporting {
     }
 
     func messages(timeout: TimeInterval) -> AsyncThrowingStream<String, Error> {
-        AsyncThrowingStream { continuation in
+        messageTimeouts.append(timeout)
+        return AsyncThrowingStream<String, Error> { continuation in
             if let error {
                 continuation.finish(throwing: error)
                 return

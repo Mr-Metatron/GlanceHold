@@ -423,8 +423,31 @@ final class PlaybackCoordinatorTests: XCTestCase {
             return XCTFail("Expected final playback runtime summary")
         }
         XCTAssertEqual(fieldValue(.summaryKind, in: summary), "final")
+        XCTAssertEqual(fieldValue(.summarySource, in: summary), "playback")
         XCTAssertEqual(fieldValue(.playbackSnapshots, in: summary), "2")
         XCTAssertEqual(fieldValue(.playbackCommands, in: summary), "1")
+    }
+
+    func testCanceledAttentionTaskCompletesCommandConfirmationBeforeLaterRestore() async {
+        let adapter = SelfCancelingCommandPlaybackAdapter(
+            snapshots: [
+                .playing(speed: 1.5),
+                .playing(speed: 1.0),
+                .playing(speed: 1.0),
+                .playing(speed: 1.5)
+            ]
+        )
+        let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+
+        let awayTask = Task {
+            await coordinator.handleAttentionState(.lookingAway)
+        }
+        await awayTask.value
+
+        await coordinator.handleAttentionState(.facing)
+
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne, .restoreSpeed(1.5)])
+        XCTAssertEqual(adapter.snapshotReadCount, 4)
     }
 
     func testDiagnosticModeRecordsSpeedControlActionChainBreadcrumbs() async {
@@ -849,6 +872,33 @@ private final class PlaybackDiagnosticRecorder: DiagnosticRecording {
         )
         events.append(event)
         return event
+    }
+}
+
+private final class SelfCancelingCommandPlaybackAdapter: IINAPlaybackAdapting {
+    private var snapshots: [PlayerSnapshot]
+    private(set) var commands: [PlaybackIntent] = []
+    private(set) var snapshotReadCount = 0
+
+    init(snapshots: [PlayerSnapshot]) {
+        self.snapshots = snapshots
+    }
+
+    func snapshot() async -> PlayerSnapshot {
+        snapshotReadCount += 1
+
+        guard !snapshots.isEmpty else {
+            return .playerUnavailable
+        }
+
+        return snapshots.removeFirst()
+    }
+
+    func execute(_ intent: PlaybackIntent) async throws {
+        commands.append(intent)
+        withUnsafeCurrentTask { task in
+            task?.cancel()
+        }
     }
 }
 

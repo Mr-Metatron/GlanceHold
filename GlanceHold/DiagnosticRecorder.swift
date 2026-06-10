@@ -100,6 +100,7 @@ enum DiagnosticFieldName: String, Equatable, Hashable {
     case analysisLatencyMillisecondsAverage
     case analysisLatencyMillisecondsMax
     case summaryKind
+    case summarySource
     case inputSampleCount
     case selectedWindowSampleCount
     case selectedWindowDurationSeconds
@@ -212,6 +213,11 @@ struct DiagnosticRuntimeMetrics: Equatable {
     }
 }
 
+enum DiagnosticSummarySource: String, Equatable {
+    case attention
+    case playback
+}
+
 struct DiagnosticEventRequest: Equatable {
     let category: DiagnosticCategory
     let name: DiagnosticEventName
@@ -230,11 +236,15 @@ struct DiagnosticEventRequest: Equatable {
         self.isPeriodicSummary = isPeriodicSummary
     }
 
-    static func runtimeSummary(_ metrics: DiagnosticRuntimeMetrics, periodic: Bool) -> DiagnosticEventRequest {
+    static func runtimeSummary(
+        _ metrics: DiagnosticRuntimeMetrics,
+        periodic: Bool,
+        source: DiagnosticSummarySource
+    ) -> DiagnosticEventRequest {
         DiagnosticEventRequest(
             category: .runtimeSummary,
             name: .runtimeSummary,
-            fields: metrics.summaryFields(periodic: periodic),
+            fields: metrics.summaryFields(periodic: periodic, source: source),
             isPeriodicSummary: periodic
         )
     }
@@ -346,7 +356,7 @@ private extension DiagnosticEventName {
 }
 
 private extension DiagnosticRuntimeMetrics {
-    func summaryFields(periodic: Bool) -> [DiagnosticField] {
+    func summaryFields(periodic: Bool, source: DiagnosticSummarySource) -> [DiagnosticField] {
         [
             field(.framesReceived, .int(framesReceived)),
             field(.framesAnalyzed, .int(framesAnalyzed)),
@@ -358,7 +368,8 @@ private extension DiagnosticRuntimeMetrics {
             field(.skippedSamples, .int(skippedSamples)),
             field(.analysisLatencyMillisecondsAverage, .double(averageAnalysisLatencyMilliseconds)),
             field(.analysisLatencyMillisecondsMax, .double(analysisLatencyMillisecondsMax)),
-            field(.summaryKind, .string(periodic ? "periodic" : "final"))
+            field(.summaryKind, .string(periodic ? "periodic" : "final")),
+            field(.summarySource, .string(source.rawValue))
         ]
     }
 

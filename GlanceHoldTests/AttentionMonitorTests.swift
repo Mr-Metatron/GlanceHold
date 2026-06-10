@@ -41,12 +41,17 @@ final class AttentionMonitorTests: XCTestCase {
             capture: capture,
             analyzer: FakeVisionAnalyzer()
         )
+        var sessionChanges: [DiagnosticSession?] = []
+        monitor.diagnosticSessionDidChange = { sessionChanges.append($0) }
 
         await monitor.startMonitoring()
 
         XCTAssertEqual(capture.startCount, 1)
         XCTAssertNil(capture.frameHandler)
         XCTAssertEqual(monitor.state, .cameraUnavailable)
+        XCTAssertNil(monitor.currentDiagnosticSession)
+        XCTAssertEqual(sessionChanges.count, 1)
+        XCTAssertNil(sessionChanges[0])
     }
 
     func testDisablingMonitoringStopsCaptureExactlyOnce() async {

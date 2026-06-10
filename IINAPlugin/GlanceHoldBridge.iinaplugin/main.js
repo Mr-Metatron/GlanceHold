@@ -1,7 +1,7 @@
-const { console, core, event, menu, mpv, ws } = iina;
+const { console, core, event, menu, mpv, preferences, ws } = iina;
 
 const protocolVersion = 1;
-const bridgeToken = "glancehold-iina-bridge-v1";
+const bridgeTokenPreferenceKey = "bridgeToken";
 const toggleMonitoringTitles = {
   en: "Toggle GlanceHold Monitoring",
   "zh-Hans": "切换 GlanceHold 监控"
@@ -161,8 +161,23 @@ function executeBridgeCommand(request) {
   }
 }
 
+function configuredBridgeToken() {
+  if (!preferences || typeof preferences.get !== "function") {
+    return null;
+  }
+
+  const token = preferences.get(bridgeTokenPreferenceKey);
+  if (typeof token !== "string") {
+    return null;
+  }
+
+  const trimmed = token.trim();
+  return trimmed.length >= 32 ? trimmed : null;
+}
+
 function isAuthorized(request) {
-  return typeof request.token === "string" && request.token === bridgeToken;
+  const token = configuredBridgeToken();
+  return token !== null && typeof request.token === "string" && request.token === token;
 }
 
 function handleMessage(conn, text) {

@@ -589,8 +589,13 @@ private struct GlanceHoldMenu: View {
     }
 
     private func sendAttentionState(_ attentionState: DebouncedAttentionState, to coordinator: PlaybackCoordinator) {
-        playbackAttentionTask?.cancel()
+        let previousTask = playbackAttentionTask
         playbackAttentionTask = Task {
+            await previousTask?.value
+            guard !Task.isCancelled else {
+                return
+            }
+
             await coordinator.handleAttentionState(attentionState)
         }
     }

@@ -17,6 +17,12 @@ Restart IINA, then enable `GlanceHold Bridge` in IINA's plugin UI if it is not e
 
 When the bridge is connected, GlanceHold's status-bar menu should show an IINA status row such as `IINA Playing`, `IINA Paused`, `IINA Idle`, or `IINA Not Controllable` instead of an unavailable/setup-needed state.
 
+## Bridge Token
+
+Playback-control requests require a per-install bridge token. The Swift app generates and stores its token locally; the IINA plugin reads the expected token from its plugin preference named `bridgeToken`. After launching GlanceHold once, copy the token with `defaults read com.metatron.GlanceHold iinaPluginBridgeToken`, then open IINA's plugin preferences for GlanceHold Bridge and paste it into the Bridge token field. Keep this value private and at least 32 characters long.
+
+If the plugin preference is empty or too short, command requests are rejected as unauthorized. Heartbeat and status pushes still use id-less messages and do not carry the token.
+
 ## Development Link
 
 For local development, IINA can load a development link ending in `.iinaplugin-dev`:
@@ -46,7 +52,7 @@ Phase 5 carry-forward evidence: the user completed the live IINA shortcut check,
 
 ## Bridge Protocol
 
-App-to-plugin requests carry protocol `version`, request `id`, and the expected bridge token. Requests without the token are rejected before any playback command is considered.
+App-to-plugin requests carry protocol `version`, request `id`, and the configured per-install bridge token. Requests without the token are rejected before any playback command is considered.
 
 Server-pushed messages use the same protocol version and do not carry a request `id`.
 `statusChanged` carries the current player snapshot:

@@ -177,10 +177,12 @@ final class AttentionMonitor {
         } catch CameraFrameCaptureError.unavailable {
             recordFailure(category: .camera, in: diagnosticSession)
             clearActiveCapture(sessionID: sessionID)
+            clearActiveDiagnosticSession(diagnosticSession)
             setState(.cameraUnavailable)
         } catch {
             recordFailure(category: .monitoring, in: diagnosticSession)
             clearActiveCapture(sessionID: sessionID)
+            clearActiveDiagnosticSession(diagnosticSession)
             setState(.unavailable)
         }
     }
@@ -492,7 +494,7 @@ final class AttentionMonitor {
         }
 
         diagnosticRecorder.record(
-            DiagnosticEventRequest.runtimeSummary(finalizedMetrics(at: nil), periodic: false),
+            DiagnosticEventRequest.runtimeSummary(finalizedMetrics(at: nil), periodic: false, source: .attention),
             in: diagnosticSession
         )
         diagnosticRecorder.record(
@@ -545,7 +547,7 @@ final class AttentionMonitor {
         }
 
         diagnosticRecorder.record(
-            DiagnosticEventRequest.runtimeSummary(finalizedMetrics(at: sampleTime), periodic: true),
+            DiagnosticEventRequest.runtimeSummary(finalizedMetrics(at: sampleTime), periodic: true, source: .attention),
             in: session
         )
         lastPeriodicSummaryAt = sampleTime
@@ -602,6 +604,15 @@ final class AttentionMonitor {
         capture.frameHandler = nil
         capture.stop()
         isCaptureRunning = false
+    }
+
+    private func clearActiveDiagnosticSession(_ session: DiagnosticSession) {
+        guard activeDiagnosticSession === session else {
+            return
+        }
+
+        activeDiagnosticSession = nil
+        diagnosticSessionDidChange?(nil)
     }
 
     private func setState(_ state: AttentionMonitorState) {
