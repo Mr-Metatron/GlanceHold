@@ -115,6 +115,7 @@ Recent decisions affecting current work:
 - [Phase 08]: 08-06 keeps verification pending-resource-evidence until post-change live resource observations are supplied or explicitly accepted as a limitation. — Manual post-change scalar evidence is required by the plan; automated gates alone cannot make Phase 8 nyquist-compliant.
 - [Phase 08]: 08-06 treats the first full XCTest host kill as transient because the immediate identical retry passed. — The first run failed before test bootstrapping with signal kill, while the identical retry passed without assertion failures.
 - [Phase 08]: 08-06 does not use a fixed watt threshold for resource evidence. — Phase 8 resource readings are noisy, so verification relies on automated quantity gates plus scalar before/after observations.
+- [Bridge UX]: On 2026-06-10 the user rejected the current manual IINA bridge token/paste design as low-value security friction. Next-phase planning should remove or radically simplify this mechanism instead of expanding token/pairing ceremony; `unauthorized` must not be hidden as generic `IINA unavailable`.
 
 ### Roadmap Evolution
 
@@ -132,6 +133,7 @@ Recent decisions affecting current work:
 ### Pending Todos
 
 - [Phase 8]: Begin power hot path sampling and notification deduplication work.
+- [Bridge UX]: Remove or radically simplify the IINA bridge manual token requirement in the next phase; see `.planning/todos/pending/2026-06-10-remove-iina-bridge-manual-token-friction.md`.
 
 ### Blockers/Concerns
 
@@ -141,6 +143,7 @@ Recent decisions affecting current work:
 - [v1.1]: User observed roughly 5W additional power draw during real monitoring; Phase 8 and Phase 11 must verify before/after behavior.
 - [v1.1]: Logging must be default-quiet and privacy-safe; diagnostic mode may add detail but must not store frames or upload visual data.
 - [v1.1]: Bridge token/pairing strategy needs an explicit design choice before implementation.
+- [v1.1]: Current user direction is to cancel the manual per-install IINA bridge token/paste workflow because it blocks normal local use with low-value friction.
 - [Phase 7]: Live Diagnostic Mode unified-log evidence passed. Pre-paused IINA startup semantics were fixed in quick task 260609-jit.
 - [Phase 08]: Post-change 1-minute stable-viewing resource observation is pending; need IINA/plugin/camera state plus CPU, energy impact if available, wakeups if available, WebSocket/network scalar, and analyzer received/analyzed/skipped/rate counters before marking verification passed or nyquist_compliant true.
 
