@@ -104,4 +104,8 @@ If GlanceHold can send commands but the IINA status row does not update after ma
 
 Expected pushed message types are `statusChanged`, `heartbeat`, and `toggleMonitoringRequested`; request/response messages for `snapshot`, `setSpeed`, `pause`, and `resume` still include request ids.
 
+## Supplemental Manual Smoke
+
+This check is optional and supplemental, not a hard phase gate. After updating the plugin, restart IINA, load a playable video, and confirm the GlanceHold IINA row leaves `IINA Bridge Waiting` without reading or pasting any token.
+
 Phase 11 inherits this no-token local loopback trust model.
