@@ -1,10 +1,18 @@
 import Foundation
 
+enum BridgeProtocolFailure: Equatable {
+    case unsupportedVersion
+    case unknownType
+    case unknownCommand
+    case malformedResponse
+    case requestMismatch
+    case pluginUpdateRequired
+}
+
 enum IINAPluginBridgeClientError: Error, Equatable {
     case pluginNeeded
     case unavailable
-    case malformedResponse
-    case requestMismatch
+    case protocolFailure(BridgeProtocolFailure)
     case commandFailed(String)
 }
 
@@ -145,7 +153,7 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
         )
         let response = try await send(request)
         guard let snapshot = response.snapshot else {
-            throw IINAPluginBridgeClientError.malformedResponse
+            throw IINAPluginBridgeClientError.protocolFailure(.malformedResponse)
         }
 
         return try status(from: snapshot)
@@ -322,7 +330,7 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
     private func send(_ request: Request) async throws -> Response {
         let data = try encoder.encode(request)
         guard let message = String(data: data, encoding: .utf8) else {
-            throw IINAPluginBridgeClientError.malformedResponse
+            throw IINAPluginBridgeClientError.protocolFailure(.malformedResponse)
         }
 
         let responseText: String
@@ -340,11 +348,15 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
 
         guard let responseData = responseText.data(using: .utf8),
               let response = try? decoder.decode(Response.self, from: responseData) else {
-            throw IINAPluginBridgeClientError.malformedResponse
+            throw IINAPluginBridgeClientError.protocolFailure(.malformedResponse)
+        }
+
+        if response.error == "unauthorized" {
+            throw IINAPluginBridgeClientError.protocolFailure(.pluginUpdateRequired)
         }
 
         guard response.id == request.id, response.version == Self.protocolVersion else {
-            throw IINAPluginBridgeClientError.requestMismatch
+            throw IINAPluginBridgeClientError.protocolFailure(.requestMismatch)
         }
 
         guard response.ok else {
@@ -352,10 +364,30 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
             if message == "unavailable" {
                 throw IINAPluginBridgeClientError.unavailable
             }
+            if let failure = protocolFailure(for: message) {
+                throw IINAPluginBridgeClientError.protocolFailure(failure)
+            }
             throw IINAPluginBridgeClientError.commandFailed(message)
         }
 
         return response
+    }
+
+    private func protocolFailure(for message: String) -> BridgeProtocolFailure? {
+        switch message {
+        case "unsupported_version":
+            return .unsupportedVersion
+        case "unknown_type":
+            return .unknownType
+        case "unknown_command":
+            return .unknownCommand
+        case "malformed":
+            return .malformedResponse
+        case "unauthorized":
+            return .pluginUpdateRequired
+        default:
+            return nil
+        }
     }
 
     private func shouldIgnoreRequestPathMessage(_ message: String) -> Bool {
@@ -481,11 +513,11 @@ struct URLSessionIINAPluginBridgeTransport: IINAPluginBridgeTransporting {
             return text
         case let .data(data):
             guard let text = String(data: data, encoding: .utf8) else {
-                throw IINAPluginBridgeClientError.malformedResponse
+                throw IINAPluginBridgeClientError.protocolFailure(.malformedResponse)
             }
             return text
         @unknown default:
-            throw IINAPluginBridgeClientError.malformedResponse
+            throw IINAPluginBridgeClientError.protocolFailure(.malformedResponse)
         }
     }
 
