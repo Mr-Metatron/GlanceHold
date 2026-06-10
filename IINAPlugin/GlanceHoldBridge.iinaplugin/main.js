@@ -1,6 +1,8 @@
 const { console, core, event, menu, mpv, ws } = iina;
 
 const protocolVersion = 2;
+const minPlaybackSpeed = 0.1;
+const maxPlaybackSpeed = 16.0;
 const toggleMonitoringTitles = {
   en: "Toggle GlanceHold Monitoring",
   "zh-Hans": "切换 GlanceHold 监控"
@@ -148,7 +150,12 @@ function registerStatusEvent(name) {
 function executeBridgeCommand(request) {
   switch (request.command) {
   case "setSpeed":
-    if (typeof request.speed !== "number" || !Number.isFinite(request.speed)) {
+    if (
+      typeof request.speed !== "number" ||
+      !Number.isFinite(request.speed) ||
+      request.speed < minPlaybackSpeed ||
+      request.speed > maxPlaybackSpeed
+    ) {
       throw new Error("invalid_speed");
     }
     core.setSpeed(request.speed);
