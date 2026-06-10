@@ -8,6 +8,7 @@ final class IINAPluginBridgeAdapterTests: XCTestCase {
             .paused(speed: 1.25),
             .idle,
             .setupNeeded,
+            .pluginUpdateRequired,
             .unavailable
         ])
         let adapter = IINAPluginBridgeAdapter(client: client)
@@ -16,12 +17,14 @@ final class IINAPluginBridgeAdapterTests: XCTestCase {
         let paused = await adapter.snapshot()
         let idle = await adapter.snapshot()
         let setupNeeded = await adapter.snapshot()
+        let pluginUpdateRequired = await adapter.snapshot()
         let unavailable = await adapter.snapshot()
 
         XCTAssertEqual(playing, .playing(speed: 1.5))
         XCTAssertEqual(paused, .paused(speed: 1.25))
         XCTAssertEqual(idle, .idle)
         XCTAssertEqual(setupNeeded, .setupNeeded)
+        XCTAssertEqual(pluginUpdateRequired, .pluginUpdateRequired)
         XCTAssertEqual(unavailable, .playerUnavailable)
     }
 
@@ -53,6 +56,7 @@ final class IINAPluginBridgeAdapterTests: XCTestCase {
             statuses: [],
             updateEvents: [
                 .heartbeat,
+                .status(.pluginUpdateRequired),
                 .status(.playing(speed: 2.0))
             ]
         )
@@ -65,6 +69,7 @@ final class IINAPluginBridgeAdapterTests: XCTestCase {
 
         XCTAssertEqual(events, [
             .heartbeat,
+            .status(.pluginUpdateRequired),
             .status(.playing(speed: 2.0))
         ])
     }

@@ -307,6 +307,16 @@ final class IINAPluginBridgeClientTests: XCTestCase {
         await XCTAssertThrowsProtocolFailure(try await client.snapshot(), .pluginUpdateRequired)
     }
 
+    func testStatusMapsOldPluginUnauthorizedResponseToPluginUpdateRequired() async throws {
+        let client = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
+            #"{"id":1,"version":2,"ok":false,"error":"unauthorized"}"#
+        ]))
+
+        let status = await client.status()
+
+        XCTAssertEqual(status, .pluginUpdateRequired)
+    }
+
     func testUnavailableResponseAndUnknownSnapshotStateStillMapToUnavailable() async throws {
         let unknownState = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
             #"{"id":1,"version":2,"ok":true,"snapshot":{"state":"buffering","speed":1.5}}"#
