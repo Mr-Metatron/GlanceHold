@@ -110,6 +110,13 @@ function assertMalformedResponse(response) {
   assert.equal(response.error, "malformed");
 }
 
+function assertInvalidSpeedResponse(response, id) {
+  assert.equal(response.version, 2);
+  assert.equal(response.id, id);
+  assert.equal(response.ok, false);
+  assert.equal(response.error, "invalid_speed");
+}
+
 function testMalformedJSONHasNoSideEffects() {
   const harness = createHarness();
 
@@ -163,6 +170,87 @@ function testValidPauseCommandHasOneSideEffect() {
   assert.deepEqual(harness.calls.mpvGetNumber, []);
 }
 
+function testSetSpeedBoundariesAreAccepted() {
+  for (const speed of [0.1, 16.0]) {
+    const harness = createHarness();
+
+    const response = harness.sendRequest({
+      id: 20,
+      version: 2,
+      type: "command",
+      command: "setSpeed",
+      speed
+    });
+
+    assert.deepEqual(response, { version: 2, id: 20, ok: true });
+    assert.equal(harness.calls.pause, 0);
+    assert.equal(harness.calls.resume, 0);
+    assert.deepEqual(harness.calls.setSpeed, [speed]);
+    assert.deepEqual(harness.calls.mpvGetFlag, []);
+    assert.deepEqual(harness.calls.mpvGetNumber, []);
+  }
+}
+
+function testInvalidSetSpeedValuesAreRejectedWithoutSideEffects() {
+  const invalidRequests = [
+    { id: 30, version: 2, type: "command", command: "setSpeed", speed: 0 },
+    { id: 31, version: 2, type: "command", command: "setSpeed", speed: -1 },
+    { id: 32, version: 2, type: "command", command: "setSpeed", speed: 0.099 },
+    { id: 33, version: 2, type: "command", command: "setSpeed", speed: 16.001 },
+    { id: 34, version: 2, type: "command", command: "setSpeed" },
+    { id: 35, version: 2, type: "command", command: "setSpeed", speed: "1" }
+  ];
+
+  for (const request of invalidRequests) {
+    const harness = createHarness();
+
+    const response = harness.sendRequest(request);
+
+    assertInvalidSpeedResponse(response, request.id);
+    assertNoSideEffects(harness.calls);
+  }
+
+  const nonFiniteHarness = createHarness();
+  const nonFiniteResponse = nonFiniteHarness.sendRaw(
+    '{"id":36,"version":2,"type":"command","command":"setSpeed","speed":1e999}'
+  );
+
+  assertInvalidSpeedResponse(nonFiniteResponse, 36);
+  assertNoSideEffects(nonFiniteHarness.calls);
+}
+
+function testPauseAndResumeStillWorkAfterSpeedValidation() {
+  const pauseHarness = createHarness();
+  const pauseResponse = pauseHarness.sendRequest({
+    id: 40,
+    version: 2,
+    type: "command",
+    command: "pause"
+  });
+
+  assert.deepEqual(pauseResponse, { version: 2, id: 40, ok: true });
+  assert.equal(pauseHarness.calls.pause, 1);
+  assert.equal(pauseHarness.calls.resume, 0);
+  assert.deepEqual(pauseHarness.calls.setSpeed, []);
+  assert.deepEqual(pauseHarness.calls.mpvGetFlag, []);
+  assert.deepEqual(pauseHarness.calls.mpvGetNumber, []);
+
+  const resumeHarness = createHarness();
+  const resumeResponse = resumeHarness.sendRequest({
+    id: 41,
+    version: 2,
+    type: "command",
+    command: "resume"
+  });
+
+  assert.deepEqual(resumeResponse, { version: 2, id: 41, ok: true });
+  assert.equal(resumeHarness.calls.pause, 0);
+  assert.equal(resumeHarness.calls.resume, 1);
+  assert.deepEqual(resumeHarness.calls.setSpeed, []);
+  assert.deepEqual(resumeHarness.calls.mpvGetFlag, []);
+  assert.deepEqual(resumeHarness.calls.mpvGetNumber, []);
+}
+
 function testValidSnapshotReadsSnapshot() {
   const harness = createHarness();
 
@@ -192,6 +280,9 @@ const tests = [
   testMalformedJSONHasNoSideEffects,
   testInvalidRequestShapesHaveNoSideEffects,
   testValidPauseCommandHasOneSideEffect,
+  testSetSpeedBoundariesAreAccepted,
+  testInvalidSetSpeedValuesAreRejectedWithoutSideEffects,
+  testPauseAndResumeStillWorkAfterSpeedValidation,
   testValidSnapshotReadsSnapshot
 ];
 
