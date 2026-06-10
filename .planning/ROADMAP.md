@@ -66,8 +66,8 @@
 **Goal:** Replace the rejected manual IINA bridge token/paste model with an explicit low-friction local trust model, clear setup/auth error states, and updated requirements before playback ownership work continues.
 **Requirements**: BRDG-01, BRDG-02, BRDG-03, BRDG-05
 **Depends on:** Phase 8
-**Plans:** 5/6 plans complete; 08.1-06 gap-closure plan ready
-**Verification:** gaps_found — see `08.1-VERIFICATION.md`; execute 08.1-06 to close remaining gaps
+**Plans:** 6/6 plans complete
+**Verification:** gap closure complete — see `08.1-06-SUMMARY.md`; re-run verification when ready
 
 **Success criteria:**
 
@@ -133,7 +133,7 @@
 | 6. End-to-End UX Hardening and Manual UAT | v1.0 | 4/4 | Complete | 2026-06-08 |
 | 7. Structured Runtime Logging and Diagnostics Foundation | v1.1 | 5/5 | Complete    | 2026-06-09 |
 | 8. Power Hot Path Sampling and Notification Deduplication | v1.1 | 6/6 | Complete   | 2026-06-10 |
-| 08.1. IINA bridge local trust model and setup-error UX | v1.1 | 5/6 | Ready to Execute | — |
+| 08.1. IINA bridge local trust model and setup-error UX | v1.1 | 6/6 | Complete   | 2026-06-10 |
 | 9. Playback Coordinator Ownership and Async Safety | v1.1 | 0/? | Planned | — |
 | 10. Attention Semantics, Calibration Robustness, and Settings Validation | v1.1 | 0/? | Planned | — |
 | 11. IINA Bridge Security, Legacy Boundary, and Reliability Verification | v1.1 | 0/? | Planned | — |

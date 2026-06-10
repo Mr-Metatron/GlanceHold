@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Runtime Reliability and Power Budget
 status: executing
-stopped_at: Ready to execute Phase 08.1 gap-closure plan
-last_updated: "2026-06-10T16:38:43.600Z"
-last_activity: 2026-06-10 -- Phase 08.1 planning complete
+stopped_at: Phase 08.1 complete; ready for Phase 9
+last_updated: "2026-06-10T17:18:32.614Z"
+last_activity: 2026-06-10 -- Completed Phase 08.1 gap-closure plan 06
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 17
-  completed_plans: 16
+  completed_plans: 17
   percent: 50
 ---
 
@@ -21,20 +21,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-09 after completing Phase 7)
 
 **Core value:** 当用户注意力离开屏幕时，GlanceHold 能可靠、克制地替用户处理视频速度或播放状态，并在用户回来时恢复到合适状态，且不误恢复用户手动暂停的视频。
-**Current focus:** Phase 08.1 — iina-bridge-local-trust-model-and-setup-error-ux
+**Current focus:** Phase 9 — playback-coordinator-ownership-and-async-safety
 
 ## Current Position
 
-Phase: 08.1 (iina-bridge-local-trust-model-and-setup-error-ux) — READY TO EXECUTE
-Plan: 5 of 6 complete; gap-closure plan 08.1-06 ready
-Status: Ready to execute Phase 08.1 gap-closure plan
-Last activity: 2026-06-10 -- Phase 08.1 planning complete
+Phase: 9 (playback-coordinator-ownership-and-async-safety) — PLANNED
+Plan: Not planned
+Status: Phase 08.1 complete; ready for Phase 9
+Last activity: 2026-06-10 -- Completed Phase 08.1 gap-closure plan 06
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 32 of 32
+- Total plans completed: 33 of 33
 - Average duration: N/A
 - Total execution time: 0.0 hours
 
@@ -90,6 +90,7 @@ Last activity: 2026-06-10 -- Phase 08.1 planning complete
 | Phase 08 P04 | 6min | 3 tasks | 7 files |
 | Phase 08 P06 | 4min | 3 tasks | 4 files |
 | Phase 08.1 P05 | 9 min | 3 tasks | 8 files |
+| Phase 08.1 P06 | 8min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -117,6 +118,9 @@ Recent decisions affecting current work:
 - [Phase 08]: 08-06 treats the first full XCTest host kill as transient because the immediate identical retry passed. — The first run failed before test bootstrapping with signal kill, while the identical retry passed without assertion failures.
 - [Phase 08]: 08-06 does not use a fixed watt threshold for resource evidence. — Phase 8 resource readings are noisy, so verification relies on automated quantity gates plus scalar before/after observations.
 - [Bridge UX]: On 2026-06-10 the user rejected the current manual IINA bridge token/paste design as low-value security friction. Next-phase planning should remove or radically simplify this mechanism instead of expanding token/pairing ceremony; `unauthorized` must not be hidden as generic `IINA unavailable`.
+- [Phase 08.1]: 08.1-06 maps every typed IINA plugin bridge protocol failure from `status()` to `pluginUpdateRequired`, while preserving setup-needed for missing plugins and unavailable for true runtime/player failures.
+- [Phase 08.1]: 08.1-06 validates token-free plugin requests as non-array objects with positive safe-integer ids before reading snapshots or invoking playback commands.
+- [Phase 08.1]: 08.1-06 constrains plugin `setSpeed` to finite numeric values from 0.1 through 16.0 inclusive as part of the local bridge trust boundary.
 
 ### Roadmap Evolution
 
@@ -134,7 +138,7 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-- [Phase 08.1]: Close verification gaps from `08.1-VERIFICATION.md`; see `.planning/todos/pending/2026-06-10-remove-iina-bridge-manual-token-friction.md`.
+- None currently for Phase 08.1. Gap-closure plan 08.1-06 completed; see `08.1-06-SUMMARY.md`.
 
 ### Blockers/Concerns
 
@@ -143,8 +147,7 @@ Recent decisions affecting current work:
 - [Phase 6]: Final hardening covered disable/quit flows, last-action feedback, final manual checklist coverage, localization sanity, shortcut toggle sanity, and build verification.
 - [v1.1]: User observed roughly 5W additional power draw during real monitoring; Phase 8 and Phase 11 must verify before/after behavior.
 - [v1.1]: Logging must be default-quiet and privacy-safe; diagnostic mode may add detail but must not store frames or upload visual data.
-- [v1.1]: Bridge token/pairing strategy needs an explicit low-friction local-trust design choice in inserted Phase 08.1 before implementation.
-- [v1.1]: Current user direction is to cancel the manual per-install IINA bridge token/paste workflow because it blocks normal local use with low-value friction.
+- [v1.1]: Phase 08.1 completed the no-token local IINA bridge trust model; Phase 11 should inherit it without reintroducing pairing, client ids, manual token copy/paste, or equivalent ceremony.
 - [Phase 7]: Live Diagnostic Mode unified-log evidence passed. Pre-paused IINA startup semantics were fixed in quick task 260609-jit.
 - [Phase 08]: Post-change 1-minute stable-viewing resource observation is pending; need IINA/plugin/camera state plus CPU, energy impact if available, wakeups if available, WebSocket/network scalar, and analyzer received/analyzed/skipped/rate counters before marking verification passed or nyquist_compliant true.
 
@@ -171,11 +174,11 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-10T16:18:35Z
-Stopped at: Phase 08.1 verification gaps found
+Last session: 2026-06-10T17:18:32.610Z
+Stopped at: Phase 08.1 complete; ready for Phase 9
 Resume file: None
 
 ## Operator Next Steps
 
-- Run `$gsd-plan-phase 08.1 --gaps` to create closure plans for the verifier gaps.
+- Proceed to Phase 9 planning/execution for playback coordinator ownership and async safety.
 - Per user request on 2026-06-09, do not start code review immediately after execution unless explicitly requested.
