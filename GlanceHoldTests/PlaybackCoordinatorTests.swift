@@ -160,6 +160,40 @@ final class PlaybackCoordinatorTests: XCTestCase {
         XCTAssertEqual(adapter.commands, [])
     }
 
+    func testControllablePushedSnapshotReopensDedupedAwayStateAfterInitialNoOp() async {
+        var deduper = PlaybackSemanticDeduper()
+        deduper.startSession(UUID(uuidString: "ABABABAB-ABAB-ABAB-ABAB-ABABABABABAB")!)
+        var appPlayerStatus: PlayerControlStatus?
+        let adapter = FakeIINAPlaybackAdapter(
+            snapshots: [
+                .setupNeeded,
+                .playing(speed: 1.5),
+                .playing(speed: 1.0)
+            ]
+        )
+        let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+        coordinator.stateDidChange = { coordinatorState in
+            let wasPlayerControllable = appPlayerStatus == .playing || appPlayerStatus == .paused
+            appPlayerStatus = PlayerControlStatus(coordinatorState: coordinatorState)
+            if coordinatorState.isPlayerControllable && !wasPlayerControllable {
+                deduper.clearLastEmissionForActiveSession()
+            }
+        }
+
+        XCTAssertTrue(deduper.shouldEmit(.lookingAway))
+        await coordinator.handleAttentionState(.lookingAway)
+        XCTAssertEqual(adapter.commands, [])
+        XCTAssertFalse(deduper.shouldEmit(.lookingAway))
+
+        coordinator.applyPushedPlayerSnapshot(.playing(speed: 1.5))
+
+        XCTAssertTrue(deduper.shouldEmit(.lookingAway))
+        await coordinator.handleAttentionState(.lookingAway)
+
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
+        XCTAssertEqual(adapter.snapshotReadCount, 3)
+    }
+
     func testPauseModeAwaySendsPause() async {
         let adapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5), .paused(speed: 1.5)])
         let coordinator = PlaybackCoordinator(mode: .pauseResume, adapter: adapter)

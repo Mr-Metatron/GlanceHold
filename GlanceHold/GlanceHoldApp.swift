@@ -567,7 +567,11 @@ private struct GlanceHoldMenu: View {
     private func installPlaybackCoordinatorStateHandler() {
         playbackCoordinator.stateDidChange = { coordinatorState in
             Task { @MainActor in
+                let wasPlayerControllable = state.playerStatus == .playing || state.playerStatus == .paused
                 state.apply(playerControlState: coordinatorState)
+                if coordinatorState.isPlayerControllable && !wasPlayerControllable {
+                    playbackSemanticDeduper.clearLastEmissionForActiveSession()
+                }
             }
         }
         playbackCoordinator.playbackActionDidComplete = { action in

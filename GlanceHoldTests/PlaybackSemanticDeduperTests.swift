@@ -62,6 +62,18 @@ final class PlaybackSemanticDeduperTests: XCTestCase {
         XCTAssertFalse(deduper.shouldEmit(.facing))
     }
 
+    func testClearingLastEmissionForActiveSessionAllowsSameStateToEmitAgain() {
+        var deduper = PlaybackSemanticDeduper()
+        deduper.startSession(UUID(uuidString: "99999999-9999-9999-9999-999999999999")!)
+
+        XCTAssertTrue(deduper.shouldEmit(.lookingAway))
+        XCTAssertFalse(deduper.shouldEmit(.lookingAway))
+
+        deduper.clearLastEmissionForActiveSession()
+
+        XCTAssertTrue(deduper.shouldEmit(.lookingAway))
+    }
+
     func testRepeatedStableSuppressionExposesNoCommandReason() {
         var deduper = PlaybackSemanticDeduper()
         deduper.startSession(UUID(uuidString: "88888888-8888-8888-8888-888888888888")!)

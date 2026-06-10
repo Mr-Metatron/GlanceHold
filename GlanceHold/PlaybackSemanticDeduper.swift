@@ -23,6 +23,14 @@ struct PlaybackSemanticDeduper {
         lastEmittedState = nil
     }
 
+    mutating func clearLastEmissionForActiveSession() {
+        guard currentSessionID != nil else {
+            return
+        }
+
+        lastEmittedState = nil
+    }
+
     mutating func shouldEmit(_ state: DebouncedAttentionState) -> Bool {
         guard currentSessionID != nil else {
             return false
