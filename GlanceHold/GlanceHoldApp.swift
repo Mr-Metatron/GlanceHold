@@ -143,6 +143,7 @@ private struct GlanceHoldMenu: View {
     @State private var permissionRequestID: UUID?
     @State private var playbackStatusStreamTask: Task<Void, Never>?
     @State private var playbackAttentionTask: Task<Void, Never>?
+    @State private var playbackAttentionGeneration = UUID()
     @State private var monitoringToggleRequestTask: Task<Void, Never>?
     @State private var playbackSemanticDeduper = PlaybackSemanticDeduper()
     @Environment(\.openWindow) private var openWindow
@@ -593,10 +594,11 @@ private struct GlanceHoldMenu: View {
     }
 
     private func sendAttentionState(_ attentionState: DebouncedAttentionState, to coordinator: PlaybackCoordinator) {
+        let generation = playbackAttentionGeneration
         let previousTask = playbackAttentionTask
-        playbackAttentionTask = Task {
+        playbackAttentionTask = Task { @MainActor in
             await previousTask?.value
-            guard !Task.isCancelled else {
+            guard !Task.isCancelled, generation == playbackAttentionGeneration else {
                 return
             }
 
@@ -653,6 +655,7 @@ private struct GlanceHoldMenu: View {
     }
 
     private func stopPlaybackAttentionHandling() {
+        playbackAttentionGeneration = UUID()
         playbackAttentionTask?.cancel()
         playbackAttentionTask = nil
     }

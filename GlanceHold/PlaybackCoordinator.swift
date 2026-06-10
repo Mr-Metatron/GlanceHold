@@ -31,6 +31,7 @@ final class PlaybackCoordinator {
     private var policy: PlaybackPolicy
     private var suppressCommandsUntilValidSnapshot = false
     private var monitoringSessionActive = false
+    private var monitoringGeneration = UUID()
     private var activeDiagnosticSession: DiagnosticSession?
     private var playbackMetrics = DiagnosticRuntimeMetrics.empty
     private var playbackNoOpAggregates: [PlaybackNoOpReason: PlaybackNoOpAggregate] = [:]
@@ -68,6 +69,7 @@ final class PlaybackCoordinator {
     }
 
     func stopMonitoring() {
+        monitoringGeneration = UUID()
         monitoringSessionActive = false
         recordFinalPlaybackSummary()
         resetPolicy()
@@ -115,9 +117,14 @@ final class PlaybackCoordinator {
     }
 
     func handleAttentionState(_ state: DebouncedAttentionState) async {
+        let generation = monitoringGeneration
+        guard canStartAttentionSideEffect(startedIn: generation) else {
+            return
+        }
+
         monitoringSessionActive = true
         let snapshot = await readSnapshot()
-        guard !Task.isCancelled else {
+        guard canStartAttentionSideEffect(startedIn: generation) else {
             return
         }
         let isControllable = isPlayerControllable(snapshot)
@@ -164,10 +171,22 @@ final class PlaybackCoordinator {
             return
         }
 
+        guard canStartAttentionSideEffect(startedIn: generation) else {
+            return
+        }
+
         do {
             playbackMetrics.playbackCommands += 1
             try await adapter.execute(intent)
+            guard isSameAttentionGeneration(startedIn: generation) else {
+                return
+            }
+
             let confirmation = await readSnapshot()
+            guard isSameAttentionGeneration(startedIn: generation) else {
+                return
+            }
+
             guard confirms(intent: intent, with: confirmation) else {
                 recordPlaybackAction(
                     snapshot: snapshot,
@@ -192,6 +211,10 @@ final class PlaybackCoordinator {
                 playbackActionDidComplete?(completedAction)
             }
         } catch {
+            guard isSameAttentionGeneration(startedIn: generation) else {
+                return
+            }
+
             recordPlaybackAction(
                 snapshot: snapshot,
                 intent: intent,
@@ -201,6 +224,14 @@ final class PlaybackCoordinator {
             )
             markNotControllable(snapshot: snapshot)
         }
+    }
+
+    private func canStartAttentionSideEffect(startedIn generation: UUID) -> Bool {
+        !Task.isCancelled && isSameAttentionGeneration(startedIn: generation)
+    }
+
+    private func isSameAttentionGeneration(startedIn generation: UUID) -> Bool {
+        generation == monitoringGeneration
     }
 
     private func readSnapshot() async -> PlayerSnapshot {

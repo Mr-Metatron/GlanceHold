@@ -403,6 +403,27 @@ final class PlaybackCoordinatorTests: XCTestCase {
         assertNoRestoreOrResume(adapter.commands)
     }
 
+    func testStopMonitoringInvalidatesInFlightAttentionBeforeCommandExecution() async {
+        let adapter = SuspendingSnapshotPlaybackAdapter(snapshot: .playing(speed: 1.5))
+        let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+        var completedActions: [PlaybackCompletedAction] = []
+        coordinator.playbackActionDidComplete = { completedActions.append($0) }
+
+        let task = Task {
+            await coordinator.handleAttentionState(.lookingAway)
+        }
+        await adapter.waitForSnapshotRequest()
+
+        coordinator.stopMonitoring()
+        adapter.resumeSnapshot()
+        await task.value
+
+        XCTAssertEqual(adapter.commands, [])
+        XCTAssertEqual(completedActions, [])
+        XCTAssertEqual(adapter.snapshotReadCount, 1)
+        XCTAssertFalse(coordinator.state.isPlayerControllable)
+    }
+
     func testPushedSnapshotPreservesManualTakeoverStopReason() async {
         let adapter = FakeIINAPlaybackAdapter(
             snapshots: [
@@ -933,6 +954,47 @@ private final class SelfCancelingCommandPlaybackAdapter: IINAPlaybackAdapting {
         withUnsafeCurrentTask { task in
             task?.cancel()
         }
+    }
+}
+
+private final class SuspendingSnapshotPlaybackAdapter: IINAPlaybackAdapting {
+    private let snapshotResult: PlayerSnapshot
+    private var snapshotContinuation: CheckedContinuation<PlayerSnapshot, Never>?
+    private var requestContinuation: CheckedContinuation<Void, Never>?
+    private(set) var commands: [PlaybackIntent] = []
+    private(set) var snapshotReadCount = 0
+
+    init(snapshot: PlayerSnapshot) {
+        self.snapshotResult = snapshot
+    }
+
+    func snapshot() async -> PlayerSnapshot {
+        snapshotReadCount += 1
+        requestContinuation?.resume()
+        requestContinuation = nil
+
+        return await withCheckedContinuation { continuation in
+            snapshotContinuation = continuation
+        }
+    }
+
+    func execute(_ intent: PlaybackIntent) async throws {
+        commands.append(intent)
+    }
+
+    func waitForSnapshotRequest() async {
+        guard snapshotReadCount == 0 else {
+            return
+        }
+
+        await withCheckedContinuation { continuation in
+            requestContinuation = continuation
+        }
+    }
+
+    func resumeSnapshot() {
+        snapshotContinuation?.resume(returning: snapshotResult)
+        snapshotContinuation = nil
     }
 }
 
