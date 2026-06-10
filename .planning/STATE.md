@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Runtime Reliability and Power Budget
-status: executing
-stopped_at: Phase 08.1 complete; ready for Phase 9
-last_updated: "2026-06-10T17:18:32.614Z"
+status: ready_to_plan
+stopped_at: Phase 08.1 complete (6/6) — ready to discuss Phase 9
+last_updated: 2026-06-10T17:41:22.107Z
 last_activity: 2026-06-10 -- Completed Phase 08.1 gap-closure plan 06
 progress:
   total_phases: 6
@@ -21,20 +21,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-09 after completing Phase 7)
 
 **Core value:** 当用户注意力离开屏幕时，GlanceHold 能可靠、克制地替用户处理视频速度或播放状态，并在用户回来时恢复到合适状态，且不误恢复用户手动暂停的视频。
-**Current focus:** Phase 9 — playback-coordinator-ownership-and-async-safety
+**Current focus:** Phase 9 — playback coordinator ownership and async safety
 
 ## Current Position
 
-Phase: 9 (playback-coordinator-ownership-and-async-safety) — PLANNED
-Plan: Not planned
-Status: Phase 08.1 complete; ready for Phase 9
-Last activity: 2026-06-10 -- Completed Phase 08.1 gap-closure plan 06
+Phase: 9
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-06-10
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 33 of 33
+- Total plans completed: 39 of 39
 - Average duration: N/A
 - Total execution time: 0.0 hours
 
@@ -49,6 +49,7 @@ Last activity: 2026-06-10 -- Completed Phase 08.1 gap-closure plan 06
 | 05 | 5/5 | 39 min | 8 min |
 | 06 | 4 | - | - |
 | 07 | 5/5 | 41 min | 8 min |
+| 08.1 | 6 | - | - |
 
 **Recent Trend:**
 
