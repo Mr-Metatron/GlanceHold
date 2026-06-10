@@ -130,23 +130,28 @@ final class GlanceHoldLocalizationTests: XCTestCase {
         XCTAssertNoRedundantPrivacyAssurance(in: visibleAppSurfaceStrings)
     }
 
-    func testIINAPluginUsesLocalizedShortcutLabelAndRejectsUnauthenticatedRequests() throws {
+    func testIINAPluginUsesLocalizedShortcutLabelAndNoTokenBridgeMetadata() throws {
         let source = try String(contentsOf: projectFileURL("IINAPlugin/GlanceHoldBridge.iinaplugin/main.js"), encoding: .utf8)
         let infoData = try Data(contentsOf: projectFileURL("IINAPlugin/GlanceHoldBridge.iinaplugin/Info.json"))
         let pluginInfo = try XCTUnwrap(try JSONSerialization.jsonObject(with: infoData) as? [String: Any])
-        let preferenceDefaults = try XCTUnwrap(pluginInfo["preferenceDefaults"] as? [String: Any])
-        let preferencesPage = try String(
-            contentsOf: projectFileURL("IINAPlugin/GlanceHoldBridge.iinaplugin/preferences.html"),
-            encoding: .utf8
-        )
+        let preferenceDefaults = pluginInfo["preferenceDefaults"] as? [String: Any]
+        let preferencesPageURL = projectFileURL("IINAPlugin/GlanceHoldBridge.iinaplugin/preferences.html")
 
         XCTAssertTrue(source.contains(#""zh-Hans": "切换 GlanceHold 监控""#))
         XCTAssertTrue(source.contains("localizedToggleMonitoringTitle()"))
-        XCTAssertTrue(source.contains(#""unauthorized""#))
         XCTAssertFalse(source.contains("menu.item(\n  \"Toggle GlanceHold Monitoring\""))
-        XCTAssertEqual(pluginInfo["preferencesPage"] as? String, "preferences.html")
-        XCTAssertEqual(preferenceDefaults["bridgeToken"] as? String, "")
-        XCTAssertTrue(preferencesPage.contains(#"data-pref-key="bridgeToken""#))
+        XCTAssertTrue(source.contains("executeBridgeCommand"))
+        XCTAssertTrue(source.contains(#""snapshot""#))
+        XCTAssertTrue(source.contains(#""setSpeed""#))
+        XCTAssertTrue(source.contains(#""pause""#))
+        XCTAssertTrue(source.contains(#""resume""#))
+        XCTAssertFalse(source.contains("bridgeTokenPreferenceKey"))
+        XCTAssertFalse(source.contains(#"preferences.get("bridgeToken")"#))
+        XCTAssertFalse(source.contains("request.token"))
+        XCTAssertFalse(source.contains(#""unauthorized""#))
+        XCTAssertNil(pluginInfo["preferencesPage"])
+        XCTAssertNil(preferenceDefaults?["bridgeToken"])
+        XCTAssertFalse(FileManager.default.fileExists(atPath: preferencesPageURL.path))
     }
 
     private func localizationCatalog() throws -> [String: Any] {
