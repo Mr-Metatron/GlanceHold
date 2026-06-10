@@ -17,6 +17,10 @@ function unavailable(conn, id, error = "unavailable") {
   reply(conn, { id, ok: false, error });
 }
 
+function isValidRequestId(id) {
+  return Number.isSafeInteger(id) && id > 0;
+}
+
 function readSnapshot() {
   const idle = mpv.getFlag("idle-active");
   if (idle) {
@@ -165,6 +169,11 @@ function handleMessage(conn, text) {
   try {
     request = JSON.parse(text);
   } catch {
+    unavailable(conn, null, "malformed");
+    return;
+  }
+
+  if (request === null || typeof request !== "object" || Array.isArray(request) || !isValidRequestId(request.id)) {
     unavailable(conn, null, "malformed");
     return;
   }
