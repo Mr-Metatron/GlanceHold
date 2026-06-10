@@ -257,27 +257,69 @@ final class IINAPluginBridgeClientTests: XCTestCase {
         XCTAssertEqual(transport.sentMessages.count, 1)
     }
 
-    func testMalformedProtocolAndFailedCommandMapToUnavailable() async throws {
-        let malformed = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: ["not json"]))
-        await XCTAssertEqualAsync(await malformed.status(), .unavailable)
+    func testUnsupportedVersionResponseErrorMapsToProtocolFailure() async throws {
+        let client = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
+            #"{"id":1,"version":2,"ok":false,"error":"unsupported_version"}"#
+        ]))
 
-        let mismatched = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
+        await XCTAssertThrowsProtocolFailure(try await client.snapshot(), .unsupportedVersion)
+    }
+
+    func testUnknownTypeResponseErrorMapsToProtocolFailure() async throws {
+        let client = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
+            #"{"id":1,"version":2,"ok":false,"error":"unknown_type"}"#
+        ]))
+
+        await XCTAssertThrowsProtocolFailure(try await client.snapshot(), .unknownType)
+    }
+
+    func testUnknownCommandResponseErrorMapsToProtocolFailure() async throws {
+        let client = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
+            #"{"id":1,"version":2,"ok":false,"error":"unknown_command"}"#
+        ]))
+
+        await XCTAssertThrowsProtocolFailure(try await client.execute(.pause), .unknownCommand)
+    }
+
+    func testNonJSONResponseMapsToMalformedProtocolFailure() async throws {
+        let client = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: ["not json"]))
+
+        await XCTAssertThrowsProtocolFailure(try await client.snapshot(), .malformedResponse)
+    }
+
+    func testMismatchedResponseIDOrVersionMapsToRequestMismatchProtocolFailure() async throws {
+        let mismatchedID = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
             #"{"id":999,"version":2,"ok":true,"snapshot":{"state":"playing","speed":1.5}}"#
         ]))
-        await XCTAssertEqualAsync(await mismatched.status(), .unavailable)
+        await XCTAssertThrowsProtocolFailure(try await mismatchedID.snapshot(), .requestMismatch)
 
+        let mismatchedVersion = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
+            #"{"id":1,"version":3,"ok":true,"snapshot":{"state":"playing","speed":1.5}}"#
+        ]))
+        await XCTAssertThrowsProtocolFailure(try await mismatchedVersion.snapshot(), .requestMismatch)
+    }
+
+    func testOldPluginUnauthorizedResponseMapsToPluginUpdateRequiredProtocolFailure() async throws {
+        let client = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
+            #"{"id":1,"version":2,"ok":false,"error":"unauthorized"}"#
+        ]))
+
+        await XCTAssertThrowsProtocolFailure(try await client.snapshot(), .pluginUpdateRequired)
+    }
+
+    func testUnavailableResponseAndUnknownSnapshotStateStillMapToUnavailable() async throws {
         let unknownState = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
             #"{"id":1,"version":2,"ok":true,"snapshot":{"state":"buffering","speed":1.5}}"#
         ]))
         await XCTAssertEqualAsync(await unknownState.status(), .unavailable)
 
-        let failed = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
+        let unavailable = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
             #"{"id":1,"version":2,"ok":false,"error":"unavailable"}"#
         ]))
 
         do {
-            try await failed.execute(.pause)
-            XCTFail("Expected command failure")
+            try await unavailable.execute(.pause)
+            XCTFail("Expected unavailable failure")
         } catch let error as IINAPluginBridgeClientError {
             XCTAssertEqual(error, .unavailable)
         }
@@ -353,5 +395,21 @@ private func XCTAssertEqualAsync<T: Equatable>(
         XCTAssertEqual(value1, value2, file: file, line: line)
     } catch {
         XCTFail("Unexpected error: \(error)", file: file, line: line)
+    }
+}
+
+private func XCTAssertThrowsProtocolFailure<T>(
+    _ expression: @autoclosure () async throws -> T,
+    _ expected: BridgeProtocolFailure,
+    file: StaticString = #filePath,
+    line: UInt = #line
+) async {
+    do {
+        _ = try await expression()
+        XCTFail("Expected protocol failure", file: file, line: line)
+    } catch let IINAPluginBridgeClientError.protocolFailure(failure) {
+        XCTAssertEqual(failure, expected, file: file, line: line)
+    } catch {
+        XCTFail("Expected protocol failure \(expected), got \(error)", file: file, line: line)
     }
 }
