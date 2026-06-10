@@ -39,10 +39,11 @@
 
 ### IINA Bridge and Legacy Boundary
 
-- [ ] **BRDG-01**: User playback status is not pushed to an unauthenticated IINA bridge connection.
-- [ ] **BRDG-02**: User playback commands require connection-level authentication or an explicitly documented per-install or pairing secret strategy rather than a fixed public token.
-- [ ] **BRDG-03**: Developer can test bridge authentication behavior with protocol-level tests, not only source-string checks.
+- [x] **BRDG-01**: User can use the local IINA bridge without manually copying a GlanceHold token into IINA plugin preferences.
+- [x] **BRDG-02**: Developer can reason from an explicit local single-user bridge trust model that treats loopback transport, narrow commands, plugin enablement, and local-only diagnostics as the security boundary for v1.1.
+- [x] **BRDG-03**: User sees protocol-distinct setup/auth bridge failures instead of `unauthorized` being collapsed into generic `IINA unavailable`.
 - [ ] **BRDG-04**: Developer can clearly see whether the legacy MPV IPC backend is removed from production or isolated as experimental code with a single shared status mapping path.
+- [x] **BRDG-05**: Developer can test the revised bridge trust behavior with protocol-level tests, not only source-string checks.
 
 ### Verification and Regression Coverage
 
@@ -101,18 +102,19 @@
 | ATT-04 | Phase 10 | Pending |
 | ATT-05 | Phase 10 | Pending |
 | ATT-06 | Phase 10 | Pending |
-| BRDG-01 | Phase 11 | Pending |
-| BRDG-02 | Phase 11 | Pending |
-| BRDG-03 | Phase 11 | Pending |
+| BRDG-01 | Phase 08.1 | Complete |
+| BRDG-02 | Phase 08.1 | Complete |
+| BRDG-03 | Phase 08.1 | Complete |
 | BRDG-04 | Phase 11 | Pending |
+| BRDG-05 | Phase 08.1, Phase 11 | Complete |
 | VER-01 | Phase 11 | Pending |
 | VER-02 | Phase 11 | Pending |
 
 **Coverage:**
-- v1.1 requirements: 26 total
-- Mapped to phases: 26
+- v1.1 requirements: 27 total
+- Mapped to phases: 27
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-06-09*
-*Last updated: 2026-06-09 after starting v1.1 milestone*
+*Last updated: 2026-06-10 after inserting Phase 08.1 for IINA bridge local trust model*

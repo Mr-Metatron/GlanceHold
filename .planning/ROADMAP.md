@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1-6 (shipped 2026-06-08) — [archive](milestones/v1.0-ROADMAP.md)
-- 🚧 **v1.1 Runtime Reliability and Power Budget** — Phases 7-11 (executing 2026-06-09)
+- 🚧 **v1.1 Runtime Reliability and Power Budget** — Phases 7-11 plus inserted Phase 08.1 (executing 2026-06-09)
 
 ## Phases
 
@@ -20,10 +20,11 @@
 </details>
 
 <details open>
-<summary>🚧 v1.1 Runtime Reliability and Power Budget (Phases 7-11) — EXECUTING</summary>
+<summary>🚧 v1.1 Runtime Reliability and Power Budget (Phases 7-11 plus inserted 08.1) — EXECUTING</summary>
 
 - [x] Phase 7: Structured Runtime Logging and Diagnostics Foundation (5/5 plans) — completed 2026-06-09
 - [ ] Phase 8: Power Hot Path Sampling and Notification Deduplication
+- [x] Phase 08.1: IINA bridge local trust model and setup-error UX (INSERTED) — completed 2026-06-10
 - [ ] Phase 9: Playback Coordinator Ownership and Async Safety
 - [ ] Phase 10: Attention Semantics, Calibration Robustness, and Settings Validation
 - [ ] Phase 11: IINA Bridge Security, Legacy Boundary, and Reliability Verification
@@ -60,6 +61,21 @@
 4. Fake 30fps input tests assert analyzer, notification, snapshot, and command upper bounds.
 5. Runtime metrics from Phase 7 show the expected reductions during tests.
 
+### Phase 08.1: IINA bridge local trust model and setup-error UX (INSERTED)
+
+**Goal:** Replace the rejected manual IINA bridge token/paste model with an explicit low-friction local trust model, clear setup/auth error states, and updated requirements before playback ownership work continues.
+**Requirements**: BRDG-01, BRDG-02, BRDG-03, BRDG-05
+**Depends on:** Phase 8
+**Plans:** 5/5 plans complete
+
+**Success criteria:**
+
+1. Normal local IINA use does not require copying a token from GlanceHold into IINA plugin preferences.
+2. The bridge threat model is documented as a local single-user loopback integration with a narrow protocol surface, not a general remote-control API.
+3. If any auth/setup failure remains, GlanceHold surfaces a specific setup/auth state instead of collapsing `unauthorized` into generic `IINA unavailable`.
+4. Bridge diagnostics and docs continue to avoid tokens, raw bridge payloads, media paths, media titles, camera frames, and raw Vision data.
+5. Phase 11 inherits this trust model for final protocol tests and real IINA/camera verification rather than reintroducing manual pairing friction.
+
 ### Phase 9: Playback Coordinator Ownership and Async Safety
 
 **Goal:** Make playback side effects serial, session-bound, and invalidated by stop, quit, and mode replacement so old tasks cannot control IINA after monitoring is no longer active.
@@ -91,14 +107,14 @@
 
 ### Phase 11: IINA Bridge Security, Legacy Boundary, and Reliability Verification
 
-**Goal:** Close the milestone by tightening the bridge trust boundary, clarifying the legacy MPV backend, and verifying the whole runtime with automated stress tests plus real IINA/camera use.
+**Goal:** Close the milestone by verifying the revised local bridge trust boundary, clarifying the legacy MPV backend, and testing the whole runtime with automated stress tests plus real IINA/camera use.
 
 **Requirements:** PWR-05, BRDG-01, BRDG-02, BRDG-03, BRDG-04, VER-01, VER-02
 
 **Success criteria:**
 
-1. Unauthenticated IINA bridge connections do not receive current status, statusChanged events, or toggle events.
-2. Command authorization uses a connection-level handshake or documented per-install/pairing strategy rather than relying on an unauthenticated subscription path.
+1. Final bridge behavior matches the Phase 08.1 local trust model without requiring manual token copy/paste for normal use.
+2. Setup/auth failures, if any remain, are protocol-distinct and user-visible instead of being reported as generic IINA unavailability.
 3. Bridge security behavior is covered by protocol-level tests.
 4. Legacy MPV IPC is either removed from production or isolated as experimental with shared mapping and clear comments/tests.
 5. Full regression coverage includes concurrency, high-frequency input, attention semantics, calibration windows, settings validation, and bridge auth.
@@ -116,14 +132,15 @@
 | 6. End-to-End UX Hardening and Manual UAT | v1.0 | 4/4 | Complete | 2026-06-08 |
 | 7. Structured Runtime Logging and Diagnostics Foundation | v1.1 | 5/5 | Complete    | 2026-06-09 |
 | 8. Power Hot Path Sampling and Notification Deduplication | v1.1 | 6/6 | Complete   | 2026-06-10 |
+| 08.1. IINA bridge local trust model and setup-error UX | v1.1 | 5/5 | Complete   | 2026-06-10 |
 | 9. Playback Coordinator Ownership and Async Safety | v1.1 | 0/? | Planned | — |
 | 10. Attention Semantics, Calibration Robustness, and Settings Validation | v1.1 | 0/? | Planned | — |
 | 11. IINA Bridge Security, Legacy Boundary, and Reliability Verification | v1.1 | 0/? | Planned | — |
 
 ## Next
 
-Start Phase 8 discussion with:
+Start Phase 9 when ready:
 
 ```bash
-$gsd-discuss-phase 8
+$gsd-execute-phase 9
 ```
