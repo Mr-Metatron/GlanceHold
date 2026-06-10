@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Runtime Reliability and Power Budget
 status: executing
-stopped_at: Completed 08.1-05-PLAN.md
-last_updated: "2026-06-10T15:48:58.075Z"
-last_activity: 2026-06-10 -- Phase 08.1 plan 05 complete
+stopped_at: Phase 08.1 verification gaps found
+last_updated: "2026-06-10T16:18:35Z"
+last_activity: 2026-06-10 -- Phase 08.1 verification found gaps
 progress:
   total_phases: 6
   completed_phases: 3
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-06-09 after completing Phase 7)
 
 ## Current Position
 
-Phase: 08.1 (iina-bridge-local-trust-model-and-setup-error-ux) — COMPLETE
+Phase: 08.1 (iina-bridge-local-trust-model-and-setup-error-ux) — GAPS FOUND
 Plan: 5 of 5
-Status: Completed Phase 08.1
-Last activity: 2026-06-10 -- Phase 08.1 plan 05 complete
+Status: Verification gaps found; gap closure required before Phase 9
+Last activity: 2026-06-10 -- Phase 08.1 verification found gaps
 
 ## Performance Metrics
 
@@ -134,7 +134,7 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-- [Phase 08.1]: Plan and execute the low-friction local IINA bridge trust model; see `.planning/todos/pending/2026-06-10-remove-iina-bridge-manual-token-friction.md`.
+- [Phase 08.1]: Close verification gaps from `08.1-VERIFICATION.md`; see `.planning/todos/pending/2026-06-10-remove-iina-bridge-manual-token-friction.md`.
 
 ### Blockers/Concerns
 
@@ -171,11 +171,11 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-10T15:48:58.071Z
-Stopped at: Completed 08.1-05-PLAN.md
+Last session: 2026-06-10T16:18:35Z
+Stopped at: Phase 08.1 verification gaps found
 Resume file: None
 
 ## Operator Next Steps
 
-- Start Phase 9 when ready.
+- Run `$gsd-plan-phase 08.1 --gaps` to create closure plans for the verifier gaps.
 - Per user request on 2026-06-09, do not start code review immediately after execution unless explicitly requested.

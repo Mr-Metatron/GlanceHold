@@ -24,7 +24,7 @@
 
 - [x] Phase 7: Structured Runtime Logging and Diagnostics Foundation (5/5 plans) — completed 2026-06-09
 - [ ] Phase 8: Power Hot Path Sampling and Notification Deduplication
-- [x] Phase 08.1: IINA bridge local trust model and setup-error UX (INSERTED) — completed 2026-06-10
+- [ ] Phase 08.1: IINA bridge local trust model and setup-error UX (INSERTED) — verification gaps found 2026-06-10
 - [ ] Phase 9: Playback Coordinator Ownership and Async Safety
 - [ ] Phase 10: Attention Semantics, Calibration Robustness, and Settings Validation
 - [ ] Phase 11: IINA Bridge Security, Legacy Boundary, and Reliability Verification
@@ -67,6 +67,7 @@
 **Requirements**: BRDG-01, BRDG-02, BRDG-03, BRDG-05
 **Depends on:** Phase 8
 **Plans:** 5/5 plans complete
+**Verification:** gaps_found — see `08.1-VERIFICATION.md`
 
 **Success criteria:**
 
@@ -132,15 +133,15 @@
 | 6. End-to-End UX Hardening and Manual UAT | v1.0 | 4/4 | Complete | 2026-06-08 |
 | 7. Structured Runtime Logging and Diagnostics Foundation | v1.1 | 5/5 | Complete    | 2026-06-09 |
 | 8. Power Hot Path Sampling and Notification Deduplication | v1.1 | 6/6 | Complete   | 2026-06-10 |
-| 08.1. IINA bridge local trust model and setup-error UX | v1.1 | 5/5 | Complete   | 2026-06-10 |
+| 08.1. IINA bridge local trust model and setup-error UX | v1.1 | 5/5 | Gaps Found | — |
 | 9. Playback Coordinator Ownership and Async Safety | v1.1 | 0/? | Planned | — |
 | 10. Attention Semantics, Calibration Robustness, and Settings Validation | v1.1 | 0/? | Planned | — |
 | 11. IINA Bridge Security, Legacy Boundary, and Reliability Verification | v1.1 | 0/? | Planned | — |
 
 ## Next
 
-Start Phase 9 when ready:
+Close Phase 08.1 verification gaps before Phase 9:
 
 ```bash
-$gsd-execute-phase 9
+$gsd-plan-phase 08.1 --gaps
 ```
