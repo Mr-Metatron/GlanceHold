@@ -46,6 +46,12 @@ enum MonitoringToggleController {
     }
 }
 
+enum CalibrationStartController {
+    static func requiresLifecycleCleanupBeforeStarting(from state: GlanceHoldState) -> Bool {
+        state.isMonitoringActive || state.status == .requestingCameraPermission
+    }
+}
+
 enum DiagnosticModeMenuAction {
     static func toggle(
         settingsStore: DiagnosticSettingsStoring,

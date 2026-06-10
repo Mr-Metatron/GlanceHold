@@ -52,6 +52,48 @@ final class MonitoringToggleControllerTests: XCTestCase {
         )
     }
 
+    func testCalibrationStartRequiresLifecycleCleanupWhenMonitoringOrRequestingPermission() {
+        for status in [
+            MonitoringStatus.requestingCameraPermission,
+            .facing,
+            .lookingAway,
+            .noFaceDetected,
+            .recovering,
+            .iinaUnavailable
+        ] {
+            XCTAssertTrue(
+                CalibrationStartController.requiresLifecycleCleanupBeforeStarting(
+                    from: state(status: status, hasCalibration: true)
+                ),
+                "Expected cleanup before calibration from \(status)"
+            )
+        }
+
+        for status in [
+            MonitoringStatus.off,
+            .cameraPermissionNeeded,
+            .cameraPermissionDenied,
+            .cameraUnavailable,
+            .needsCalibration,
+            .calibratingFacingPose,
+            .calibrationFailed(previousKept: false),
+            .readyAfterCalibration,
+            .readyAfterMarginalCalibration
+        ] {
+            XCTAssertFalse(
+                CalibrationStartController.requiresLifecycleCleanupBeforeStarting(
+                    from: state(status: status, hasCalibration: true)
+                ),
+                "Did not expect cleanup before calibration from \(status)"
+            )
+        }
+
+        let cleanupPlan = MonitoringToggleController.cleanupPlan(for: .userDisable)
+        XCTAssertTrue(cleanupPlan.cancelPermissionRequest)
+        XCTAssertTrue(cleanupPlan.stopAttentionMonitor)
+        XCTAssertTrue(cleanupPlan.stopPlaybackCoordinator)
+    }
+
     func testDiagnosticModeTogglePersistsBeforeRequestingRestart() throws {
         let store = FakeDiagnosticSettingsStore(settings: .disabled)
         let requester = FakeAppRestartRequester()
@@ -135,15 +177,18 @@ final class MonitoringToggleControllerTests: XCTestCase {
         XCTAssertLessThan(dedupRange.lowerBound, sendRange.lowerBound)
     }
 
-    func testAppSourceQueuesPlaybackAttentionWithoutCancelingPreviousSideEffectTask() throws {
+    func testAppSourceCleansMonitoringLifecycleBeforeStartingCalibration() throws {
         let source = try String(contentsOf: projectFileURL("GlanceHold/GlanceHoldApp.swift"), encoding: .utf8)
-        let sendStart = try XCTUnwrap(source.range(of: "private func sendAttentionState"))
-        let nextFunction = try XCTUnwrap(source.range(of: "private func startPlaybackStatusUpdates"))
-        let sendBody = source[sendStart.lowerBound..<nextFunction.lowerBound]
+        let calibrationStart = try XCTUnwrap(source.range(of: "private func startCalibration"))
+        let nextFunction = try XCTUnwrap(source.range(of: "private func updateSettings"))
+        let calibrationBody = source[calibrationStart.lowerBound..<nextFunction.lowerBound]
 
-        XCTAssertTrue(sendBody.contains("let previousTask = playbackAttentionTask"))
-        XCTAssertTrue(sendBody.contains("await previousTask?.value"))
-        XCTAssertFalse(sendBody.contains("playbackAttentionTask?.cancel()"))
+        XCTAssertTrue(calibrationBody.contains("CalibrationStartController.requiresLifecycleCleanupBeforeStarting(from: state)"))
+        XCTAssertTrue(calibrationBody.contains("stopMonitoring(source: .userRequested)"))
+
+        let cleanupRange = try XCTUnwrap(calibrationBody.range(of: "stopMonitoring(source: .userRequested)"))
+        let captureRange = try XCTUnwrap(calibrationBody.range(of: "monitor.captureCalibrationSampleSet()"))
+        XCTAssertLessThan(cleanupRange.lowerBound, captureRange.lowerBound)
     }
 
     func testAppSourceUsesStatusStreamLivenessInsteadOfFixedSnapshotFallbackPolling() throws {

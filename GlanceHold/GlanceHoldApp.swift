@@ -410,6 +410,10 @@ private struct GlanceHoldMenu: View {
     }
 
     private func startCalibration() {
+        if CalibrationStartController.requiresLifecycleCleanupBeforeStarting(from: state) {
+            stopMonitoring(source: .userRequested)
+        }
+
         let requestID = UUID()
         permissionRequestID = requestID
         state.status = .requestingCameraPermission
