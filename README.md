@@ -65,6 +65,10 @@ If the menu says camera permission is needed or denied, choose the menu action s
 
 If IINA status is unavailable or setup-needed, confirm IINA is running, the GlanceHold IINA plugin is installed and enabled, and a playable video is loaded. Restart IINA after copying or linking plugin files.
 
+### IINA Bridge Update Needed
+
+Update or reinstall the GlanceHold IINA plugin, then restart IINA.
+
 ### Speed Or Pause Does Not Change
 
 Check that monitoring is enabled, calibration has succeeded, IINA is playing a controllable item, and the selected mode matches what you expect. In Speed Control mode, the visible change is speed lowering to 1x and later restoring. In Pause/Resume mode, the visible change is pause and resume.
