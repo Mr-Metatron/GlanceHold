@@ -141,6 +141,7 @@ enum MonitoringStatus: Equatable {
 enum PlayerControlStatus: Equatable {
     case unavailable
     case setupNeeded
+    case pluginUpdateRequired
     case idle
     case paused
     case playing
@@ -169,7 +170,7 @@ enum PlayerControlStatus: Equatable {
             case .playerUnavailable:
                 self = .unavailable
             case .pluginUpdateRequired:
-                self = .setupNeeded
+                self = .pluginUpdateRequired
             }
             return
         }
@@ -186,7 +187,7 @@ enum PlayerControlStatus: Equatable {
         case .playerUnavailable:
             self = .unavailable
         case .pluginUpdateRequired:
-            self = .setupNeeded
+            self = .pluginUpdateRequired
         }
     }
 
@@ -195,6 +196,8 @@ enum PlayerControlStatus: Equatable {
         case .unavailable:
             GlanceHoldStrings.text(.playerUnavailableTitle)
         case .setupNeeded:
+            GlanceHoldStrings.text(.playerSetupNeededTitle)
+        case .pluginUpdateRequired:
             GlanceHoldStrings.text(.playerSetupNeededTitle)
         case .idle:
             GlanceHoldStrings.text(.playerIdleTitle)
@@ -212,6 +215,8 @@ enum PlayerControlStatus: Equatable {
         case .unavailable:
             GlanceHoldStrings.text(.playerUnavailableDetail)
         case .setupNeeded:
+            GlanceHoldStrings.text(.playerSetupNeededDetail)
+        case .pluginUpdateRequired:
             GlanceHoldStrings.text(.playerSetupNeededDetail)
         case .idle:
             GlanceHoldStrings.text(.playerIdleDetail)
