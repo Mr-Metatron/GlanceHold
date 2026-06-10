@@ -154,6 +154,32 @@ final class GlanceHoldLocalizationTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: preferencesPageURL.path))
     }
 
+    func testBridgeDocsAvoidManualTokenSetupAndDescribeUpdateNeededGuidance() throws {
+        let pluginReadme = try String(contentsOf: projectFileURL("IINAPlugin/README.md"), encoding: .utf8)
+        let topLevelReadme = try String(contentsOf: projectFileURL("README.md"), encoding: .utf8)
+        let docs = [pluginReadme, topLevelReadme]
+
+        XCTAssertTrue(pluginReadme.contains("No request token is required."))
+        XCTAssertTrue(pluginReadme.contains("Do not copy or paste a bridge token."))
+        XCTAssertTrue(pluginReadme.contains("There is no remote host configuration."))
+        XCTAssertTrue(pluginReadme.contains("Phase 11 inherits this no-token local loopback trust model."))
+        XCTAssertTrue(
+            docs.allSatisfy {
+                $0.contains("Update or reinstall the GlanceHold IINA plugin, then restart IINA.")
+            }
+        )
+
+        for doc in docs {
+            XCTAssertFalse(doc.contains("Bridge Token"))
+            XCTAssertFalse(doc.contains("iinaPluginBridgeToken"))
+            XCTAssertFalse(doc.contains("defaults read"))
+            XCTAssertFalse(doc.contains("plugin preference token"))
+            XCTAssertFalse(doc.contains("token preference"))
+            XCTAssertFalse(doc.contains("preferencesPage"))
+            XCTAssertFalse(doc.contains(#"data-pref-key="bridgeToken""#))
+        }
+    }
+
     private func localizationCatalog() throws -> [String: Any] {
         let data = try Data(contentsOf: projectFileURL("GlanceHold/Localizable.xcstrings"))
         let root = try JSONSerialization.jsonObject(with: data) as? [String: Any]
