@@ -62,42 +62,10 @@ enum IINAPluginBridgePushedEvent: Equatable {
     case heartbeat
 }
 
-struct IINAPluginBridgeTokenStore {
-    private static let tokenKey = "iinaPluginBridgeToken"
-
-    private let defaults: UserDefaults
-
-    init(defaults: UserDefaults = .standard) {
-        self.defaults = defaults
-    }
-
-    func loadOrCreateToken() -> String {
-        if let token = defaults.string(forKey: Self.tokenKey), Self.isValid(token) {
-            return token
-        }
-
-        let token = Self.makeToken()
-        defaults.set(token, forKey: Self.tokenKey)
-        return token
-    }
-
-    private static func makeToken() -> String {
-        [UUID().uuidString, UUID().uuidString]
-            .joined(separator: "")
-            .replacingOccurrences(of: "-", with: "")
-            .lowercased()
-    }
-
-    private static func isValid(_ token: String) -> Bool {
-        token.count >= 32 && token.allSatisfy { $0.isLetter || $0.isNumber || $0 == "-" || $0 == "_" }
-    }
-}
-
 final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
     private struct Request: Encodable {
         var id: Int
         var version: Int
-        var token: String
         var type: String
         var command: String?
         var speed: Double?
@@ -136,12 +104,11 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
         var speed: Double?
     }
 
-    private static let protocolVersion = 1
+    private static let protocolVersion = 2
 
     private let transport: IINAPluginBridgeTransporting
     private let timeout: TimeInterval
     private let streamStaleTimeout: TimeInterval
-    private let bridgeToken: String
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
     private let requestIDLock = NSLock()
@@ -150,15 +117,12 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
     init(
         url: URL = URL(string: "ws://127.0.0.1:47873")!,
         transport: IINAPluginBridgeTransporting? = nil,
-        bridgeToken: String? = nil,
-        tokenStore: IINAPluginBridgeTokenStore = IINAPluginBridgeTokenStore(),
         timeout: TimeInterval = 1.0,
         streamStaleTimeout: TimeInterval = 15.0
     ) {
         self.transport = transport ?? URLSessionIINAPluginBridgeTransport(url: url)
         self.timeout = timeout
         self.streamStaleTimeout = streamStaleTimeout
-        self.bridgeToken = bridgeToken ?? tokenStore.loadOrCreateToken()
     }
 
     func status() async -> IINAPlayerStatus {
@@ -175,7 +139,6 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
         let request = Request(
             id: nextID(),
             version: Self.protocolVersion,
-            token: bridgeToken,
             type: "snapshot",
             command: nil,
             speed: nil
@@ -344,13 +307,13 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
         let id = nextID()
         switch intent {
         case .holdSpeedAtOne:
-            return Request(id: id, version: Self.protocolVersion, token: bridgeToken, type: "command", command: "setSpeed", speed: 1.0)
+            return Request(id: id, version: Self.protocolVersion, type: "command", command: "setSpeed", speed: 1.0)
         case let .restoreSpeed(speed):
-            return Request(id: id, version: Self.protocolVersion, token: bridgeToken, type: "command", command: "setSpeed", speed: speed)
+            return Request(id: id, version: Self.protocolVersion, type: "command", command: "setSpeed", speed: speed)
         case .pause:
-            return Request(id: id, version: Self.protocolVersion, token: bridgeToken, type: "command", command: "pause", speed: nil)
+            return Request(id: id, version: Self.protocolVersion, type: "command", command: "pause", speed: nil)
         case .resume:
-            return Request(id: id, version: Self.protocolVersion, token: bridgeToken, type: "command", command: "resume", speed: nil)
+            return Request(id: id, version: Self.protocolVersion, type: "command", command: "resume", speed: nil)
         case .stopMonitoring:
             return nil
         }
