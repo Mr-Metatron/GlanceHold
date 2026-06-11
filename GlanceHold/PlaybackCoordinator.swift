@@ -33,7 +33,10 @@ final class PlaybackCoordinator {
     private var suppressCommandsUntilValidSnapshot = false
     private var monitoringSessionActive = false
     private var monitoringGeneration = UUID()
+    private var latestAttentionState: DebouncedAttentionState?
     private var pendingConfirmation: PendingPlaybackConfirmation?
+    private var supersededPauseMayLandWhileFacing = false
+    private var supersededSpeedPendingConfirmation: PendingPlaybackConfirmation?
     private var activeDiagnosticSession: DiagnosticSession?
     private var playbackMetrics = DiagnosticRuntimeMetrics.empty
     private var playbackNoOpAggregates: [PlaybackNoOpReason: PlaybackNoOpAggregate] = [:]
@@ -67,6 +70,16 @@ final class PlaybackCoordinator {
     }
 
     func invalidateInFlightAttentionHandling() {
+        if let pendingConfirmation {
+            if pendingConfirmation.intent == .pause {
+                supersededPauseMayLandWhileFacing = true
+            }
+
+            if isSpeedIntent(pendingConfirmation.intent) {
+                supersededSpeedPendingConfirmation = pendingConfirmation
+            }
+        }
+
         monitoringGeneration = UUID()
         pendingConfirmation = nil
     }
@@ -129,6 +142,7 @@ final class PlaybackCoordinator {
             return
         }
 
+        latestAttentionState = state
         monitoringSessionActive = true
         guard let snapshot = await readSnapshot(startedIn: generation) else {
             return
@@ -255,6 +269,7 @@ final class PlaybackCoordinator {
         sourceSnapshot: PlayerSnapshot,
         startedIn generation: UUID
     ) {
+        clearSupersededConfirmationTracking(for: intent)
         policy.beginPendingConfirmation(for: intent)
         pendingConfirmation = PendingPlaybackConfirmation(
             intent: intent,
@@ -271,6 +286,7 @@ final class PlaybackCoordinator {
     ) {
         policy.resolvePendingConfirmation(for: intent)
         pendingConfirmation = nil
+        clearSupersededConfirmationTracking(for: intent)
         updateState(
             snapshot: confirmation,
             isPlayerControllable: isPlayerControllable(confirmation),
@@ -448,6 +464,19 @@ final class PlaybackCoordinator {
     private func resetPolicy() {
         policy = PlaybackPolicy(mode: mode)
         pendingConfirmation = nil
+        supersededPauseMayLandWhileFacing = false
+        supersededSpeedPendingConfirmation = nil
+    }
+
+    private func clearSupersededConfirmationTracking(for intent: PlaybackIntent) {
+        switch intent {
+        case .holdSpeedAtOne, .restoreSpeed:
+            supersededSpeedPendingConfirmation = nil
+        case .pause, .resume:
+            supersededPauseMayLandWhileFacing = false
+        case .stopMonitoring:
+            break
+        }
     }
 
     private func applyReadOnlyPlayerSnapshot(_ snapshot: PlayerSnapshot, startedIn generation: UUID? = nil) {
@@ -469,6 +498,10 @@ final class PlaybackCoordinator {
         }
 
         if resolvePendingConfirmationFromPushedSnapshotIfNeeded(snapshot, startedIn: generation) {
+            return
+        }
+
+        if resolveSupersededConfirmationFromPushedSnapshotIfNeeded(snapshot, startedIn: generation) {
             return
         }
 
@@ -527,7 +560,49 @@ final class PlaybackCoordinator {
             return true
         }
 
+        if isSpeedIntent(pendingConfirmation.intent), isControllableSpeedSnapshot(snapshot) {
+            handleStopMonitoring(
+                reason: .manualPlayerTakeover,
+                snapshot: snapshot,
+                startedIn: pendingConfirmation.generation
+            )
+            return true
+        }
+
         return false
+    }
+
+    @discardableResult
+    private func resolveSupersededConfirmationFromPushedSnapshotIfNeeded(
+        _ snapshot: PlayerSnapshot,
+        startedIn generation: UUID? = nil
+    ) -> Bool {
+        guard isValidOperation(startedIn: generation) else {
+            return false
+        }
+
+        if supersededPauseMayLandWhileFacing,
+           latestAttentionState == .facing,
+           confirms(intent: .pause, with: snapshot) {
+            handleStopMonitoring(reason: .manualPlayerTakeover, snapshot: snapshot, startedIn: generation)
+            return true
+        }
+
+        guard let supersededSpeedPendingConfirmation else {
+            return false
+        }
+
+        if isPendingCommandEcho(snapshot, for: supersededSpeedPendingConfirmation) {
+            self.supersededSpeedPendingConfirmation = nil
+            return false
+        }
+
+        guard isControllableSpeedSnapshot(snapshot) else {
+            return false
+        }
+
+        handleStopMonitoring(reason: .manualPlayerTakeover, snapshot: snapshot, startedIn: generation)
+        return true
     }
 
     private func isPendingCommandEcho(
@@ -553,6 +628,19 @@ final class PlaybackCoordinator {
         case .stopMonitoring:
             return false
         }
+    }
+
+    private func isSpeedIntent(_ intent: PlaybackIntent) -> Bool {
+        switch intent {
+        case .holdSpeedAtOne, .restoreSpeed:
+            return true
+        case .pause, .resume, .stopMonitoring:
+            return false
+        }
+    }
+
+    private func isControllableSpeedSnapshot(_ snapshot: PlayerSnapshot) -> Bool {
+        snapshot.playbackState == .playing && snapshot.speed != nil
     }
 
     @discardableResult
