@@ -57,7 +57,7 @@ final class AttentionStateMachineTests: XCTestCase {
     }
 
     func testUnsafeSignalsReturnUnavailableAndDoNotCreateRecovery() {
-        for signal in unsafeSignals() {
+        for signal in explicitProblemSignals() {
             var machine = AttentionStateMachine()
 
             XCTAssertEqual(machine.apply(sample(.facing, at: 0.0)), .facing)
@@ -67,7 +67,7 @@ final class AttentionStateMachineTests: XCTestCase {
     }
 
     func testUnsafeSignalsResetPendingAwayCandidate() {
-        for signal in unsafeSignals() {
+        for signal in explicitProblemSignals() {
             var machine = AttentionStateMachine()
 
             XCTAssertEqual(machine.apply(sample(.facing, at: 0.0)), .facing)
@@ -75,6 +75,114 @@ final class AttentionStateMachineTests: XCTestCase {
             XCTAssertEqual(machine.apply(sample(signal, at: 0.8)), .unavailable)
             XCTAssertEqual(machine.apply(sample(.away, at: 1.2)), .unavailable)
             XCTAssertEqual(machine.apply(sample(.away, at: 2.2)), .lookingAway)
+        }
+    }
+
+    func testUnknownDuringRecoveryPausesWithoutCountingAsFacingTime() {
+        var machine = AttentionStateMachine(timing: AttentionTiming(awayDelay: 1.0, recoveryDelay: 0.6))
+
+        XCTAssertEqual(machine.apply(sample(.away, at: 0.0)), .facing)
+        XCTAssertEqual(machine.apply(sample(.away, at: 1.0)), .lookingAway)
+
+        let recoveryStarted = machine.applyWithDiagnostics(sample(.facing, at: 1.1))
+        let paused = machine.applyWithDiagnostics(sample(.unknown, at: 1.3))
+        let resumed = machine.applyWithDiagnostics(sample(.facing, at: 1.7))
+
+        XCTAssertEqual(recoveryStarted.nextState, .recovering)
+        XCTAssertEqual(recoveryStarted.candidateSignal, .facing)
+        XCTAssertEqual(recoveryStarted.candidateStartedAt, 1.1)
+
+        XCTAssertEqual(paused.previousState, .recovering)
+        XCTAssertEqual(paused.nextState, .recovering)
+        XCTAssertEqual(paused.candidateSignal, .facing)
+        XCTAssertEqual(paused.candidateStartedAt, 1.1)
+        XCTAssertEqual(paused.elapsedSinceCandidateStart ?? -1.0, 0.2, accuracy: 0.000_001)
+        XCTAssertEqual(paused.requiredThreshold, 0.6)
+
+        XCTAssertEqual(resumed.previousState, .recovering)
+        XCTAssertEqual(resumed.nextState, .recovering)
+        XCTAssertEqual(resumed.candidateSignal, .facing)
+        XCTAssertEqual(resumed.elapsedSinceCandidateStart ?? -1.0, 0.2, accuracy: 0.000_001)
+        XCTAssertEqual(resumed.requiredThreshold, 0.6)
+
+        XCTAssertEqual(machine.apply(sample(.facing, at: 2.09)), .recovering)
+        XCTAssertEqual(machine.apply(sample(.facing, at: 2.1)), .facing)
+    }
+
+    func testAmbiguousDuringNoFaceRecoveryPausesWithoutClearingCandidate() {
+        var machine = AttentionStateMachine(timing: AttentionTiming(awayDelay: 1.0, recoveryDelay: 0.6))
+
+        XCTAssertEqual(machine.apply(sample(.noFace, at: 0.0)), .facing)
+        XCTAssertEqual(machine.apply(sample(.noFace, at: 1.0)), .noFaceDetected)
+
+        let started = machine.applyWithDiagnostics(sample(.facing, at: 1.1))
+        let paused = machine.applyWithDiagnostics(sample(.ambiguous, at: 1.3))
+        let resumed = machine.applyWithDiagnostics(sample(.facing, at: 1.7))
+
+        XCTAssertEqual(started.nextState, .recovering)
+        XCTAssertEqual(paused.previousState, .recovering)
+        XCTAssertEqual(paused.nextState, .recovering)
+        XCTAssertEqual(paused.candidateSignal, .facing)
+        XCTAssertEqual(paused.candidateStartedAt, 1.1)
+        XCTAssertEqual(paused.elapsedSinceCandidateStart ?? -1.0, 0.2, accuracy: 0.000_001)
+        XCTAssertEqual(paused.requiredThreshold, 0.6)
+
+        XCTAssertEqual(resumed.nextState, .recovering)
+        XCTAssertEqual(resumed.elapsedSinceCandidateStart ?? -1.0, 0.2, accuracy: 0.000_001)
+        XCTAssertEqual(machine.apply(sample(.facing, at: 2.1)), .facing)
+    }
+
+    func testShortUncertaintyKeepsStableStateAndSustainedUncertaintyBecomesUnavailable() {
+        for signal in uncertaintySignals() {
+            var machine = AttentionStateMachine(timing: AttentionTiming(awayDelay: 1.0, recoveryDelay: 0.6))
+
+            XCTAssertEqual(machine.apply(sample(.facing, at: 0.0)), .facing)
+            XCTAssertEqual(machine.apply(sample(signal, at: 0.1)), .facing)
+            XCTAssertEqual(machine.apply(sample(signal, at: 0.69)), .facing)
+            XCTAssertEqual(machine.apply(sample(signal, at: 0.7)), .unavailable)
+        }
+    }
+
+    func testShortUncertaintyKeepsAwayAndNoFaceStableStates() {
+        for signal in uncertaintySignals() {
+            var awayMachine = AttentionStateMachine(timing: AttentionTiming(awayDelay: 1.0, recoveryDelay: 0.6))
+
+            XCTAssertEqual(awayMachine.apply(sample(.away, at: 0.0)), .facing)
+            XCTAssertEqual(awayMachine.apply(sample(.away, at: 1.0)), .lookingAway)
+            XCTAssertEqual(awayMachine.apply(sample(signal, at: 1.1)), .lookingAway)
+            XCTAssertEqual(awayMachine.apply(sample(signal, at: 1.69)), .lookingAway)
+
+            var noFaceMachine = AttentionStateMachine(timing: AttentionTiming(awayDelay: 1.0, recoveryDelay: 0.6))
+
+            XCTAssertEqual(noFaceMachine.apply(sample(.noFace, at: 0.0)), .facing)
+            XCTAssertEqual(noFaceMachine.apply(sample(.noFace, at: 1.0)), .noFaceDetected)
+            XCTAssertEqual(noFaceMachine.apply(sample(signal, at: 1.1)), .noFaceDetected)
+            XCTAssertEqual(noFaceMachine.apply(sample(signal, at: 1.69)), .noFaceDetected)
+        }
+    }
+
+    func testFacingAfterSustainedUnavailableRequiresRecoveryDelay() {
+        for signal in uncertaintySignals() {
+            var machine = AttentionStateMachine(timing: AttentionTiming(awayDelay: 1.0, recoveryDelay: 0.6))
+
+            XCTAssertEqual(machine.apply(sample(.facing, at: 0.0)), .facing)
+            XCTAssertEqual(machine.apply(sample(signal, at: 0.1)), .facing)
+            XCTAssertEqual(machine.apply(sample(signal, at: 0.7)), .unavailable)
+            XCTAssertEqual(machine.apply(sample(.facing, at: 0.8)), .recovering)
+            XCTAssertEqual(machine.apply(sample(.facing, at: 1.39)), .recovering)
+            XCTAssertEqual(machine.apply(sample(.facing, at: 1.4)), .facing)
+        }
+    }
+
+    func testExplicitProblemSignalsStillReturnUnavailableImmediately() {
+        for signal in explicitProblemSignals() {
+            var machine = AttentionStateMachine(timing: AttentionTiming(awayDelay: 1.0, recoveryDelay: 0.6))
+
+            XCTAssertEqual(machine.apply(sample(.away, at: 0.0)), .facing)
+            XCTAssertEqual(machine.apply(sample(.away, at: 1.0)), .lookingAway)
+            XCTAssertEqual(machine.apply(sample(.facing, at: 1.1)), .recovering)
+            XCTAssertEqual(machine.apply(sample(signal, at: 1.2)), .unavailable)
+            XCTAssertEqual(machine.apply(sample(.facing, at: 1.3)), .facing)
         }
     }
 
@@ -163,7 +271,7 @@ final class AttentionStateMachineTests: XCTestCase {
 
         _ = machine.applyWithDiagnostics(sample(.away, at: 0.2))
         let reset = machine.applyWithDiagnostics(sample(.noFace, at: 0.3))
-        let unavailable = machine.applyWithDiagnostics(sample(.ambiguous, at: 0.4))
+        let unavailable = machine.applyWithDiagnostics(sample(.cameraUnavailable, at: 0.4))
 
         XCTAssertEqual(reset.rawSignal, .noFace)
         XCTAssertEqual(reset.previousState, .facing)
@@ -173,7 +281,7 @@ final class AttentionStateMachineTests: XCTestCase {
         XCTAssertEqual(reset.requiredThreshold, 1.0)
         XCTAssertEqual(reset.reason, .candidateReset)
 
-        XCTAssertEqual(unavailable.rawSignal, .ambiguous)
+        XCTAssertEqual(unavailable.rawSignal, .cameraUnavailable)
         XCTAssertEqual(unavailable.previousState, .facing)
         XCTAssertEqual(unavailable.nextState, .unavailable)
         XCTAssertNil(unavailable.candidateSignal)
@@ -186,10 +294,15 @@ final class AttentionStateMachineTests: XCTestCase {
         RawAttentionSample(signal: signal, time: time)
     }
 
-    private func unsafeSignals() -> [RawAttentionSignal] {
+    private func uncertaintySignals() -> [RawAttentionSignal] {
         [
             .ambiguous,
-            .unknown,
+            .unknown
+        ]
+    }
+
+    private func explicitProblemSignals() -> [RawAttentionSignal] {
+        [
             .uncalibrated,
             .cameraPermissionDenied,
             .cameraUnavailable
