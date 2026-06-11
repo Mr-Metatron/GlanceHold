@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Runtime Reliability and Power Budget
 status: executing
-stopped_at: Completed 10-01-PLAN.md
-last_updated: "2026-06-11T12:04:44.349Z"
+stopped_at: Completed 10-02-PLAN.md
+last_updated: "2026-06-11T12:16:38.598Z"
 last_activity: 2026-06-11
 progress:
   total_phases: 6
   completed_phases: 4
   total_plans: 25
-  completed_plans: 22
+  completed_plans: 23
   percent: 67
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-09 after completing Phase 7)
 ## Current Position
 
 Phase: 10 (attention-semantics-calibration-robustness-and-settings-vali) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-06-11
 
@@ -97,6 +97,7 @@ Last activity: 2026-06-11
 | Phase 09 P03 | 10min | 3 tasks | 2 files |
 | Phase 09 P04 | 25min | 3 tasks | 5 files |
 | Phase 10 P01 | 6 min | 2 tasks | 2 files |
+| Phase 10 P02 | 7min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -134,6 +135,8 @@ Recent decisions affecting current work:
 - [Phase 09]: 09-03 uses one deterministic read-only confirmation retry plus trusted pushed status; exhausted confirmation clears ownership without compensation commands.
 - [Phase 09]: 09-03 treats non-manual controllable pending snapshots as command echo evidence; explicit manual actions still stop monitoring.
 - [Phase 09]: 09-04 closes security gaps by requiring explicit Pause/Resume play/pause manual actions, keeping stop-finalized stale work diagnostically quiet, and recording in-session supersession as scalar `invalidated` Diagnostic Mode evidence.
+- [Phase 10]: 10-02 selects only calibration windows with at least 5 pose samples and at least 1.0 second duration before spread ranking. — Prevents short low-spread micro-windows from creating trusted calibration.
+- [Phase 10]: 10-02 uses stableWindowTooShort for duration-gate failures while preserving unstablePoseSpread for valid but noisy windows. — Keeps calibration diagnostics scalar and lets later monitor diagnostics distinguish count, duration, and spread failures.
 
 ### Roadmap Evolution
 
@@ -187,8 +190,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-11T12:04:44.129Z
-Stopped at: Completed 10-01-PLAN.md
+Last session: 2026-06-11T12:16:38.595Z
+Stopped at: Completed 10-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
