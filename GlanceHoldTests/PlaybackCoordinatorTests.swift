@@ -611,6 +611,148 @@ final class PlaybackCoordinatorTests: XCTestCase {
         })
     }
 
+    func testTransientConfirmationFailurePreservesPendingSpeedOwnershipWithoutResendingCommand() async {
+        let recorder = PlaybackDiagnosticRecorder(mode: .diagnostic)
+        let adapter = FakeIINAPlaybackAdapter(
+            snapshots: [
+                .playing(speed: 1.5),
+                .playerUnavailable,
+                .playing(speed: 1.0),
+                .playing(speed: 1.0),
+                .playing(speed: 1.5)
+            ]
+        )
+        let coordinator = PlaybackCoordinator(
+            mode: .speedControl,
+            adapter: adapter,
+            diagnosticRecorder: recorder,
+            diagnosticMode: .diagnostic,
+            diagnosticSession: DiagnosticSession(kind: .monitoring)
+        )
+        var completedActions: [PlaybackCompletedAction] = []
+        coordinator.playbackActionDidComplete = { completedActions.append($0) }
+
+        await coordinator.handleAttentionState(.lookingAway)
+
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
+        XCTAssertEqual(adapter.snapshotReadCount, 3, "Initial read, transient confirmation, and one read-only retry.")
+        XCTAssertEqual(completedActions, [.heldSpeedAtOne])
+        assertNoCommandRetry(adapter.commands, command: .holdSpeedAtOne)
+        assertNoRestoreOrResume(adapter.commands)
+        assertDiagnosticValuesArePrivacySafe(recorder.events)
+
+        await coordinator.handleAttentionState(.facing)
+
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne, .restoreSpeed(1.5)])
+        XCTAssertEqual(adapter.snapshotReadCount, 5)
+        XCTAssertEqual(completedActions, [.heldSpeedAtOne, .restoredSpeed(1.5)])
+        assertNoCommandRetry(adapter.commands, command: .holdSpeedAtOne)
+        assertNoCommandRetry(adapter.commands, command: .restoreSpeed(1.5))
+        assertDiagnosticValuesArePrivacySafe(recorder.events)
+    }
+
+    func testTrustedPushedStatusResolvesPendingConfirmationOwnership() async {
+        let recorder = PlaybackDiagnosticRecorder(mode: .diagnostic)
+        let adapter = StreamingStatusPlaybackAdapter(
+            snapshots: [
+                .playing(speed: 1.5),
+                .playerUnavailable,
+                .playerUnavailable,
+                .playing(speed: 1.0),
+                .playing(speed: 1.5)
+            ]
+        )
+        let coordinator = PlaybackCoordinator(
+            mode: .speedControl,
+            adapter: adapter,
+            diagnosticRecorder: recorder,
+            diagnosticMode: .diagnostic,
+            diagnosticSession: DiagnosticSession(kind: .monitoring)
+        )
+        let pushedStatusApplied = StateChangeWaiter { state in
+            state.isPlayerControllable && state.playerSnapshot == .playing(speed: 1.0)
+        }
+        var completedActions: [PlaybackCompletedAction] = []
+        coordinator.playbackActionDidComplete = { completedActions.append($0) }
+        coordinator.stateDidChange = { state in
+            pushedStatusApplied.record(state)
+        }
+
+        let statusTask = Task {
+            await coordinator.observePlayerStatusUpdates()
+        }
+        await adapter.waitForStatusStream()
+
+        await coordinator.handleAttentionState(.lookingAway)
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
+        assertNoCommandRetry(adapter.commands, command: .holdSpeedAtOne)
+
+        adapter.yieldStatus(.playing(speed: 1.0))
+        await pushedStatusApplied.wait()
+
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
+        XCTAssertEqual(completedActions, [.heldSpeedAtOne])
+        assertDiagnosticValuesArePrivacySafe(recorder.events)
+
+        await coordinator.handleAttentionState(.facing)
+
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne, .restoreSpeed(1.5)])
+        XCTAssertEqual(completedActions, [.heldSpeedAtOne, .restoredSpeed(1.5)])
+        assertNoCommandRetry(adapter.commands, command: .holdSpeedAtOne)
+        assertNoCommandRetry(adapter.commands, command: .restoreSpeed(1.5))
+        assertDiagnosticValuesArePrivacySafe(recorder.events)
+
+        adapter.finishStatusEvents()
+        statusTask.cancel()
+        await statusTask.value
+    }
+
+    func testExhaustedConfirmationRetryClearsPendingOwnershipWithoutCompensation() async {
+        let recorder = PlaybackDiagnosticRecorder(mode: .diagnostic)
+        let adapter = FakeIINAPlaybackAdapter(
+            snapshots: [
+                .playing(speed: 1.5),
+                .playerUnavailable,
+                PlayerSnapshot(playbackState: .playing, speed: nil),
+                .playing(speed: 1.0)
+            ]
+        )
+        let coordinator = PlaybackCoordinator(
+            mode: .speedControl,
+            adapter: adapter,
+            diagnosticRecorder: recorder,
+            diagnosticMode: .diagnostic,
+            diagnosticSession: DiagnosticSession(kind: .monitoring)
+        )
+        var completedActions: [PlaybackCompletedAction] = []
+        var stopRequests: [StopMonitoringReason] = []
+        coordinator.playbackActionDidComplete = { completedActions.append($0) }
+        coordinator.stopMonitoringRequested = { stopRequests.append($0) }
+
+        await coordinator.handleAttentionState(.lookingAway)
+
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
+        XCTAssertEqual(adapter.snapshotReadCount, 3, "Initial read plus bounded read-only confirmation attempts.")
+        XCTAssertEqual(completedActions, [])
+        XCTAssertFalse(coordinator.state.isPlayerControllable)
+        XCTAssertEqual(coordinator.state.playerSnapshot.playbackState, .playerUnavailable)
+        XCTAssertEqual(stopRequests, [])
+        assertNoCommandRetry(adapter.commands, command: .holdSpeedAtOne)
+        assertNoRestoreOrResume(adapter.commands)
+        XCTAssertTrue(recorder.events.contains { event in
+            event.name == .playbackAction &&
+                fieldValue(.confirmationOutcome, in: event) == "exhausted"
+        })
+        assertDiagnosticValuesArePrivacySafe(recorder.events)
+
+        await coordinator.handleAttentionState(.facing)
+
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
+        XCTAssertEqual(completedActions, [])
+        XCTAssertEqual(stopRequests, [])
+        assertNoRestoreOrResume(adapter.commands)
+    }
+
     func testPushedSnapshotPreservesManualTakeoverStopReason() async {
         let adapter = FakeIINAPlaybackAdapter(
             snapshots: [
@@ -1341,6 +1483,110 @@ private final class SuspendingConfirmationSnapshotPlaybackAdapter: IINAPlaybackA
     }
 }
 
+private final class StreamingStatusPlaybackAdapter: IINAPlaybackAdapting {
+    private var snapshots: [PlayerSnapshot]
+    private var statusContinuation: AsyncStream<IINAPlaybackStatusEvent>.Continuation?
+    private var statusStreamRequestContinuation: CheckedContinuation<Void, Never>?
+    private var didOpenStatusStream = false
+    private(set) var commands: [PlaybackIntent] = []
+    private(set) var snapshotReadCount = 0
+
+    init(snapshots: [PlayerSnapshot]) {
+        self.snapshots = snapshots
+    }
+
+    func snapshot() async -> PlayerSnapshot {
+        snapshotReadCount += 1
+
+        guard !snapshots.isEmpty else {
+            return .playerUnavailable
+        }
+
+        return snapshots.removeFirst()
+    }
+
+    func statusEvents() -> AsyncStream<IINAPlaybackStatusEvent> {
+        AsyncStream { continuation in
+            statusContinuation = continuation
+            didOpenStatusStream = true
+            statusStreamRequestContinuation?.resume()
+            statusStreamRequestContinuation = nil
+        }
+    }
+
+    func execute(_ intent: PlaybackIntent) async throws {
+        commands.append(intent)
+    }
+
+    func waitForStatusStream() async {
+        guard !didOpenStatusStream else {
+            return
+        }
+
+        await withCheckedContinuation { continuation in
+            statusStreamRequestContinuation = continuation
+        }
+    }
+
+    func yieldStatus(_ snapshot: PlayerSnapshot) {
+        statusContinuation?.yield(.status(snapshot))
+    }
+
+    func finishStatusEvents() {
+        statusContinuation?.finish()
+        statusContinuation = nil
+    }
+}
+
+private final class StateChangeWaiter {
+    private let predicate: (PlaybackCoordinatorState) -> Bool
+    private let lock = NSLock()
+    private var isSatisfied = false
+    private var continuation: CheckedContinuation<Void, Never>?
+
+    init(predicate: @escaping (PlaybackCoordinatorState) -> Bool) {
+        self.predicate = predicate
+    }
+
+    func record(_ state: PlaybackCoordinatorState) {
+        guard predicate(state) else {
+            return
+        }
+
+        let continuationToResume: CheckedContinuation<Void, Never>?
+        lock.lock()
+        if isSatisfied {
+            continuationToResume = nil
+        } else {
+            isSatisfied = true
+            continuationToResume = continuation
+            continuation = nil
+        }
+        lock.unlock()
+        continuationToResume?.resume()
+    }
+
+    func wait() async {
+        lock.lock()
+        if isSatisfied {
+            lock.unlock()
+            return
+        }
+        lock.unlock()
+
+        await withCheckedContinuation { continuation in
+            lock.lock()
+            if isSatisfied {
+                lock.unlock()
+                continuation.resume()
+            } else {
+                self.continuation = continuation
+                lock.unlock()
+            }
+        }
+    }
+}
+
 private func assertPlaybackAction(
     _ event: DiagnosticEvent,
     snapshotState: String,
@@ -1363,4 +1609,48 @@ private func assertPlaybackAction(
 
 private func fieldValue(_ name: DiagnosticFieldName, in event: DiagnosticEvent) -> String? {
     event.fields.first { $0.name == name }?.value.logValue
+}
+
+private func assertNoCommandRetry(
+    _ commands: [PlaybackIntent],
+    command expectedCommand: PlaybackIntent,
+    file: StaticString = #filePath,
+    line: UInt = #line
+) {
+    XCTAssertEqual(
+        commands.filter { $0 == expectedCommand }.count,
+        1,
+        "Playback commands must not be re-sent solely for confirmation.",
+        file: file,
+        line: line
+    )
+}
+
+private func assertDiagnosticValuesArePrivacySafe(
+    _ events: [DiagnosticEvent],
+    file: StaticString = #filePath,
+    line: UInt = #line
+) {
+    let forbiddenFragments = [
+        "payload",
+        "token",
+        "media",
+        "title",
+        "path",
+        "frame",
+        "camera",
+        "vision"
+    ]
+    let loggedValues = events.flatMap { event in
+        event.fields.map { $0.value.logValue.lowercased() }
+    }
+
+    for fragment in forbiddenFragments {
+        XCTAssertFalse(
+            loggedValues.contains { $0.contains(fragment) },
+            "Diagnostic values must not contain private/raw fragment: \(fragment)",
+            file: file,
+            line: line
+        )
+    }
 }
