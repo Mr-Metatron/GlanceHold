@@ -54,7 +54,7 @@ If GlanceHold is not running or no local client is connected, the shortcut is a 
 
 ## Bridge Protocol
 
-App-to-plugin requests carry protocol `version`, request `id`, request `type`, and any type-specific fields. Protocol version 2 is the supported no-token schema.
+App-to-plugin requests carry protocol `version`, request `id`, request `type`, and any type-specific fields. Protocol version 3 is the supported no-token schema.
 
 Supported request types are:
 
@@ -66,13 +66,15 @@ Server-pushed messages use the same protocol version and do not carry a request 
 `statusChanged` carries the current player snapshot:
 
 ```json
-{"version":2,"type":"statusChanged","snapshot":{"state":"playing","speed":2.0}}
+{"version":3,"type":"statusChanged","snapshot":{"state":"playing","speed":2.0}}
 ```
+
+Snapshots may include optional `manualAction` values (`speedChanged`, `playPressed`, or `pausePressed`) when the plugin observes a user-originated player change. Echoes from GlanceHold bridge commands omit `manualAction`.
 
 The bridge also sends a liveness-only heartbeat about every 5 seconds:
 
 ```json
-{"version":2,"type":"heartbeat"}
+{"version":3,"type":"heartbeat"}
 ```
 
 Heartbeat messages carry no snapshot, speed, title, path, or request `id`.
@@ -82,7 +84,7 @@ snapshot or command request ids.
 The monitoring shortcut event is also pushed without a request `id`:
 
 ```json
-{"version":2,"type":"toggleMonitoringRequested"}
+{"version":3,"type":"toggleMonitoringRequested"}
 ```
 
 The pushed stream is for menu/status freshness, liveness, and the monitoring shortcut only. It does not trigger playback commands by itself. GlanceHold's Swift playback policy remains responsible for deciding when to hold speed, restore speed, pause, or resume.

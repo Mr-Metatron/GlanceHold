@@ -26,7 +26,35 @@ final class PlaybackPolicyTests: XCTestCase {
         let result = policy.apply(attention: .facing, player: .playing(speed: 1.0))
 
         XCTAssertEqual(result.intents, [.restoreSpeed(1.75)])
-        XCTAssertNil(result.state.capturedSpeed)
+        XCTAssertEqual(result.state.capturedSpeed, 1.75)
+
+        policy.beginPendingConfirmation(for: .restoreSpeed(1.75))
+        let confirmed = policy.applyObservedPlayerSnapshot(.playing(speed: 1.75), monitoringActive: true)
+        XCTAssertNil(confirmed.state.capturedSpeed)
+    }
+
+    func testPendingRestoreRetainsCapturedSpeedAcrossAwayUntilConfirmed() {
+        var policy = PlaybackPolicy(mode: .speedControl)
+
+        XCTAssertEqual(policy.apply(attention: .lookingAway, player: .playing(speed: 1.75)).intents, [.holdSpeedAtOne])
+        policy.beginPendingConfirmation(for: .holdSpeedAtOne)
+        XCTAssertEqual(
+            policy.applyObservedPlayerSnapshot(.playing(speed: 1.0), monitoringActive: true).state.capturedSpeed,
+            1.75
+        )
+
+        let restore = policy.apply(attention: .facing, player: .playing(speed: 1.0))
+        XCTAssertEqual(restore.intents, [.restoreSpeed(1.75)])
+        XCTAssertEqual(restore.state.capturedSpeed, 1.75)
+
+        policy.beginPendingConfirmation(for: .restoreSpeed(1.75))
+        let supersededAway = policy.apply(attention: .lookingAway, player: .playing(speed: 1.0))
+        XCTAssertEqual(supersededAway.intents, [])
+        XCTAssertEqual(supersededAway.state.capturedSpeed, 1.75)
+
+        let confirmed = policy.applyObservedPlayerSnapshot(.playing(speed: 1.75), monitoringActive: true)
+        XCTAssertEqual(confirmed.intents, [])
+        XCTAssertNil(confirmed.state.capturedSpeed)
     }
 
     func testSpeedModeRestoresArbitraryCapturedSpeeds() {
@@ -99,7 +127,33 @@ final class PlaybackPolicyTests: XCTestCase {
 
         let resume = policy.apply(attention: .facing, player: .paused(speed: 1.5))
         XCTAssertEqual(resume.intents, [.resume])
-        XCTAssertFalse(resume.state.pauseOwnedByGlanceHold)
+        XCTAssertTrue(resume.state.pauseOwnedByGlanceHold)
+
+        policy.beginPendingConfirmation(for: .resume)
+        let confirmed = policy.applyObservedPlayerSnapshot(.playing(speed: 1.5), monitoringActive: true)
+        XCTAssertFalse(confirmed.state.pauseOwnedByGlanceHold)
+    }
+
+    func testPendingResumeRetainsPauseOwnershipAcrossAwayUntilConfirmed() {
+        var policy = PlaybackPolicy(mode: .pauseResume)
+
+        XCTAssertEqual(policy.apply(attention: .lookingAway, player: .playing(speed: 1.5)).intents, [.pause])
+        policy.beginPendingConfirmation(for: .pause)
+        let paused = policy.applyObservedPlayerSnapshot(.paused(speed: 1.5), monitoringActive: true)
+        XCTAssertTrue(paused.state.pauseOwnedByGlanceHold)
+
+        let resume = policy.apply(attention: .facing, player: .paused(speed: 1.5))
+        XCTAssertEqual(resume.intents, [.resume])
+        XCTAssertTrue(resume.state.pauseOwnedByGlanceHold)
+
+        policy.beginPendingConfirmation(for: .resume)
+        let supersededAway = policy.apply(attention: .lookingAway, player: .paused(speed: 1.5))
+        XCTAssertEqual(supersededAway.intents, [])
+        XCTAssertTrue(supersededAway.state.pauseOwnedByGlanceHold)
+
+        let confirmed = policy.applyObservedPlayerSnapshot(.playing(speed: 1.5), monitoringActive: true)
+        XCTAssertEqual(confirmed.intents, [])
+        XCTAssertFalse(confirmed.state.pauseOwnedByGlanceHold)
     }
 
     func testAlreadyPausedBeforeAwayIsNotResumed() {

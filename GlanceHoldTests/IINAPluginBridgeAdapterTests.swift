@@ -73,6 +73,49 @@ final class IINAPluginBridgeAdapterTests: XCTestCase {
             .status(.playing(speed: 2.0))
         ])
     }
+
+    func testPluginBridgeManualActionsMapToPlayerSnapshots() async throws {
+        let client = FakeIINAPluginBridgeClient(
+            statuses: [
+                .paused(speed: 1.5, manualAction: .pausePressed),
+                .playing(speed: 1.5, manualAction: .playPressed),
+                .playing(speed: 1.0, manualAction: .speedChanged)
+            ],
+            updateStatuses: [
+                .paused(speed: 2.0, manualAction: .pausePressed),
+                .playing(speed: 2.0, manualAction: .playPressed),
+                .playing(speed: 1.0, manualAction: .speedChanged)
+            ]
+        )
+        let adapter = IINAPluginBridgeAdapter(client: client)
+
+        let pausedSnapshot = await adapter.snapshot()
+        let playingSnapshot = await adapter.snapshot()
+        let speedSnapshot = await adapter.snapshot()
+
+        var pushedSnapshots: [PlayerSnapshot] = []
+        for await snapshot in adapter.statusUpdates() {
+            pushedSnapshots.append(snapshot)
+        }
+
+        XCTAssertEqual(
+            pausedSnapshot,
+            PlayerSnapshot(playbackState: .paused, speed: 1.5, manualAction: .pausePressed)
+        )
+        XCTAssertEqual(
+            playingSnapshot,
+            PlayerSnapshot(playbackState: .playing, speed: 1.5, manualAction: .playPressed)
+        )
+        XCTAssertEqual(
+            speedSnapshot,
+            PlayerSnapshot(playbackState: .playing, speed: 1.0, manualAction: .speedChanged)
+        )
+        XCTAssertEqual(pushedSnapshots, [
+            PlayerSnapshot(playbackState: .paused, speed: 2.0, manualAction: .pausePressed),
+            PlayerSnapshot(playbackState: .playing, speed: 2.0, manualAction: .playPressed),
+            PlayerSnapshot(playbackState: .playing, speed: 1.0, manualAction: .speedChanged)
+        ])
+    }
 }
 
 private final class FakeIINAPluginBridgeClient: IINAPluginBridgeClienting {

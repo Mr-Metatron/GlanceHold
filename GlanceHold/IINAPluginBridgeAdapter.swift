@@ -73,10 +73,10 @@ private extension IINAPlayerStatus {
             return .pluginUpdateRequired
         case .idle:
             return .idle
-        case let .paused(speed):
-            return .paused(speed: speed)
-        case let .playing(speed):
-            return .playing(speed: speed)
+        case let .paused(speed, manualAction):
+            return PlayerSnapshot(playbackState: .paused, speed: speed, manualAction: manualAction)
+        case let .playing(speed, manualAction):
+            return PlayerSnapshot(playbackState: .playing, speed: speed, manualAction: manualAction)
         }
     }
 }

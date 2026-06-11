@@ -110,9 +110,10 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
     private struct Snapshot: Decodable {
         var state: String
         var speed: Double?
+        var manualAction: String?
     }
 
-    private static let protocolVersion = 2
+    private static let protocolVersion = 3
 
     private let transport: IINAPluginBridgeTransporting
     private let timeout: TimeInterval
@@ -300,18 +301,33 @@ final class IINAPluginBridgeClient: IINAPluginBridgeClienting {
             guard let speed = finiteSpeed(snapshot.speed) else {
                 throw IINAPluginBridgeClientError.unavailable
             }
-            return .playing(speed: speed)
+            return .playing(speed: speed, manualAction: try manualAction(from: snapshot.manualAction))
         case "paused":
             guard let speed = finiteSpeed(snapshot.speed) else {
                 throw IINAPluginBridgeClientError.unavailable
             }
-            return .paused(speed: speed)
+            return .paused(speed: speed, manualAction: try manualAction(from: snapshot.manualAction))
         case "idle":
             return .idle
         case "pluginUpdateRequired":
             return .pluginUpdateRequired
         default:
             throw IINAPluginBridgeClientError.unavailable
+        }
+    }
+
+    private func manualAction(from value: String?) throws -> PlayerManualAction? {
+        switch value {
+        case nil:
+            return nil
+        case "speedChanged":
+            return .speedChanged
+        case "playPressed":
+            return .playPressed
+        case "pausePressed":
+            return .pausePressed
+        default:
+            throw IINAPluginBridgeClientError.protocolFailure(.malformedResponse)
         }
     }
 

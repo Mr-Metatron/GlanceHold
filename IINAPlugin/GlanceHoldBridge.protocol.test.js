@@ -16,6 +16,11 @@ function createHarness() {
     mpvGetNumber: []
   };
   let messageHandler = null;
+  let newConnectionHandler = null;
+  const eventHandlers = new Map();
+  let paused = false;
+  let idle = false;
+  let playbackSpeed = 1.25;
 
   const iina = {
     language: "en",
@@ -25,16 +30,21 @@ function createHarness() {
     core: {
       pause() {
         calls.pause += 1;
+        paused = true;
       },
       resume() {
         calls.resume += 1;
+        paused = false;
       },
       setSpeed(speed) {
         calls.setSpeed.push(speed);
+        playbackSpeed = speed;
       }
     },
     event: {
-      on() {}
+      on(name, handler) {
+        eventHandlers.set(name, handler);
+      }
     },
     menu: {
       item(title, action, options) {
@@ -46,17 +56,17 @@ function createHarness() {
       getFlag(name) {
         calls.mpvGetFlag.push(name);
         if (name === "idle-active") {
-          return false;
+          return idle;
         }
         if (name === "pause") {
-          return false;
+          return paused;
         }
         return false;
       },
       getNumber(name) {
         calls.mpvGetNumber.push(name);
         if (name === "speed") {
-          return 1.25;
+          return playbackSpeed;
         }
         return 0;
       }
@@ -64,7 +74,9 @@ function createHarness() {
     ws: {
       createServer() {},
       onStateUpdate() {},
-      onNewConnection() {},
+      onNewConnection(handler) {
+        newConnectionHandler = handler;
+      },
       onConnectionStateUpdate() {},
       onMessage(handler) {
         messageHandler = handler;
@@ -92,7 +104,21 @@ function createHarness() {
     return sendRaw(JSON.stringify(request));
   }
 
-  return { calls, replies, sendRaw, sendRequest };
+  function connect(conn = "conn-1") {
+    newConnectionHandler(conn);
+  }
+
+  function setPlayback({ isPaused = paused, isIdle = idle, speed = playbackSpeed } = {}) {
+    paused = isPaused;
+    idle = isIdle;
+    playbackSpeed = speed;
+  }
+
+  function emit(name) {
+    eventHandlers.get(name)();
+  }
+
+  return { calls, replies, connect, emit, sendRaw, sendRequest, setPlayback };
 }
 
 function assertNoSideEffects(calls) {
@@ -104,14 +130,14 @@ function assertNoSideEffects(calls) {
 }
 
 function assertMalformedResponse(response) {
-  assert.equal(response.version, 2);
+  assert.equal(response.version, 3);
   assert.equal(response.id, null);
   assert.equal(response.ok, false);
   assert.equal(response.error, "malformed");
 }
 
 function assertInvalidSpeedResponse(response, id) {
-  assert.equal(response.version, 2);
+  assert.equal(response.version, 3);
   assert.equal(response.id, id);
   assert.equal(response.ok, false);
   assert.equal(response.error, "invalid_speed");
@@ -134,12 +160,12 @@ function testInvalidRequestShapesHaveNoSideEffects() {
     null,
     [],
     [1],
-    { version: 2, type: "command", command: "pause" },
-    { id: 0, version: 2, type: "command", command: "pause" },
-    { id: -1, version: 2, type: "command", command: "pause" },
-    { id: 1.5, version: 2, type: "command", command: "pause" },
-    { id: "1", version: 2, type: "command", command: "pause" },
-    { id: Number.MAX_SAFE_INTEGER + 1, version: 2, type: "command", command: "pause" }
+    { version: 3, type: "command", command: "pause" },
+    { id: 0, version: 3, type: "command", command: "pause" },
+    { id: -1, version: 3, type: "command", command: "pause" },
+    { id: 1.5, version: 3, type: "command", command: "pause" },
+    { id: "1", version: 3, type: "command", command: "pause" },
+    { id: Number.MAX_SAFE_INTEGER + 1, version: 3, type: "command", command: "pause" }
   ];
 
   for (const request of invalidRequests) {
@@ -157,12 +183,12 @@ function testValidPauseCommandHasOneSideEffect() {
 
   const response = harness.sendRequest({
     id: 12,
-    version: 2,
+    version: 3,
     type: "command",
     command: "pause"
   });
 
-  assert.deepEqual(response, { version: 2, id: 12, ok: true });
+  assert.deepEqual(response, { version: 3, id: 12, ok: true });
   assert.equal(harness.calls.pause, 1);
   assert.equal(harness.calls.resume, 0);
   assert.deepEqual(harness.calls.setSpeed, []);
@@ -176,13 +202,13 @@ function testSetSpeedBoundariesAreAccepted() {
 
     const response = harness.sendRequest({
       id: 20,
-      version: 2,
+      version: 3,
       type: "command",
       command: "setSpeed",
       speed
     });
 
-    assert.deepEqual(response, { version: 2, id: 20, ok: true });
+    assert.deepEqual(response, { version: 3, id: 20, ok: true });
     assert.equal(harness.calls.pause, 0);
     assert.equal(harness.calls.resume, 0);
     assert.deepEqual(harness.calls.setSpeed, [speed]);
@@ -193,12 +219,12 @@ function testSetSpeedBoundariesAreAccepted() {
 
 function testInvalidSetSpeedValuesAreRejectedWithoutSideEffects() {
   const invalidRequests = [
-    { id: 30, version: 2, type: "command", command: "setSpeed", speed: 0 },
-    { id: 31, version: 2, type: "command", command: "setSpeed", speed: -1 },
-    { id: 32, version: 2, type: "command", command: "setSpeed", speed: 0.099 },
-    { id: 33, version: 2, type: "command", command: "setSpeed", speed: 16.001 },
-    { id: 34, version: 2, type: "command", command: "setSpeed" },
-    { id: 35, version: 2, type: "command", command: "setSpeed", speed: "1" }
+    { id: 30, version: 3, type: "command", command: "setSpeed", speed: 0 },
+    { id: 31, version: 3, type: "command", command: "setSpeed", speed: -1 },
+    { id: 32, version: 3, type: "command", command: "setSpeed", speed: 0.099 },
+    { id: 33, version: 3, type: "command", command: "setSpeed", speed: 16.001 },
+    { id: 34, version: 3, type: "command", command: "setSpeed" },
+    { id: 35, version: 3, type: "command", command: "setSpeed", speed: "1" }
   ];
 
   for (const request of invalidRequests) {
@@ -212,7 +238,7 @@ function testInvalidSetSpeedValuesAreRejectedWithoutSideEffects() {
 
   const nonFiniteHarness = createHarness();
   const nonFiniteResponse = nonFiniteHarness.sendRaw(
-    '{"id":36,"version":2,"type":"command","command":"setSpeed","speed":1e999}'
+    '{"id":36,"version":3,"type":"command","command":"setSpeed","speed":1e999}'
   );
 
   assertInvalidSpeedResponse(nonFiniteResponse, 36);
@@ -223,12 +249,12 @@ function testPauseAndResumeStillWorkAfterSpeedValidation() {
   const pauseHarness = createHarness();
   const pauseResponse = pauseHarness.sendRequest({
     id: 40,
-    version: 2,
+    version: 3,
     type: "command",
     command: "pause"
   });
 
-  assert.deepEqual(pauseResponse, { version: 2, id: 40, ok: true });
+  assert.deepEqual(pauseResponse, { version: 3, id: 40, ok: true });
   assert.equal(pauseHarness.calls.pause, 1);
   assert.equal(pauseHarness.calls.resume, 0);
   assert.deepEqual(pauseHarness.calls.setSpeed, []);
@@ -238,12 +264,12 @@ function testPauseAndResumeStillWorkAfterSpeedValidation() {
   const resumeHarness = createHarness();
   const resumeResponse = resumeHarness.sendRequest({
     id: 41,
-    version: 2,
+    version: 3,
     type: "command",
     command: "resume"
   });
 
-  assert.deepEqual(resumeResponse, { version: 2, id: 41, ok: true });
+  assert.deepEqual(resumeResponse, { version: 3, id: 41, ok: true });
   assert.equal(resumeHarness.calls.pause, 0);
   assert.equal(resumeHarness.calls.resume, 1);
   assert.deepEqual(resumeHarness.calls.setSpeed, []);
@@ -256,12 +282,12 @@ function testValidSnapshotReadsSnapshot() {
 
   const response = harness.sendRequest({
     id: 44,
-    version: 2,
+    version: 3,
     type: "snapshot"
   });
 
   assert.deepEqual(response, {
-    version: 2,
+    version: 3,
     id: 44,
     ok: true,
     snapshot: {
@@ -276,6 +302,61 @@ function testValidSnapshotReadsSnapshot() {
   assert.deepEqual(harness.calls.mpvGetNumber, ["speed"]);
 }
 
+function testManualPropertyChangesAnnotateStatusChanged() {
+  const harness = createHarness();
+  harness.connect();
+
+  harness.replies.length = 0;
+  harness.setPlayback({ isPaused: true });
+  harness.emit("mpv.pause.changed");
+  assert.equal(harness.replies.at(-1).body.snapshot.manualAction, "pausePressed");
+
+  harness.setPlayback({ isPaused: false });
+  harness.emit("mpv.pause.changed");
+  assert.equal(harness.replies.at(-1).body.snapshot.manualAction, "playPressed");
+
+  harness.setPlayback({ isPaused: false, speed: 1.75 });
+  harness.emit("mpv.speed.changed");
+  assert.equal(harness.replies.at(-1).body.snapshot.manualAction, "speedChanged");
+}
+
+function testBridgeCommandEchoesAreNotAnnotatedAsManualActions() {
+  const harness = createHarness();
+  harness.connect();
+  harness.replies.length = 0;
+
+  const pauseStart = harness.replies.length;
+  harness.sendRequest({
+    id: 45,
+    version: 3,
+    type: "command",
+    command: "pause"
+  });
+  const pauseReplies = harness.replies.slice(pauseStart).map((reply) => reply.body);
+  const pauseResponse = pauseReplies.find((reply) => reply.id === 45);
+  const pauseStatusChanged = pauseReplies.find((reply) => reply.type === "statusChanged");
+
+  assert.deepEqual(pauseResponse, { version: 3, id: 45, ok: true });
+  assert.equal(pauseStatusChanged.snapshot.state, "paused");
+  assert.equal(pauseStatusChanged.snapshot.manualAction, undefined);
+
+  const speedStart = harness.replies.length;
+  harness.sendRequest({
+    id: 46,
+    version: 3,
+    type: "command",
+    command: "setSpeed",
+    speed: 1.5
+  });
+  const speedReplies = harness.replies.slice(speedStart).map((reply) => reply.body);
+  const speedResponse = speedReplies.find((reply) => reply.id === 46);
+  const speedStatusChanged = speedReplies.find((reply) => reply.type === "statusChanged");
+
+  assert.deepEqual(speedResponse, { version: 3, id: 46, ok: true });
+  assert.equal(speedStatusChanged.snapshot.state, "paused");
+  assert.equal(speedStatusChanged.snapshot.manualAction, undefined);
+}
+
 const tests = [
   testMalformedJSONHasNoSideEffects,
   testInvalidRequestShapesHaveNoSideEffects,
@@ -283,7 +364,9 @@ const tests = [
   testSetSpeedBoundariesAreAccepted,
   testInvalidSetSpeedValuesAreRejectedWithoutSideEffects,
   testPauseAndResumeStillWorkAfterSpeedValidation,
-  testValidSnapshotReadsSnapshot
+  testValidSnapshotReadsSnapshot,
+  testManualPropertyChangesAnnotateStatusChanged,
+  testBridgeCommandEchoesAreNotAnnotatedAsManualActions
 ];
 
 let failed = 0;

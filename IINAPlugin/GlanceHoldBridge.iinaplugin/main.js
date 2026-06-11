@@ -1,8 +1,9 @@
 const { console, core, event, menu, mpv, ws } = iina;
 
-const protocolVersion = 2;
+const protocolVersion = 3;
 const minPlaybackSpeed = 0.1;
 const maxPlaybackSpeed = 16.0;
+const speedEpsilon = 0.000001;
 const toggleMonitoringTitles = {
   en: "Toggle GlanceHold Monitoring",
   "zh-Hans": "切换 GlanceHold 监控"
@@ -10,6 +11,8 @@ const toggleMonitoringTitles = {
 const activeConnections = new Set();
 let lastBroadcastSnapshotKey = null;
 let pendingBroadcastTimer = null;
+let pendingBroadcastManualAction = null;
+const pendingCommandEchoes = [];
 
 function reply(conn, response) {
   ws.sendText(conn, JSON.stringify({ version: protocolVersion, ...response }));
@@ -23,7 +26,7 @@ function isValidRequestId(id) {
   return Number.isSafeInteger(id) && id > 0;
 }
 
-function readSnapshot() {
+function readSnapshot(manualAction = null) {
   const idle = mpv.getFlag("idle-active");
   if (idle) {
     return { state: "idle", speed: null };
@@ -35,7 +38,11 @@ function readSnapshot() {
     throw new Error("unavailable");
   }
 
-  return { state: paused ? "paused" : "playing", speed };
+  const snapshot = { state: paused ? "paused" : "playing", speed };
+  if (manualAction !== null) {
+    snapshot.manualAction = manualAction;
+  }
+  return snapshot;
 }
 
 function snapshotKey(snapshot) {
@@ -76,21 +83,83 @@ function sendCurrentStatus(conn) {
   }
 }
 
+function approximatelyEqual(left, right) {
+  return Math.abs(left - right) <= speedEpsilon;
+}
+
+function rememberCommandEcho(echo) {
+  pendingCommandEchoes.push(echo);
+}
+
+function consumeMatchingCommandEcho(snapshot, property) {
+  const index = pendingCommandEchoes.findIndex((echo) => {
+    if (echo.property !== property) {
+      return false;
+    }
+
+    if (property === "speed") {
+      return snapshot.state === "playing" &&
+        typeof snapshot.speed === "number" &&
+        approximatelyEqual(snapshot.speed, echo.speed);
+    }
+
+    if (property === "pause") {
+      return echo.paused ? snapshot.state === "paused" : snapshot.state === "playing";
+    }
+
+    return false;
+  });
+
+  if (index < 0) {
+    return false;
+  }
+
+  pendingCommandEchoes.splice(index, 1);
+  return true;
+}
+
+function manualActionForPropertyChange(property) {
+  let snapshot;
+  try {
+    snapshot = readSnapshot();
+  } catch (error) {
+    console.log(`GlanceHold bridge status unavailable: ${error.message || "unavailable"}`);
+    return null;
+  }
+
+  if (consumeMatchingCommandEcho(snapshot, property)) {
+    return null;
+  }
+
+  if (property === "speed" && snapshot.state === "playing") {
+    return "speedChanged";
+  }
+
+  if (property === "pause") {
+    return snapshot.state === "paused" ? "pausePressed" : "playPressed";
+  }
+
+  return null;
+}
+
 function broadcastStatusChanged({ force = false } = {}) {
   if (activeConnections.size === 0) {
     return;
   }
 
+  const manualAction = pendingBroadcastManualAction;
+  pendingBroadcastManualAction = null;
+
   let snapshot;
   try {
-    snapshot = readSnapshot();
+    snapshot = readSnapshot(manualAction);
   } catch (error) {
     console.log(`GlanceHold bridge status unavailable: ${error.message || "unavailable"}`);
     return;
   }
 
   const key = snapshotKey(snapshot);
-  if (!force && key === lastBroadcastSnapshotKey) {
+  if (!force && manualAction === null && key === lastBroadcastSnapshotKey) {
     return;
   }
 
@@ -123,7 +192,11 @@ function broadcastToggleMonitoringRequested() {
   }
 }
 
-function scheduleStatusChanged() {
+function scheduleStatusChanged(manualAction = null) {
+  if (manualAction !== null) {
+    pendingBroadcastManualAction = manualAction;
+  }
+
   if (typeof setTimeout !== "function") {
     broadcastStatusChanged();
     return;
@@ -139,9 +212,11 @@ function scheduleStatusChanged() {
   }, 50);
 }
 
-function registerStatusEvent(name) {
+function registerStatusEvent(name, property = null) {
   try {
-    event.on(name, scheduleStatusChanged);
+    event.on(name, () => {
+      scheduleStatusChanged(property === null ? null : manualActionForPropertyChange(property));
+    });
   } catch (error) {
     console.log(`GlanceHold bridge could not register ${name}: ${error.message || "unavailable"}`);
   }
@@ -158,12 +233,15 @@ function executeBridgeCommand(request) {
     ) {
       throw new Error("invalid_speed");
     }
+    rememberCommandEcho({ property: "speed", speed: request.speed });
     core.setSpeed(request.speed);
     return;
   case "pause":
+    rememberCommandEcho({ property: "pause", paused: true });
     core.pause();
     return;
   case "resume":
+    rememberCommandEcho({ property: "pause", paused: false });
     core.resume();
     return;
   default:
@@ -239,8 +317,8 @@ ws.onMessage((conn, message) => {
 registerStatusEvent("iina.file-loaded");
 registerStatusEvent("iina.file-started");
 registerStatusEvent("iina.window-did-close");
-registerStatusEvent("mpv.pause.changed");
-registerStatusEvent("mpv.speed.changed");
+registerStatusEvent("mpv.pause.changed", "pause");
+registerStatusEvent("mpv.speed.changed", "speed");
 registerStatusEvent("mpv.idle-active.changed");
 
 menu.addItem(menu.item(

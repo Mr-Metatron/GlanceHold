@@ -4,7 +4,7 @@ import XCTest
 final class IINAPluginBridgeClientTests: XCTestCase {
     func testSnapshotRequestUsesVersionedJSONMessage() async throws {
         let transport = FakeIINAPluginBridgeTransport(responses: [
-            #"{"id":1,"version":2,"ok":true,"snapshot":{"state":"playing","speed":1.5}}"#
+            #"{"id":1,"version":3,"ok":true,"snapshot":{"state":"playing","speed":1.5}}"#
         ])
         let client = IINAPluginBridgeClient(transport: transport)
 
@@ -12,17 +12,17 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
         let request = try XCTUnwrap(transport.sentMessages.first)
         XCTAssertEqual(request["id"] as? Int, 1)
-        XCTAssertEqual(request["version"] as? Int, 2)
+        XCTAssertEqual(request["version"] as? Int, 3)
         XCTAssertFalse(request.keys.contains("token"))
         XCTAssertEqual(request["type"] as? String, "snapshot")
     }
 
     func testCommandRequestsMapToSetSpeedPauseAndResume() async throws {
         let transport = FakeIINAPluginBridgeTransport(responses: [
-            #"{"id":1,"version":2,"ok":true}"#,
-            #"{"id":2,"version":2,"ok":true}"#,
-            #"{"id":3,"version":2,"ok":true}"#,
-            #"{"id":4,"version":2,"ok":true}"#
+            #"{"id":1,"version":3,"ok":true}"#,
+            #"{"id":2,"version":3,"ok":true}"#,
+            #"{"id":3,"version":3,"ok":true}"#,
+            #"{"id":4,"version":3,"ok":true}"#
         ])
         let client = IINAPluginBridgeClient(transport: transport)
 
@@ -50,7 +50,7 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
     func testDefaultClientInitializerDoesNotRequireTokenStore() async throws {
         let transport = FakeIINAPluginBridgeTransport(responses: [
-            #"{"id":1,"version":2,"ok":true,"snapshot":{"state":"idle"}}"#
+            #"{"id":1,"version":3,"ok":true,"snapshot":{"state":"idle"}}"#
         ])
         let client = IINAPluginBridgeClient(transport: transport)
 
@@ -72,7 +72,7 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
     func testStatusChangedMessageWithoutRequestIDDecodesAsPushedStatus() async throws {
         let transport = FakeIINAPluginBridgeTransport(streamMessages: [
-            #"{"version":2,"type":"statusChanged","snapshot":{"state":"playing","speed":2.0}}"#
+            #"{"version":3,"type":"statusChanged","snapshot":{"state":"playing","speed":2.0}}"#
         ])
         let client = IINAPluginBridgeClient(transport: transport)
 
@@ -83,10 +83,42 @@ final class IINAPluginBridgeClientTests: XCTestCase {
         XCTAssertEqual(transport.sentMessages.count, 0)
     }
 
+    func testStatusChangedManualActionsDecodeFromBridgeSnapshots() async throws {
+        let transport = FakeIINAPluginBridgeTransport(streamMessages: [
+            #"{"version":3,"type":"statusChanged","snapshot":{"state":"paused","speed":1.5,"manualAction":"pausePressed"}}"#,
+            #"{"version":3,"type":"statusChanged","snapshot":{"state":"playing","speed":1.5,"manualAction":"playPressed"}}"#,
+            #"{"version":3,"type":"statusChanged","snapshot":{"state":"playing","speed":1.0,"manualAction":"speedChanged"}}"#
+        ])
+        let client = IINAPluginBridgeClient(transport: transport)
+
+        var iterator = client.statusUpdates().makeAsyncIterator()
+        let pausePressed = await iterator.next()
+        let playPressed = await iterator.next()
+        let speedChanged = await iterator.next()
+        let nextStatus = await iterator.next()
+
+        XCTAssertEqual(pausePressed, .paused(speed: 1.5, manualAction: .pausePressed))
+        XCTAssertEqual(playPressed, .playing(speed: 1.5, manualAction: .playPressed))
+        XCTAssertEqual(speedChanged, .playing(speed: 1.0, manualAction: .speedChanged))
+        XCTAssertNil(nextStatus)
+        XCTAssertEqual(transport.sentMessages.count, 0)
+    }
+
+    func testUnknownManualActionMarksPluginUpdateRequired() async throws {
+        let transport = FakeIINAPluginBridgeTransport(responses: [
+            #"{"id":1,"version":3,"ok":true,"snapshot":{"state":"playing","speed":1.5,"manualAction":"keyboardMash"}}"#
+        ])
+        let client = IINAPluginBridgeClient(transport: transport)
+
+        let status = await client.status()
+
+        XCTAssertEqual(status, .pluginUpdateRequired)
+    }
+
     func testHeartbeatMessageWithoutRequestIDDecodesAsLivenessOnly() async throws {
         let transport = FakeIINAPluginBridgeTransport(streamMessages: [
-            #"{"version":2,"type":"heartbeat"}"#,
-            #"{"version":2,"type":"statusChanged","snapshot":{"state":"playing","speed":2.0}}"#
+            #"{"version":3,"type":"heartbeat"}"#,
+            #"{"version":3,"type":"statusChanged","snapshot":{"state":"playing","speed":2.0}}"#
         ])
         let client = IINAPluginBridgeClient(transport: transport)
 
@@ -110,7 +142,7 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
     func testToggleMonitoringRequestedMessageDecodesAsEventStreamWithoutCommand() async throws {
         let transport = FakeIINAPluginBridgeTransport(streamMessages: [
-            #"{"version":2,"type":"toggleMonitoringRequested"}"#
+            #"{"version":3,"type":"toggleMonitoringRequested"}"#
         ])
         let client = IINAPluginBridgeClient(transport: transport)
 
@@ -125,9 +157,9 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
     func testToggleMonitoringStreamUsesLivenessTimeoutAndSurvivesHeartbeatIdleWindow() async throws {
         let transport = FakeIINAPluginBridgeTransport(streamMessages: [
-            #"{"version":2,"type":"heartbeat"}"#,
-            #"{"version":2,"type":"heartbeat"}"#,
-            #"{"version":2,"type":"toggleMonitoringRequested"}"#
+            #"{"version":3,"type":"heartbeat"}"#,
+            #"{"version":3,"type":"heartbeat"}"#,
+            #"{"version":3,"type":"toggleMonitoringRequested"}"#
         ])
         let client = IINAPluginBridgeClient(
             transport: transport,
@@ -145,7 +177,7 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
     func testStatusChangedMessageWithoutSnapshotResponseMapsToPluginUpdateRequired() async throws {
         let transport = FakeIINAPluginBridgeTransport(responses: [
-            #"{"version":2,"type":"statusChanged","snapshot":{"state":"playing","speed":2.0}}"#
+            #"{"version":3,"type":"statusChanged","snapshot":{"state":"playing","speed":2.0}}"#
         ])
         let client = IINAPluginBridgeClient(transport: transport)
 
@@ -157,8 +189,8 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
     func testStatusChangedBeforeSnapshotResponseDoesNotPoisonRequest() async throws {
         let transport = FakeIINAPluginBridgeTransport(responses: [
-            #"{"version":2,"type":"statusChanged","snapshot":{"state":"playing","speed":2.0}}"#,
-            #"{"id":1,"version":2,"ok":true,"snapshot":{"state":"playing","speed":1.25}}"#
+            #"{"version":3,"type":"statusChanged","snapshot":{"state":"playing","speed":2.0}}"#,
+            #"{"id":1,"version":3,"ok":true,"snapshot":{"state":"playing","speed":1.25}}"#
         ])
         let client = IINAPluginBridgeClient(transport: transport)
 
@@ -170,8 +202,8 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
     func testHeartbeatBeforeSnapshotResponseDoesNotPoisonRequest() async throws {
         let transport = FakeIINAPluginBridgeTransport(responses: [
-            #"{"version":2,"type":"heartbeat"}"#,
-            #"{"id":1,"version":2,"ok":true,"snapshot":{"state":"playing","speed":1.25}}"#
+            #"{"version":3,"type":"heartbeat"}"#,
+            #"{"id":1,"version":3,"ok":true,"snapshot":{"state":"playing","speed":1.25}}"#
         ])
         let client = IINAPluginBridgeClient(transport: transport)
 
@@ -183,8 +215,8 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
     func testToggleMonitoringRequestedBeforeSnapshotResponseDoesNotPoisonRequest() async throws {
         let transport = FakeIINAPluginBridgeTransport(responses: [
-            #"{"version":2,"type":"toggleMonitoringRequested"}"#,
-            #"{"id":1,"version":2,"ok":true,"snapshot":{"state":"playing","speed":1.25}}"#
+            #"{"version":3,"type":"toggleMonitoringRequested"}"#,
+            #"{"id":1,"version":3,"ok":true,"snapshot":{"state":"playing","speed":1.25}}"#
         ])
         let client = IINAPluginBridgeClient(transport: transport)
 
@@ -196,11 +228,11 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
     func testToggleMonitoringRequestedStrictlyIgnoresUnsupportedShapes() async throws {
         let transport = FakeIINAPluginBridgeTransport(streamMessages: [
-            #"{"version":3,"type":"toggleMonitoringRequested"}"#,
-            #"{"id":7,"version":2,"type":"toggleMonitoringRequested"}"#,
-            #"{"version":2,"type":"unknownEvent"}"#,
+            #"{"version":4,"type":"toggleMonitoringRequested"}"#,
+            #"{"id":7,"version":3,"type":"toggleMonitoringRequested"}"#,
+            #"{"version":3,"type":"unknownEvent"}"#,
             #"not json"#,
-            #"{"version":2,"type":"toggleMonitoringRequested"}"#
+            #"{"version":3,"type":"toggleMonitoringRequested"}"#
         ])
         let client = IINAPluginBridgeClient(transport: transport)
 
@@ -215,12 +247,12 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
     func testHeartbeatStrictlyIgnoresUnsupportedShapes() async throws {
         let transport = FakeIINAPluginBridgeTransport(streamMessages: [
-            #"{"version":3,"type":"heartbeat"}"#,
-            #"{"id":7,"version":2,"type":"heartbeat"}"#,
-            #"{"version":2,"type":"heartbeat","snapshot":{"state":"playing","speed":2.0}}"#,
-            #"{"version":2,"type":"unknownEvent"}"#,
+            #"{"version":4,"type":"heartbeat"}"#,
+            #"{"id":7,"version":3,"type":"heartbeat"}"#,
+            #"{"version":3,"type":"heartbeat","snapshot":{"state":"playing","speed":2.0}}"#,
+            #"{"version":3,"type":"unknownEvent"}"#,
             #"not json"#,
-            #"{"version":2,"type":"heartbeat"}"#
+            #"{"version":3,"type":"heartbeat"}"#
         ])
         let client = IINAPluginBridgeClient(transport: transport)
 
@@ -235,7 +267,7 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
     func testRequestIDBearingHeartbeatResponseMismatchMapsToPluginUpdateRequired() async throws {
         let transport = FakeIINAPluginBridgeTransport(responses: [
-            #"{"id":7,"version":2,"type":"heartbeat","ok":true}"#
+            #"{"id":7,"version":3,"type":"heartbeat","ok":true}"#
         ])
         let client = IINAPluginBridgeClient(transport: transport)
 
@@ -247,7 +279,7 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
     func testStatusChangedWithRequestIDIsStillTreatedAsResponse() async throws {
         let transport = FakeIINAPluginBridgeTransport(responses: [
-            #"{"id":1,"version":2,"type":"statusChanged","ok":true,"snapshot":{"state":"playing","speed":1.75}}"#
+            #"{"id":1,"version":3,"type":"statusChanged","ok":true,"snapshot":{"state":"playing","speed":1.75}}"#
         ])
         let client = IINAPluginBridgeClient(transport: transport)
 
@@ -259,7 +291,7 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
     func testUnsupportedVersionResponseErrorMapsToProtocolFailure() async throws {
         let client = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
-            #"{"id":1,"version":2,"ok":false,"error":"unsupported_version"}"#
+            #"{"id":1,"version":3,"ok":false,"error":"unsupported_version"}"#
         ]))
 
         await XCTAssertThrowsProtocolFailure(try await client.snapshot(), .unsupportedVersion)
@@ -267,7 +299,7 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
     func testUnknownTypeResponseErrorMapsToProtocolFailure() async throws {
         let client = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
-            #"{"id":1,"version":2,"ok":false,"error":"unknown_type"}"#
+            #"{"id":1,"version":3,"ok":false,"error":"unknown_type"}"#
         ]))
 
         await XCTAssertThrowsProtocolFailure(try await client.snapshot(), .unknownType)
@@ -275,7 +307,7 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
     func testUnknownCommandResponseErrorMapsToProtocolFailure() async throws {
         let client = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
-            #"{"id":1,"version":2,"ok":false,"error":"unknown_command"}"#
+            #"{"id":1,"version":3,"ok":false,"error":"unknown_command"}"#
         ]))
 
         await XCTAssertThrowsProtocolFailure(try await client.execute(.pause), .unknownCommand)
@@ -289,19 +321,19 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
     func testMismatchedResponseIDOrVersionMapsToRequestMismatchProtocolFailure() async throws {
         let mismatchedID = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
-            #"{"id":999,"version":2,"ok":true,"snapshot":{"state":"playing","speed":1.5}}"#
+            #"{"id":999,"version":3,"ok":true,"snapshot":{"state":"playing","speed":1.5}}"#
         ]))
         await XCTAssertThrowsProtocolFailure(try await mismatchedID.snapshot(), .requestMismatch)
 
         let mismatchedVersion = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
-            #"{"id":1,"version":3,"ok":true,"snapshot":{"state":"playing","speed":1.5}}"#
+            #"{"id":1,"version":4,"ok":true,"snapshot":{"state":"playing","speed":1.5}}"#
         ]))
         await XCTAssertThrowsProtocolFailure(try await mismatchedVersion.snapshot(), .requestMismatch)
     }
 
     func testOldPluginUnauthorizedResponseMapsToPluginUpdateRequiredProtocolFailure() async throws {
         let client = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
-            #"{"id":1,"version":2,"ok":false,"error":"unauthorized"}"#
+            #"{"id":1,"version":3,"ok":false,"error":"unauthorized"}"#
         ]))
 
         await XCTAssertThrowsProtocolFailure(try await client.snapshot(), .pluginUpdateRequired)
@@ -309,7 +341,7 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
     func testStatusMapsOldPluginUnauthorizedResponseToPluginUpdateRequired() async throws {
         let client = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
-            #"{"id":1,"version":2,"ok":false,"error":"unauthorized"}"#
+            #"{"id":1,"version":3,"ok":false,"error":"unauthorized"}"#
         ]))
 
         let status = await client.status()
@@ -319,7 +351,7 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
     func testStatusMapsUnsupportedVersionResponseToPluginUpdateRequired() async throws {
         let client = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
-            #"{"id":1,"version":2,"ok":false,"error":"unsupported_version"}"#
+            #"{"id":1,"version":3,"ok":false,"error":"unsupported_version"}"#
         ]))
 
         let status = await client.status()
@@ -339,7 +371,7 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
     func testStatusMapsMismatchedResponseIDToPluginUpdateRequired() async throws {
         let client = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
-            #"{"id":999,"version":2,"ok":true,"snapshot":{"state":"playing","speed":1.5}}"#
+            #"{"id":999,"version":3,"ok":true,"snapshot":{"state":"playing","speed":1.5}}"#
         ]))
 
         let status = await client.status()
@@ -349,7 +381,7 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
     func testStatusMapsMismatchedResponseVersionToPluginUpdateRequired() async throws {
         let client = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
-            #"{"id":1,"version":3,"ok":true,"snapshot":{"state":"playing","speed":1.5}}"#
+            #"{"id":1,"version":4,"ok":true,"snapshot":{"state":"playing","speed":1.5}}"#
         ]))
 
         let status = await client.status()
@@ -359,17 +391,17 @@ final class IINAPluginBridgeClientTests: XCTestCase {
 
     func testUnavailableResponseAndUnknownSnapshotStateStillMapToUnavailable() async throws {
         let unknownState = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
-            #"{"id":1,"version":2,"ok":true,"snapshot":{"state":"buffering","speed":1.5}}"#
+            #"{"id":1,"version":3,"ok":true,"snapshot":{"state":"buffering","speed":1.5}}"#
         ]))
         await XCTAssertEqualAsync(await unknownState.status(), .unavailable)
 
         let unavailableStatus = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
-            #"{"id":1,"version":2,"ok":false,"error":"unavailable"}"#
+            #"{"id":1,"version":3,"ok":false,"error":"unavailable"}"#
         ]))
         await XCTAssertEqualAsync(await unavailableStatus.status(), .unavailable)
 
         let unavailable = IINAPluginBridgeClient(transport: FakeIINAPluginBridgeTransport(responses: [
-            #"{"id":1,"version":2,"ok":false,"error":"unavailable"}"#
+            #"{"id":1,"version":3,"ok":false,"error":"unavailable"}"#
         ]))
 
         do {
@@ -419,7 +451,7 @@ final class FakeIINAPluginBridgeTransport: IINAPluginBridgeTransporting {
             return response
         }
 
-        return #"{"id":1,"version":2,"ok":true}"#
+        return #"{"id":1,"version":3,"ok":true}"#
     }
 
     func messages(timeout: TimeInterval) -> AsyncThrowingStream<String, Error> {

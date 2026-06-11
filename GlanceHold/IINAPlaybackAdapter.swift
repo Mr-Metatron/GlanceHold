@@ -5,8 +5,8 @@ enum IINAPlayerStatus: Equatable {
     case unavailable
     case pluginUpdateRequired
     case idle
-    case paused(speed: Double)
-    case playing(speed: Double)
+    case paused(speed: Double, manualAction: PlayerManualAction? = nil)
+    case playing(speed: Double, manualAction: PlayerManualAction? = nil)
 }
 
 enum IINAPlaybackStatusEvent: Equatable {
@@ -114,10 +114,10 @@ private extension IINAPlayerStatus {
             return .pluginUpdateRequired
         case .idle:
             return .idle
-        case let .paused(speed):
-            return .paused(speed: speed)
-        case let .playing(speed):
-            return .playing(speed: speed)
+        case let .paused(speed, manualAction):
+            return PlayerSnapshot(playbackState: .paused, speed: speed, manualAction: manualAction)
+        case let .playing(speed, manualAction):
+            return PlayerSnapshot(playbackState: .playing, speed: speed, manualAction: manualAction)
         }
     }
 }

@@ -719,6 +719,7 @@ final class PlaybackCoordinator {
             return
         }
 
+        monitoringGeneration = UUID()
         monitoringSessionActive = false
         resetPolicy()
         setState(
@@ -726,10 +727,9 @@ final class PlaybackCoordinator {
                 isPlayerControllable: false,
                 playerSnapshot: snapshot,
                 stoppedReason: reason
-            ),
-            startedIn: generation
+            )
         )
-        emitStopMonitoringRequested(reason, startedIn: generation)
+        emitStopMonitoringRequested(reason, startedIn: nil)
     }
 
     private func updateState(

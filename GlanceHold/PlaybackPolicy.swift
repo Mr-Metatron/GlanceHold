@@ -116,6 +116,7 @@ struct PlaybackPolicy: Equatable {
     mutating func resolvePendingConfirmation(for intent: PlaybackIntent) -> PlaybackPolicyResult {
         if state.pendingConfirmationIntent == intent {
             state.pendingConfirmationIntent = nil
+            releaseOwnershipConfirmed(by: intent)
         }
         return result([])
     }
@@ -206,18 +207,21 @@ struct PlaybackPolicy: Equatable {
     ) -> PlaybackPolicyResult {
         switch attention {
         case .lookingAway, .noFaceDetected:
-            guard state.capturedSpeed == nil, player.playbackState == .playing, let speed = player.speed else {
+            guard state.pendingConfirmationIntent == nil,
+                  state.capturedSpeed == nil,
+                  player.playbackState == .playing,
+                  let speed = player.speed else {
                 return result([])
             }
 
             state.capturedSpeed = speed
             return result([.holdSpeedAtOne])
         case .facing:
-            guard let capturedSpeed = state.capturedSpeed else {
+            guard !isPendingRestoreSpeedConfirmation,
+                  let capturedSpeed = state.capturedSpeed else {
                 return result([])
             }
 
-            state.capturedSpeed = nil
             return result([.restoreSpeed(capturedSpeed)])
         case .recovering, .unavailable:
             return result([])
@@ -230,18 +234,21 @@ struct PlaybackPolicy: Equatable {
     ) -> PlaybackPolicyResult {
         switch attention {
         case .lookingAway, .noFaceDetected:
-            guard !state.pauseOwnedByGlanceHold, player.playbackState == .playing else {
+            guard state.pendingConfirmationIntent == nil,
+                  !state.pauseOwnedByGlanceHold,
+                  player.playbackState == .playing else {
                 return result([])
             }
 
             state.pauseOwnedByGlanceHold = true
             return result([.pause])
         case .facing:
-            guard state.pauseOwnedByGlanceHold, player.playbackState == .paused else {
+            guard state.pendingConfirmationIntent == nil,
+                  state.pauseOwnedByGlanceHold,
+                  player.playbackState == .paused else {
                 return result([])
             }
 
-            state.pauseOwnedByGlanceHold = false
             return result([.resume])
         case .recovering, .unavailable:
             return result([])
@@ -278,9 +285,13 @@ struct PlaybackPolicy: Equatable {
         switch manualAction {
         case .speedChanged where state.capturedSpeed != nil || isPendingSpeedConfirmation:
             return stopMonitoringForManualTakeover()
-        case .playPressed, .pausePressed where state.pauseOwnedByGlanceHold || isPendingPauseResumeConfirmation:
+        case .playPressed, .pausePressed:
+            guard state.pauseOwnedByGlanceHold || isPendingPauseResumeConfirmation else {
+                return nil
+            }
+
             return stopMonitoringForManualTakeover()
-        case .speedChanged, .playPressed, .pausePressed:
+        case .speedChanged:
             return nil
         }
     }
@@ -304,6 +315,15 @@ struct PlaybackPolicy: Equatable {
         }
     }
 
+    private var isPendingRestoreSpeedConfirmation: Bool {
+        switch state.pendingConfirmationIntent {
+        case .restoreSpeed:
+            true
+        case .holdSpeedAtOne, .pause, .resume, .stopMonitoring, nil:
+            false
+        }
+    }
+
     private var isPendingPauseResumeConfirmation: Bool {
         switch state.pendingConfirmationIntent {
         case .pause, .resume:
@@ -319,7 +339,18 @@ struct PlaybackPolicy: Equatable {
             return
         }
 
-        state.pendingConfirmationIntent = nil
+        resolvePendingConfirmation(for: pendingIntent)
+    }
+
+    private mutating func releaseOwnershipConfirmed(by intent: PlaybackIntent) {
+        switch intent {
+        case .restoreSpeed:
+            state.capturedSpeed = nil
+        case .resume:
+            state.pauseOwnedByGlanceHold = false
+        case .holdSpeedAtOne, .pause, .stopMonitoring:
+            break
+        }
     }
 
     private func playerConfirms(intent: PlaybackIntent, snapshot: PlayerSnapshot) -> Bool {
