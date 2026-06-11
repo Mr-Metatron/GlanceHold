@@ -69,6 +69,23 @@ final class PlaybackPolicyTests: XCTestCase {
         assertNoRestoreOrResume(result.intents)
     }
 
+    func testManualSpeedChangedActionWhileSpeedConfirmationPendingStopsMonitoring() {
+        var policy = PlaybackPolicy(mode: .speedControl)
+
+        policy.beginPendingConfirmation(for: .restoreSpeed(1.75))
+
+        let result = policy.applyObservedPlayerSnapshot(
+            PlayerSnapshot(playbackState: .playing, speed: 1.75, manualAction: .speedChanged),
+            monitoringActive: true
+        )
+
+        XCTAssertEqual(result.intents, [.stopMonitoring(reason: .manualPlayerTakeover)])
+        XCTAssertNil(result.state.capturedSpeed)
+        XCTAssertFalse(result.state.pauseOwnedByGlanceHold)
+        XCTAssertEqual(result.state.stoppedReason, .manualPlayerTakeover)
+        assertNoRestoreOrResume(result.intents)
+    }
+
     func testPauseModeAwayPausesOnceAndFacingResumesOnlyOwnedPause() {
         var policy = PlaybackPolicy(mode: .pauseResume)
 
@@ -182,6 +199,23 @@ final class PlaybackPolicyTests: XCTestCase {
         XCTAssertEqual(result.intents, [])
         XCTAssertTrue(result.state.pauseOwnedByGlanceHold)
         XCTAssertNil(result.state.stoppedReason)
+        assertNoRestoreOrResume(result.intents)
+    }
+
+    func testManualPausePressedWhilePauseResumeConfirmationPendingStopsMonitoring() {
+        var policy = PlaybackPolicy(mode: .pauseResume)
+
+        policy.beginPendingConfirmation(for: .resume)
+
+        let result = policy.applyObservedPlayerSnapshot(
+            PlayerSnapshot(playbackState: .paused, speed: 1.5, manualAction: .pausePressed),
+            monitoringActive: true
+        )
+
+        XCTAssertEqual(result.intents, [.stopMonitoring(reason: .manualPlayerTakeover)])
+        XCTAssertNil(result.state.capturedSpeed)
+        XCTAssertFalse(result.state.pauseOwnedByGlanceHold)
+        XCTAssertEqual(result.state.stoppedReason, .manualPlayerTakeover)
         assertNoRestoreOrResume(result.intents)
     }
 
