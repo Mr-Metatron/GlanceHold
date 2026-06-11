@@ -83,6 +83,13 @@
 
 **Requirements:** PLAY-01, PLAY-02, PLAY-03, PLAY-04
 
+**Plans:** 3 plans
+
+Plans:
+- [ ] 09-01-PLAN.md — Add async playback ownership regression harness and Wave 0 coverage
+- [ ] 09-02-PLAN.md — Harden coordinator invalidation, serialization, and latest-state app scheduling
+- [ ] 09-03-PLAN.md — Preserve ownership across transient confirmation failures and tighten manual takeover
+
 **Success criteria:**
 
 1. Playback coordinator mutable state is isolated through actor, main-actor, or a serial executor.
@@ -134,7 +141,7 @@
 | 7. Structured Runtime Logging and Diagnostics Foundation | v1.1 | 5/5 | Complete    | 2026-06-09 |
 | 8. Power Hot Path Sampling and Notification Deduplication | v1.1 | 6/6 | Complete   | 2026-06-10 |
 | 08.1. IINA bridge local trust model and setup-error UX | v1.1 | 6/6 | Complete    | 2026-06-10 |
-| 9. Playback Coordinator Ownership and Async Safety | v1.1 | 0/? | Planned | — |
+| 9. Playback Coordinator Ownership and Async Safety | v1.1 | 0/3 | Planned | — |
 | 10. Attention Semantics, Calibration Robustness, and Settings Validation | v1.1 | 0/? | Planned | — |
 | 11. IINA Bridge Security, Legacy Boundary, and Reliability Verification | v1.1 | 0/? | Planned | — |
 
