@@ -6,6 +6,9 @@ APP_FILE="GlanceHold/GlanceHoldApp.swift"
 TYPES_FILE="GlanceHold/IINAPlaybackTypes.swift"
 PLUGIN_ADAPTER_FILE="GlanceHold/IINAPluginBridgeAdapter.swift"
 MPV_ADAPTER_FILE="GlanceHold/IINAPlaybackAdapter.swift"
+MPV_CLIENT_FILE="GlanceHold/MPVJSONIPCClient.swift"
+MPV_ADAPTER_TEST_FILE="GlanceHoldTests/IINAPlaybackAdapterTests.swift"
+MPV_CLIENT_TEST_FILE="GlanceHoldTests/MPVJSONIPCClientTests.swift"
 
 failures=0
 
@@ -113,6 +116,9 @@ require_file "$APP_FILE"
 require_file "$TYPES_FILE"
 require_file "$PLUGIN_ADAPTER_FILE"
 require_file "$MPV_ADAPTER_FILE"
+require_file "$MPV_CLIENT_FILE"
+require_file "$MPV_ADAPTER_TEST_FILE"
+require_file "$MPV_CLIENT_TEST_FILE"
 
 app_sources_id="$(source_phase_id_for_target "GlanceHold")"
 test_sources_id="$(source_phase_id_for_target "GlanceHoldTests")"
@@ -147,6 +153,9 @@ require_rg_match "var playerSnapshot" "$TYPES_FILE" "IINAPlaybackTypes.swift dec
 require_rg_match "status\\.playerSnapshot" "$PLUGIN_ADAPTER_FILE" "IINAPluginBridgeAdapter uses status.playerSnapshot"
 require_rg_absent "private.*playerSnapshot|var playerSnapshot|func playerSnapshot" "$MPV_ADAPTER_FILE" "IINAPlaybackAdapter declares no private duplicate playerSnapshot mapping"
 require_rg_absent "private.*playerSnapshot|var playerSnapshot|func playerSnapshot" "$PLUGIN_ADAPTER_FILE" "IINAPluginBridgeAdapter declares no private duplicate playerSnapshot mapping"
+require_rg_match "Reference-only MPV JSON IPC client" "$MPV_CLIENT_FILE" "MPVJSONIPCClient.swift is marked reference-only"
+require_rg_match "Reference coverage only; MPV IPC is not normal Phase 11 production hard-gate evidence" "$MPV_ADAPTER_TEST_FILE" "IINAPlaybackAdapterTests.swift is marked reference coverage only"
+require_rg_match "Reference coverage only; MPV IPC is not normal Phase 11 production hard-gate evidence" "$MPV_CLIENT_TEST_FILE" "MPVJSONIPCClientTests.swift is marked reference coverage only"
 
 if [ "$failures" -eq 0 ]; then
   printf 'PASS: Phase 11 MPV production boundary verified\n'

@@ -1,6 +1,7 @@
 import XCTest
 @testable import GlanceHold
 
+// Reference coverage only; MPV IPC is not normal Phase 11 production hard-gate evidence.
 final class IINAPlaybackAdapterTests: XCTestCase {
     func testPlayingPausedIdleAndUnavailableSnapshotsMapExactly() async {
         let client = FakeMPVJSONIPCClient()

@@ -2,6 +2,7 @@ import Foundation
 import XCTest
 @testable import GlanceHold
 
+// Reference coverage only; MPV IPC is not normal Phase 11 production hard-gate evidence.
 final class MPVJSONIPCClientTests: XCTestCase {
     func testCommandFramingIncludesRequestIDAndNewline() async throws {
         let transport = FakeMPVJSONIPCTransport()

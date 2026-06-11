@@ -1,6 +1,7 @@
 import Foundation
 import Network
 
+// Reference-only MPV JSON IPC client retained for experimental investigation; production playback uses the IINA plugin bridge.
 enum MPVJSONValue: Equatable, Codable {
     case string(String)
     case double(Double)
