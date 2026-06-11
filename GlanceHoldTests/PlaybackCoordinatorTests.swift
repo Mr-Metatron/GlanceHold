@@ -493,6 +493,124 @@ final class PlaybackCoordinatorTests: XCTestCase {
         XCTAssertFalse(coordinator.state.isPlayerControllable)
     }
 
+    func testStopMonitoringInvalidatesInFlightAttentionDuringExecute() async {
+        let adapter = SuspendingExecutePlaybackAdapter(
+            snapshots: [.playing(speed: 1.5), .playing(speed: 1.0)]
+        )
+        let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+        var completedActions: [PlaybackCompletedAction] = []
+        var stateChanges: [PlaybackCoordinatorState] = []
+        var stopRequests: [StopMonitoringReason] = []
+        coordinator.playbackActionDidComplete = { completedActions.append($0) }
+        coordinator.stateDidChange = { stateChanges.append($0) }
+        coordinator.stopMonitoringRequested = { stopRequests.append($0) }
+
+        let task = Task {
+            await coordinator.handleAttentionState(.lookingAway)
+        }
+        await adapter.waitForExecuteRequest()
+
+        coordinator.stopMonitoring()
+        let commandsAfterStop = adapter.commands
+        let stateChangesAfterStop = stateChanges
+
+        adapter.resumeExecute()
+        await task.value
+
+        XCTAssertEqual(adapter.commands, commandsAfterStop)
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
+        XCTAssertEqual(completedActions, [])
+        XCTAssertEqual(stateChanges, stateChangesAfterStop)
+        XCTAssertEqual(stopRequests, [])
+        XCTAssertEqual(adapter.snapshotReadCount, 1)
+        XCTAssertFalse(coordinator.state.isPlayerControllable)
+        XCTAssertNil(coordinator.state.stoppedReason)
+    }
+
+    func testStopMonitoringInvalidatesInFlightAttentionDuringConfirmation() async {
+        let adapter = SuspendingConfirmationSnapshotPlaybackAdapter(
+            initialSnapshot: .playing(speed: 1.5),
+            confirmationSnapshot: .playing(speed: 1.0)
+        )
+        let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+        var completedActions: [PlaybackCompletedAction] = []
+        var stateChanges: [PlaybackCoordinatorState] = []
+        var stopRequests: [StopMonitoringReason] = []
+        coordinator.playbackActionDidComplete = { completedActions.append($0) }
+        coordinator.stateDidChange = { stateChanges.append($0) }
+        coordinator.stopMonitoringRequested = { stopRequests.append($0) }
+
+        let task = Task {
+            await coordinator.handleAttentionState(.lookingAway)
+        }
+        await adapter.waitForConfirmationSnapshotRequest()
+
+        coordinator.stopMonitoring()
+        let commandsAfterStop = adapter.commands
+        let stateChangesAfterStop = stateChanges
+
+        adapter.resumeConfirmationSnapshot()
+        await task.value
+
+        XCTAssertEqual(adapter.commands, commandsAfterStop)
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
+        XCTAssertEqual(completedActions, [])
+        XCTAssertEqual(stateChanges, stateChangesAfterStop)
+        XCTAssertEqual(stopRequests, [])
+        XCTAssertEqual(adapter.snapshotReadCount, 2)
+        XCTAssertFalse(coordinator.state.isPlayerControllable)
+        XCTAssertNil(coordinator.state.stoppedReason)
+    }
+
+    func testInvalidatedAttentionDoesNotEmitCallbacksStopRequestsOrMisleadingDiagnostics() async {
+        let recorder = PlaybackDiagnosticRecorder(mode: .diagnostic)
+        let adapter = SuspendingConfirmationSnapshotPlaybackAdapter(
+            initialSnapshot: .playing(speed: 1.5),
+            confirmationSnapshot: .playing(speed: 1.0)
+        )
+        let coordinator = PlaybackCoordinator(
+            mode: .speedControl,
+            adapter: adapter,
+            diagnosticRecorder: recorder,
+            diagnosticMode: .diagnostic,
+            diagnosticSession: DiagnosticSession(kind: .monitoring)
+        )
+        var completedActions: [PlaybackCompletedAction] = []
+        var stateChanges: [PlaybackCoordinatorState] = []
+        var stopRequests: [StopMonitoringReason] = []
+        coordinator.playbackActionDidComplete = { completedActions.append($0) }
+        coordinator.stateDidChange = { stateChanges.append($0) }
+        coordinator.stopMonitoringRequested = { stopRequests.append($0) }
+
+        let task = Task {
+            await coordinator.handleAttentionState(.lookingAway)
+        }
+        await adapter.waitForConfirmationSnapshotRequest()
+
+        coordinator.stopMonitoring()
+        let commandsAfterStop = adapter.commands
+        let stateChangesAfterStop = stateChanges
+        let diagnosticsAfterStop = recorder.events
+
+        adapter.resumeConfirmationSnapshot()
+        await task.value
+
+        XCTAssertEqual(adapter.commands, commandsAfterStop)
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
+        XCTAssertEqual(completedActions, [])
+        XCTAssertEqual(stateChanges, stateChangesAfterStop)
+        XCTAssertEqual(stopRequests, [])
+        XCTAssertEqual(recorder.events, diagnosticsAfterStop)
+        XCTAssertFalse(recorder.events.contains { event in
+            event.name == .playbackAction &&
+                fieldValue(.confirmationOutcome, in: event) == "confirmed"
+        })
+        XCTAssertFalse(recorder.events.contains { event in
+            event.name == .playbackAction &&
+                fieldValue(.completedActionEmitted, in: event) != "none"
+        })
+    }
+
     func testPushedSnapshotPreservesManualTakeoverStopReason() async {
         let adapter = FakeIINAPlaybackAdapter(
             snapshots: [
@@ -1105,6 +1223,121 @@ private final class SuspendingSnapshotPlaybackAdapter: IINAPlaybackAdapting {
     func resumeSnapshot() {
         snapshotContinuation?.resume(returning: snapshotResult)
         snapshotContinuation = nil
+    }
+}
+
+private final class SuspendingExecutePlaybackAdapter: IINAPlaybackAdapting {
+    private var snapshots: [PlayerSnapshot]
+    private var executeContinuation: CheckedContinuation<Void, Never>?
+    private var executeRequestContinuation: CheckedContinuation<Void, Never>?
+    private var shouldResumeExecuteImmediately = false
+    private(set) var commands: [PlaybackIntent] = []
+    private(set) var snapshotReadCount = 0
+
+    init(snapshots: [PlayerSnapshot]) {
+        self.snapshots = snapshots
+    }
+
+    func snapshot() async -> PlayerSnapshot {
+        snapshotReadCount += 1
+
+        guard !snapshots.isEmpty else {
+            return .playerUnavailable
+        }
+
+        return snapshots.removeFirst()
+    }
+
+    func execute(_ intent: PlaybackIntent) async throws {
+        commands.append(intent)
+        executeRequestContinuation?.resume()
+        executeRequestContinuation = nil
+
+        await withCheckedContinuation { continuation in
+            if shouldResumeExecuteImmediately {
+                shouldResumeExecuteImmediately = false
+                continuation.resume()
+            } else {
+                executeContinuation = continuation
+            }
+        }
+    }
+
+    func waitForExecuteRequest() async {
+        guard commands.isEmpty else {
+            return
+        }
+
+        await withCheckedContinuation { continuation in
+            executeRequestContinuation = continuation
+        }
+    }
+
+    func resumeExecute() {
+        if let executeContinuation {
+            executeContinuation.resume()
+            self.executeContinuation = nil
+        } else {
+            shouldResumeExecuteImmediately = true
+        }
+    }
+}
+
+private final class SuspendingConfirmationSnapshotPlaybackAdapter: IINAPlaybackAdapting {
+    private let initialSnapshot: PlayerSnapshot
+    private let confirmationSnapshot: PlayerSnapshot
+    private var confirmationSnapshotContinuation: CheckedContinuation<PlayerSnapshot, Never>?
+    private var confirmationRequestContinuation: CheckedContinuation<Void, Never>?
+    private var shouldResumeConfirmationImmediately = false
+    private(set) var commands: [PlaybackIntent] = []
+    private(set) var snapshotReadCount = 0
+
+    init(initialSnapshot: PlayerSnapshot, confirmationSnapshot: PlayerSnapshot) {
+        self.initialSnapshot = initialSnapshot
+        self.confirmationSnapshot = confirmationSnapshot
+    }
+
+    func snapshot() async -> PlayerSnapshot {
+        snapshotReadCount += 1
+
+        guard snapshotReadCount > 1 else {
+            return initialSnapshot
+        }
+
+        confirmationRequestContinuation?.resume()
+        confirmationRequestContinuation = nil
+
+        return await withCheckedContinuation { continuation in
+            if shouldResumeConfirmationImmediately {
+                shouldResumeConfirmationImmediately = false
+                continuation.resume(returning: confirmationSnapshot)
+            } else {
+                confirmationSnapshotContinuation = continuation
+            }
+        }
+    }
+
+    func execute(_ intent: PlaybackIntent) async throws {
+        commands.append(intent)
+    }
+
+    func waitForConfirmationSnapshotRequest() async {
+        guard snapshotReadCount < 2 else {
+            return
+        }
+
+        await withCheckedContinuation { continuation in
+            confirmationRequestContinuation = continuation
+        }
+    }
+
+    func resumeConfirmationSnapshot() {
+        if let confirmationSnapshotContinuation {
+            confirmationSnapshotContinuation.resume(returning: confirmationSnapshot)
+            self.confirmationSnapshotContinuation = nil
+        } else {
+            shouldResumeConfirmationImmediately = true
+        }
     }
 }
 
