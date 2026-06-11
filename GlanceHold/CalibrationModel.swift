@@ -32,6 +32,7 @@ enum CalibrationReplacementDecision: Equatable {
 
 enum CalibrationFailureReason: String, Equatable {
     case notEnoughPoseSamples
+    case stableWindowTooShort
     case unstablePoseSpread
 }
 
@@ -57,7 +58,8 @@ enum CalibratedAttentionInput: Equatable {
 }
 
 enum CalibrationModel {
-    private static let minimumSampleCount = 3
+    private static let minimumSampleCount = 5
+    private static let minimumWindowDurationSeconds = 1.0
     private static let highSpreadThresholdDegrees = 1.0
     private static let marginalSpreadThresholdDegrees = 3.0
 
@@ -98,7 +100,7 @@ enum CalibrationModel {
                     selectedWindowDurationSeconds: nil,
                     selectedWindowSpreadDegrees: nil,
                     selectedWindowQuality: nil,
-                    failureReason: .notEnoughPoseSamples
+                    failureReason: .stableWindowTooShort
                 )
             )
         }
@@ -175,6 +177,10 @@ enum CalibrationModel {
         for start in 0...(samples.count - minimumSampleCount) {
             for length in minimumSampleCount...(samples.count - start) {
                 let windowSamples = Array(samples[start..<(start + length)])
+                guard isValidWindow(windowSamples) else {
+                    continue
+                }
+
                 let window = CalibrationWindow(
                     samples: windowSamples,
                     spreadDegrees: maxSpread(windowSamples)
@@ -193,6 +199,15 @@ enum CalibrationModel {
         }
 
         return best
+    }
+
+    private static func isValidWindow(_ samples: [PoseSample]) -> Bool {
+        guard samples.count >= minimumSampleCount,
+              let duration = duration(of: samples) else {
+            return false
+        }
+
+        return duration >= minimumWindowDurationSeconds
     }
 
     private static func quality(forSpread spread: Double) -> CalibrationQuality? {

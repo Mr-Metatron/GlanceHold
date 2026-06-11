@@ -143,6 +143,26 @@ final class CalibrationModelTests: XCTestCase {
         XCTAssertEqual(validSamples.diagnostics.selectedWindowSpreadDegrees ?? -1.0, 2.0, accuracy: 0.001)
     }
 
+    func testCalibrationReportsUnstableSpreadForValidWindowAboveMarginalThreshold() {
+        let samples = [
+            pose(yaw: -4.0, pitch: -3.0, time: 0.0),
+            pose(yaw: -2.0, pitch: 1.5, time: 0.25),
+            pose(yaw: 0.0, pitch: -1.5, time: 0.5),
+            pose(yaw: 2.0, pitch: 1.5, time: 0.75),
+            pose(yaw: 4.0, pitch: 3.0, time: 1.0)
+        ]
+
+        let evaluation = CalibrationModel.evaluateDetailed(samples: samples, existing: nil)
+
+        XCTAssertEqual(evaluation.result, .failed(previous: nil))
+        XCTAssertEqual(evaluation.diagnostics.inputSampleCount, 5)
+        XCTAssertEqual(evaluation.diagnostics.selectedWindowSampleCount, 5)
+        XCTAssertEqual(evaluation.diagnostics.selectedWindowDurationSeconds ?? -1.0, 1.0, accuracy: 0.001)
+        XCTAssertEqual(evaluation.diagnostics.selectedWindowSpreadDegrees ?? -1.0, 8.0, accuracy: 0.001)
+        XCTAssertNil(evaluation.diagnostics.selectedWindowQuality)
+        XCTAssertEqual(evaluation.diagnostics.failureReason?.rawValue, "unstablePoseSpread")
+    }
+
     func testCalibrationFailsWhenNoStableContiguousWindowExists() {
         let samples = [
             pose(yaw: -10.0, pitch: 4.0, time: 0.0),
