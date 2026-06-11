@@ -27,14 +27,18 @@ struct UserDefaultsAttentionSettingsStore: AttentionSettingsStoring {
     func load() -> AttentionSettings {
         guard
             let data = defaults.data(forKey: key),
-            let persistedSettings = try? decoder.decode(PersistedAttentionSettings.self, from: data),
-            persistedSettings.schemaVersion == AttentionSettings.currentSchemaVersion
+            let persistedSettings = try? decoder.decode(PersistedAttentionSettings.self, from: data)
         else {
             return .defaults
         }
 
+        let schemaVersion = persistedSettings.schemaVersion ?? 0
+        guard schemaVersion <= AttentionSettings.currentSchemaVersion else {
+            return .defaults
+        }
+
         let repair = AttentionSettingsLoadRepair.repair(persistedSettings)
-        if repair.didRepair {
+        if repair.didRepair || schemaVersion != AttentionSettings.currentSchemaVersion {
             try? save(repair.settings)
         }
 

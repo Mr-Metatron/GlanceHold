@@ -102,6 +102,70 @@ final class AttentionSettingsTests: XCTestCase {
         XCTAssertEqual(UserDefaultsAttentionSettingsStore(defaults: defaults, key: key).load(), repaired)
     }
 
+    func testUserDefaultsLoadMigratesLegacyPayloadWithoutSchemaVersionAndWritesBack() throws {
+        let defaults = try uniqueDefaults()
+        let key = "AttentionSettingsTests.legacy.\(UUID().uuidString)"
+        let calibration = calibrationSnapshot()
+        let settings = AttentionSettings(
+            mode: .pauseResume,
+            sensitivity: .strict,
+            headTurnThresholdDegrees: 12.0,
+            speedControlAwayDelay: 0.7,
+            pauseResumeAwayDelay: 1.5,
+            recoveryDelay: 0.9,
+            calibration: calibration
+        )
+        try writeMutatedSettings(settings, defaults: defaults, key: key) { object in
+            object.removeValue(forKey: "schemaVersion")
+        }
+
+        let migrated = UserDefaultsAttentionSettingsStore(defaults: defaults, key: key).load()
+
+        XCTAssertEqual(migrated.schemaVersion, AttentionSettings.currentSchemaVersion)
+        XCTAssertEqual(migrated.mode, settings.mode)
+        XCTAssertEqual(migrated.sensitivity, settings.sensitivity)
+        XCTAssertEqual(migrated.headTurnThresholdDegrees, settings.headTurnThresholdDegrees)
+        XCTAssertEqual(migrated.speedControlAwayDelay, settings.speedControlAwayDelay)
+        XCTAssertEqual(migrated.pauseResumeAwayDelay, settings.pauseResumeAwayDelay)
+        XCTAssertEqual(migrated.recoveryDelay, settings.recoveryDelay)
+        XCTAssertEqual(migrated.calibration, calibration)
+
+        let storedObject = try storedSettingsObject(defaults: defaults, key: key)
+        XCTAssertEqual(storedObject["schemaVersion"] as? Int, AttentionSettings.currentSchemaVersion)
+    }
+
+    func testUserDefaultsLoadMigratesOlderSchemaPayloadAndWritesBack() throws {
+        let defaults = try uniqueDefaults()
+        let key = "AttentionSettingsTests.oldSchema.\(UUID().uuidString)"
+        let calibration = calibrationSnapshot()
+        let settings = AttentionSettings(
+            mode: .pauseResume,
+            sensitivity: .relaxed,
+            headTurnThresholdDegrees: 20.0,
+            speedControlAwayDelay: 0.6,
+            pauseResumeAwayDelay: 1.4,
+            recoveryDelay: 0.8,
+            calibration: calibration
+        )
+        try writeMutatedSettings(settings, defaults: defaults, key: key) { object in
+            object["schemaVersion"] = 0
+        }
+
+        let migrated = UserDefaultsAttentionSettingsStore(defaults: defaults, key: key).load()
+
+        XCTAssertEqual(migrated.schemaVersion, AttentionSettings.currentSchemaVersion)
+        XCTAssertEqual(migrated.mode, settings.mode)
+        XCTAssertEqual(migrated.sensitivity, settings.sensitivity)
+        XCTAssertEqual(migrated.headTurnThresholdDegrees, settings.headTurnThresholdDegrees)
+        XCTAssertEqual(migrated.speedControlAwayDelay, settings.speedControlAwayDelay)
+        XCTAssertEqual(migrated.pauseResumeAwayDelay, settings.pauseResumeAwayDelay)
+        XCTAssertEqual(migrated.recoveryDelay, settings.recoveryDelay)
+        XCTAssertEqual(migrated.calibration, calibration)
+
+        let storedObject = try storedSettingsObject(defaults: defaults, key: key)
+        XCTAssertEqual(storedObject["schemaVersion"] as? Int, AttentionSettings.currentSchemaVersion)
+    }
+
     func testUserDefaultsLoadDefaultsNonFiniteNumericsAndInvalidSensitivity() throws {
         let defaults = try uniqueDefaults()
         let key = "AttentionSettingsTests.nonfinite.\(UUID().uuidString)"
@@ -225,6 +289,11 @@ private func writeMutatedSettings(
     mutate(&object)
     let mutatedData = try JSONSerialization.data(withJSONObject: object)
     defaults.set(mutatedData, forKey: key)
+}
+
+private func storedSettingsObject(defaults: UserDefaults, key: String) throws -> [String: Any] {
+    let data = try XCTUnwrap(defaults.data(forKey: key))
+    return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
 }
 
 private func setCalibrationNeutralPose(_ field: String, to value: Any, in object: inout [String: Any]) {
