@@ -1868,7 +1868,7 @@ final class FakeIINAPlaybackAdapter: IINAPlaybackAdapting {
         commands.append(intent)
 
         if failingCommands.contains(intent) {
-            throw MPVJSONIPCClientError.timeout
+            throw IINAPluginBridgeClientError.unavailable
         }
     }
 }
