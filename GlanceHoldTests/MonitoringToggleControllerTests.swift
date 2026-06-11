@@ -224,6 +224,71 @@ final class MonitoringToggleControllerTests: XCTestCase {
         XCTAssertFalse(statusUpdateSource.contains("10_000_000_000"))
     }
 
+    func testAppPlaybackAttentionSchedulingSupersedesStaleInFlightAttention() throws {
+        let source = try String(contentsOf: projectFileURL("GlanceHold/GlanceHoldApp.swift"), encoding: .utf8)
+        let body = try sourceSlice(
+            in: source,
+            from: "private func sendAttentionState",
+            to: "private func startPlaybackStatusUpdates"
+        )
+
+        XCTAssertFalse(body.contains("let previousTask = playbackAttentionTask"))
+        XCTAssertFalse(body.contains("await previousTask?.value"))
+        XCTAssertTrue(body.contains("playbackAttentionTask?.cancel()"))
+        XCTAssertTrue(body.contains("playbackAttentionGeneration = UUID()"))
+        XCTAssertTrue(body.contains("generation == playbackAttentionGeneration"))
+        XCTAssertTrue(body.contains("await coordinator.handleAttentionState(attentionState)"))
+
+        let cancelRange = try XCTUnwrap(body.range(of: "playbackAttentionTask?.cancel()"))
+        let generationRange = try XCTUnwrap(body.range(of: "playbackAttentionGeneration = UUID()"))
+        let taskRange = try XCTUnwrap(body.range(of: "playbackAttentionTask = Task"))
+        let handleRange = try XCTUnwrap(body.range(of: "await coordinator.handleAttentionState(attentionState)"))
+        XCTAssertLessThan(cancelRange.lowerBound, taskRange.lowerBound)
+        XCTAssertLessThan(generationRange.lowerBound, taskRange.lowerBound)
+        XCTAssertLessThan(taskRange.lowerBound, handleRange.lowerBound)
+    }
+
+    func testModeReplacementInvalidatesOldCoordinatorBeforeInstallingNewCallbacks() throws {
+        let source = try String(contentsOf: projectFileURL("GlanceHold/GlanceHoldApp.swift"), encoding: .utf8)
+        let body = try sourceSlice(
+            in: source,
+            from: "private func replacePlaybackCoordinator(mode: MonitoringMode)",
+            to: "private func makePlaybackCoordinator"
+        )
+
+        XCTAssertTrue(body.contains("stopPlaybackAttentionHandling()"))
+        XCTAssertTrue(body.contains("playbackCoordinator.stateDidChange = nil"))
+        XCTAssertTrue(body.contains("playbackCoordinator.stopMonitoringRequested = nil"))
+        XCTAssertTrue(body.contains("playbackCoordinator.playbackActionDidComplete = nil"))
+        XCTAssertTrue(body.contains("playbackCoordinator.stopMonitoring()"))
+        XCTAssertTrue(body.contains("playbackCoordinator = makePlaybackCoordinator(mode: mode)"))
+        XCTAssertTrue(body.contains("state.playerStatus = nil"))
+        XCTAssertTrue(
+            body.contains("installPlaybackCoordinatorStateHandler()") ||
+                body.contains("installMonitorStateHandler()")
+        )
+
+        let stopAttentionRange = try XCTUnwrap(body.range(of: "stopPlaybackAttentionHandling()"))
+        let nilStateRange = try XCTUnwrap(body.range(of: "playbackCoordinator.stateDidChange = nil"))
+        let nilStopRange = try XCTUnwrap(body.range(of: "playbackCoordinator.stopMonitoringRequested = nil"))
+        let nilActionRange = try XCTUnwrap(body.range(of: "playbackCoordinator.playbackActionDidComplete = nil"))
+        let stopRange = try XCTUnwrap(body.range(of: "playbackCoordinator.stopMonitoring()"))
+        let makeRange = try XCTUnwrap(body.range(of: "playbackCoordinator = makePlaybackCoordinator(mode: mode)"))
+        let installRange: Range<String.Index>
+        if let playbackHandlerRange = body.range(of: "installPlaybackCoordinatorStateHandler()") {
+            installRange = playbackHandlerRange
+        } else {
+            installRange = try XCTUnwrap(body.range(of: "installMonitorStateHandler()"))
+        }
+
+        XCTAssertLessThan(stopAttentionRange.lowerBound, nilStateRange.lowerBound)
+        XCTAssertLessThan(nilStateRange.lowerBound, nilStopRange.lowerBound)
+        XCTAssertLessThan(nilStopRange.lowerBound, nilActionRange.lowerBound)
+        XCTAssertLessThan(nilActionRange.lowerBound, stopRange.lowerBound)
+        XCTAssertLessThan(stopRange.lowerBound, makeRange.lowerBound)
+        XCTAssertLessThan(makeRange.lowerBound, installRange.lowerBound)
+    }
+
     private func state(status: MonitoringStatus, hasCalibration: Bool) -> GlanceHoldState {
         var settings = AttentionSettings.defaults
         settings.calibration = hasCalibration ? Self.calibration : nil
@@ -241,6 +306,13 @@ final class MonitoringToggleControllerTests: XCTestCase {
             .deletingLastPathComponent()
             .deletingLastPathComponent()
             .appendingPathComponent(relativePath)
+    }
+
+    private func sourceSlice(in source: String, from startMarker: String, to endMarker: String) throws -> String {
+        let start = try XCTUnwrap(source.range(of: startMarker))
+        let rest = source[start.lowerBound...]
+        let end = try XCTUnwrap(rest.range(of: endMarker))
+        return String(rest[..<end.lowerBound])
     }
 }
 

@@ -158,6 +158,36 @@ final class PlaybackPolicyTests: XCTestCase {
         assertNoRestoreOrResume(result.intents)
     }
 
+    func testPauseResumePlainPlayingSnapshotWhileOwnedDoesNotStopWithoutExplicitManualAction() {
+        var policy = PlaybackPolicy(mode: .pauseResume)
+
+        XCTAssertEqual(policy.apply(attention: .lookingAway, player: .playing(speed: 1.5)).intents, [.pause])
+
+        let result = policy.apply(attention: .facing, player: .playing(speed: 1.5))
+
+        XCTAssertEqual(result.intents, [])
+        XCTAssertTrue(result.state.pauseOwnedByGlanceHold)
+        XCTAssertNil(result.state.stoppedReason)
+        assertNoRestoreOrResume(result.intents)
+    }
+
+    func testPauseResumeExplicitPlayPressedStillStopsWithoutResume() {
+        var policy = PlaybackPolicy(mode: .pauseResume)
+
+        XCTAssertEqual(policy.apply(attention: .lookingAway, player: .playing(speed: 1.5)).intents, [.pause])
+
+        let result = policy.apply(
+            attention: .facing,
+            player: PlayerSnapshot(playbackState: .playing, speed: 1.5, manualAction: .playPressed)
+        )
+
+        XCTAssertEqual(result.intents, [.stopMonitoring(reason: .manualPlayerTakeover)])
+        XCTAssertNil(result.state.capturedSpeed)
+        XCTAssertFalse(result.state.pauseOwnedByGlanceHold)
+        XCTAssertEqual(result.state.stoppedReason, .manualPlayerTakeover)
+        assertNoRestoreOrResume(result.intents)
+    }
+
     func testManualPausePressedWhilePauseOwnedStopsMonitoringWithoutResume() {
         var policy = PlaybackPolicy(mode: .pauseResume)
 

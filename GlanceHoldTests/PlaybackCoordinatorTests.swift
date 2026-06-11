@@ -753,6 +753,67 @@ final class PlaybackCoordinatorTests: XCTestCase {
         assertNoRestoreOrResume(adapter.commands)
     }
 
+    func testSpeedModeCommandEchoDuringPendingConfirmationDoesNotStopMonitoring() async {
+        let adapter = StreamingStatusPlaybackAdapter(
+            snapshots: [
+                .playing(speed: 1.5),
+                .playerUnavailable,
+                .playerUnavailable,
+                .playing(speed: 1.0),
+                .playing(speed: 1.5)
+            ]
+        )
+        let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+        let commandEchoApplied = StateChangeWaiter { state in
+            state.isPlayerControllable && state.playerSnapshot == .playing(speed: 1.25)
+        }
+        let trustedStatusApplied = StateChangeWaiter { state in
+            state.isPlayerControllable && state.playerSnapshot == .playing(speed: 1.0)
+        }
+        var completedActions: [PlaybackCompletedAction] = []
+        var stopRequests: [StopMonitoringReason] = []
+        coordinator.playbackActionDidComplete = { completedActions.append($0) }
+        coordinator.stopMonitoringRequested = { stopRequests.append($0) }
+        coordinator.stateDidChange = { state in
+            commandEchoApplied.record(state)
+            trustedStatusApplied.record(state)
+        }
+
+        let statusTask = Task {
+            await coordinator.observePlayerStatusUpdates()
+        }
+        await adapter.waitForStatusStream()
+
+        await coordinator.handleAttentionState(.lookingAway)
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
+
+        adapter.yieldStatus(.playing(speed: 1.25))
+        await commandEchoApplied.wait()
+
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
+        XCTAssertEqual(stopRequests, [])
+        XCTAssertEqual(completedActions, [])
+
+        adapter.yieldStatus(.playing(speed: 1.0))
+        await trustedStatusApplied.wait()
+
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
+        XCTAssertEqual(stopRequests, [])
+        XCTAssertEqual(completedActions, [.heldSpeedAtOne])
+
+        await coordinator.handleAttentionState(.facing)
+
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne, .restoreSpeed(1.5)])
+        XCTAssertEqual(stopRequests, [])
+        XCTAssertEqual(completedActions, [.heldSpeedAtOne, .restoredSpeed(1.5)])
+        assertNoCommandRetry(adapter.commands, command: .holdSpeedAtOne)
+        assertNoCommandRetry(adapter.commands, command: .restoreSpeed(1.5))
+
+        adapter.finishStatusEvents()
+        statusTask.cancel()
+        await statusTask.value
+    }
+
     func testPushedSnapshotPreservesManualTakeoverStopReason() async {
         let adapter = FakeIINAPlaybackAdapter(
             snapshots: [
@@ -1540,7 +1601,6 @@ private final class StreamingStatusPlaybackAdapter: IINAPlaybackAdapting {
 
 private final class StateChangeWaiter {
     private let predicate: (PlaybackCoordinatorState) -> Bool
-    private let lock = NSLock()
     private var isSatisfied = false
     private var continuation: CheckedContinuation<Void, Never>?
 
@@ -1553,35 +1613,25 @@ private final class StateChangeWaiter {
             return
         }
 
-        let continuationToResume: CheckedContinuation<Void, Never>?
-        lock.lock()
-        if isSatisfied {
-            continuationToResume = nil
-        } else {
-            isSatisfied = true
-            continuationToResume = continuation
-            continuation = nil
+        guard !isSatisfied else {
+            return
         }
-        lock.unlock()
-        continuationToResume?.resume()
+
+        isSatisfied = true
+        continuation?.resume()
+        continuation = nil
     }
 
     func wait() async {
-        lock.lock()
-        if isSatisfied {
-            lock.unlock()
+        guard !isSatisfied else {
             return
         }
-        lock.unlock()
 
         await withCheckedContinuation { continuation in
-            lock.lock()
             if isSatisfied {
-                lock.unlock()
                 continuation.resume()
             } else {
                 self.continuation = continuation
-                lock.unlock()
             }
         }
     }
