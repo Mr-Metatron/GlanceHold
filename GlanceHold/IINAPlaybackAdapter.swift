@@ -1,5 +1,6 @@
 import Foundation
 
+// Reference-only MPV IPC adapter; this is not the production playback backend.
 struct IINAPlaybackAdapter: IINAPlaybackAdapting {
     private let client: MPVJSONIPCClienting
     private let socketExists: (String) -> Bool
