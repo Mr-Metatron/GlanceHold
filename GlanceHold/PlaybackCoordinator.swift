@@ -427,6 +427,14 @@ final class PlaybackCoordinator {
         return abs(lhs - rhs) <= Self.speedEpsilon
     }
 
+    private func approximatelyEqual(_ lhs: Double?, _ rhs: Double?) -> Bool {
+        guard let rhs else {
+            return lhs == nil
+        }
+
+        return approximatelyEqual(lhs, rhs)
+    }
+
     private func markNotControllable(snapshot: PlayerSnapshot, startedIn generation: UUID? = nil) {
         guard isValidOperation(startedIn: generation) else {
             return
@@ -510,7 +518,7 @@ final class PlaybackCoordinator {
             return true
         }
 
-        if isPendingCommandEcho(snapshot) {
+        if isPendingCommandEcho(snapshot, for: pendingConfirmation) {
             updateState(
                 snapshot: snapshot,
                 isPlayerControllable: isPlayerControllable(snapshot),
@@ -522,8 +530,29 @@ final class PlaybackCoordinator {
         return false
     }
 
-    private func isPendingCommandEcho(_ snapshot: PlayerSnapshot) -> Bool {
-        snapshot.manualAction == nil && isPlayerControllable(snapshot)
+    private func isPendingCommandEcho(
+        _ snapshot: PlayerSnapshot,
+        for pending: PendingPlaybackConfirmation
+    ) -> Bool {
+        guard snapshot.manualAction == nil, isPlayerControllable(snapshot) else {
+            return false
+        }
+
+        switch pending.intent {
+        case .holdSpeedAtOne:
+            return snapshot.playbackState == .playing &&
+                (approximatelyEqual(snapshot.speed, 1.0) ||
+                    approximatelyEqual(snapshot.speed, pending.sourceSnapshot.speed))
+        case let .restoreSpeed(speed):
+            return snapshot.playbackState == .playing &&
+                (approximatelyEqual(snapshot.speed, speed) ||
+                    approximatelyEqual(snapshot.speed, pending.sourceSnapshot.speed))
+        case .pause, .resume:
+            return snapshot.playbackState == pending.sourceSnapshot.playbackState &&
+                approximatelyEqual(snapshot.speed, pending.sourceSnapshot.speed)
+        case .stopMonitoring:
+            return false
+        }
     }
 
     @discardableResult

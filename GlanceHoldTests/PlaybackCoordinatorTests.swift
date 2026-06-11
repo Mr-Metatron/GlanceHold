@@ -852,7 +852,7 @@ final class PlaybackCoordinatorTests: XCTestCase {
         )
         let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
         let commandEchoApplied = StateChangeWaiter { state in
-            state.isPlayerControllable && state.playerSnapshot == .playing(speed: 1.25)
+            state.isPlayerControllable && state.playerSnapshot == .playing(speed: 1.5)
         }
         let trustedStatusApplied = StateChangeWaiter { state in
             state.isPlayerControllable && state.playerSnapshot == .playing(speed: 1.0)
@@ -874,7 +874,7 @@ final class PlaybackCoordinatorTests: XCTestCase {
         await coordinator.handleAttentionState(.lookingAway)
         XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
 
-        adapter.yieldStatus(.playing(speed: 1.25))
+        adapter.yieldStatus(.playing(speed: 1.5))
         await commandEchoApplied.wait()
 
         XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
@@ -895,6 +895,45 @@ final class PlaybackCoordinatorTests: XCTestCase {
         XCTAssertEqual(completedActions, [.heldSpeedAtOne, .restoredSpeed(1.5)])
         assertNoCommandRetry(adapter.commands, command: .holdSpeedAtOne)
         assertNoCommandRetry(adapter.commands, command: .restoreSpeed(1.5))
+
+        adapter.finishStatusEvents()
+        statusTask.cancel()
+        await statusTask.value
+    }
+
+    func testActivePendingSpeedConfirmationStopsForNonEchoSpeedTakeover() async {
+        let adapter = StreamingStatusPlaybackAdapter(
+            snapshots: [
+                .playing(speed: 1.5),
+                .playerUnavailable,
+                .playerUnavailable
+            ]
+        )
+        let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+        let stopped = StateChangeWaiter { state in
+            state.stoppedReason == .manualPlayerTakeover
+        }
+        var stopRequests: [StopMonitoringReason] = []
+        coordinator.stopMonitoringRequested = { stopRequests.append($0) }
+        coordinator.stateDidChange = { state in
+            stopped.record(state)
+        }
+
+        let statusTask = Task {
+            await coordinator.observePlayerStatusUpdates()
+        }
+        await adapter.waitForStatusStream()
+
+        await coordinator.handleAttentionState(.lookingAway)
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
+
+        adapter.yieldStatus(.playing(speed: 2.0))
+        await stopped.wait()
+
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
+        XCTAssertEqual(stopRequests, [.manualPlayerTakeover])
+        XCTAssertEqual(coordinator.state.stoppedReason, .manualPlayerTakeover)
+        assertNoRestoreOrResume(adapter.commands)
 
         adapter.finishStatusEvents()
         statusTask.cancel()
