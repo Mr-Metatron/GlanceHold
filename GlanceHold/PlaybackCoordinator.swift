@@ -504,7 +504,20 @@ final class PlaybackCoordinator {
             return true
         }
 
+        if isPendingCommandEcho(snapshot) {
+            updateState(
+                snapshot: snapshot,
+                isPlayerControllable: isPlayerControllable(snapshot),
+                startedIn: generation
+            )
+            return true
+        }
+
         return false
+    }
+
+    private func isPendingCommandEcho(_ snapshot: PlayerSnapshot) -> Bool {
+        snapshot.manualAction == nil && isPlayerControllable(snapshot)
     }
 
     @discardableResult
