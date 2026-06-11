@@ -86,8 +86,16 @@
 **Plans:** 3 plans
 
 Plans:
+**Wave 1**
+
 - [ ] 09-01-PLAN.md — Add async playback ownership regression harness and Wave 0 coverage
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 09-02-PLAN.md — Harden coordinator invalidation, serialization, and latest-state app scheduling
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 09-03-PLAN.md — Preserve ownership across transient confirmation failures and tighten manual takeover
 
 **Success criteria:**
