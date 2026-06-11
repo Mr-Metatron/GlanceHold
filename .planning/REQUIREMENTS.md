@@ -42,12 +42,12 @@
 - [x] **BRDG-01**: User can use the local IINA bridge without manually copying a GlanceHold token into IINA plugin preferences.
 - [x] **BRDG-02**: Developer can reason from an explicit local single-user bridge trust model that treats loopback transport, narrow commands, plugin enablement, and local-only diagnostics as the security boundary for v1.1.
 - [x] **BRDG-03**: User sees protocol-distinct setup/auth bridge failures instead of `unauthorized` being collapsed into generic `IINA unavailable`.
-- [ ] **BRDG-04**: Developer can clearly see whether the legacy MPV IPC backend is removed from production or isolated as experimental code with a single shared status mapping path.
+- [x] **BRDG-04**: Developer can clearly see whether the legacy MPV IPC backend is removed from production or isolated as experimental code with a single shared status mapping path.
 - [x] **BRDG-05**: Developer can test the revised bridge trust behavior with protocol-level tests, not only source-string checks.
 
 ### Verification and Regression Coverage
 
-- [ ] **VER-01**: Developer can run focused regression tests for concurrent stop-during-await, mode replacement, high-frequency fake camera input, ambiguous recovery, confirmation failure ownership, calibration micro-windows, settings validation, and bridge authentication.
+- [x] **VER-01**: Developer can run focused regression tests for concurrent stop-during-await, mode replacement, high-frequency fake camera input, ambiguous recovery, confirmation failure ownership, calibration micro-windows, settings validation, and bridge authentication.
 - [ ] **VER-02**: User can complete a real IINA plus camera UAT pass covering speed hold/restore, pause/resume, manual takeover, disable/quit cleanup, power observation, and diagnostic log capture.
 
 ## Future Requirements
@@ -105,9 +105,9 @@
 | BRDG-01 | Phase 08.1 | Complete |
 | BRDG-02 | Phase 08.1 | Complete |
 | BRDG-03 | Phase 08.1 | Complete |
-| BRDG-04 | Phase 11 | Pending |
+| BRDG-04 | Phase 11 | Complete |
 | BRDG-05 | Phase 08.1, Phase 11 | Complete |
-| VER-01 | Phase 11 | Pending |
+| VER-01 | Phase 11 | Complete |
 | VER-02 | Phase 11 | Pending |
 
 **Coverage:**

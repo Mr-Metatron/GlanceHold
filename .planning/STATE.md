@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Runtime Reliability and Power Budget
 status: executing
-stopped_at: Phase 11 context gathered
-last_updated: "2026-06-11T18:15:57.068Z"
-last_activity: 2026-06-11 -- Phase 11 planning complete
+stopped_at: Completed 11-01-PLAN.md
+last_updated: "2026-06-11T18:46:17.603Z"
+last_activity: 2026-06-11
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 30
-  completed_plans: 25
+  completed_plans: 26
   percent: 83
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-09 after completing Phase 7)
 
 **Core value:** 当用户注意力离开屏幕时，GlanceHold 能可靠、克制地替用户处理视频速度或播放状态，并在用户回来时恢复到合适状态，且不误恢复用户手动暂停的视频。
-**Current focus:** Phase 11 — iina bridge security, legacy boundary, and reliability verification
+**Current focus:** Phase 11 — iina-bridge-security-legacy-boundary-and-reliability-verific
 
 ## Current Position
 
-Phase: 11
-Plan: Not started
+Phase: 11 (iina-bridge-security-legacy-boundary-and-reliability-verific) — EXECUTING
+Plan: 2 of 5
 Status: Ready to execute
-Last activity: 2026-06-11 -- Phase 11 planning complete
+Last activity: 2026-06-11
 
 ## Performance Metrics
 
@@ -101,6 +101,7 @@ Last activity: 2026-06-11 -- Phase 11 planning complete
 | Phase 10 P02 | 7min | 2 tasks | 2 files |
 | Phase 10 P03 | 13min | 3 tasks | 5 files |
 | Phase 10 P04 | 2min | 2 tasks | 1 files |
+| Phase 11 P01 | 6 min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -143,6 +144,8 @@ Recent decisions affecting current work:
 - [Phase 10]: Monitor uncertain samples preserve reducer-visible transient state — Ambiguous and failed analyzer output should not immediately overwrite the last stable-facing, looking-away, no-face, or recovering state.
 - [Phase 10]: Reset calibration clears only calibration — User tuning for mode, sensitivity, thresholds, and delays must survive recalibration so reset does not act like a full settings reset.
 - [Phase 10]: Attention settings repair happens at UserDefaults load — Field-level repair keeps safe user choices while clamping unsafe scalars, defaulting non-finite values, and clearing only unsafe calibration snapshots.
+- [Phase ?]: 11-01 extracted shared IINA playback status/event/protocol types into IINAPlaybackTypes.swift while keeping production wiring on IINAPluginBridgeAdapter.
+- [Phase ?]: 11-01 keeps the concrete MPV IPC adapter source reference-only for now; production target isolation is deferred to 11-02.
 
 ### Roadmap Evolution
 
@@ -196,9 +199,9 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-11T16:38:43.977Z
-Stopped at: Phase 11 context gathered
-Resume file: .planning/phases/11-iina-bridge-security-legacy-boundary-and-reliability-verific/11-CONTEXT.md
+Last session: 2026-06-11T18:45:54.593Z
+Stopped at: Completed 11-01-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 
