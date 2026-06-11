@@ -23,10 +23,10 @@
 
 ### Playback Ownership Safety
 
-- [ ] **PLAY-01**: User can disable monitoring, quit GlanceHold, or switch modes without in-flight playback tasks later changing IINA speed or playback state.
-- [ ] **PLAY-02**: Developer can reason about playback coordinator state through actor, main-actor, or serial-executor isolation rather than unsynchronized mutable async state.
-- [ ] **PLAY-03**: User keeps GlanceHold-owned speed or pause ownership across transient confirmation snapshot failures when the command itself succeeded.
-- [ ] **PLAY-04**: User manual pause, play, or speed takeover remains protected and stops monitoring without unwanted restore or resume behavior.
+- [x] **PLAY-01**: User can disable monitoring, quit GlanceHold, or switch modes without in-flight playback tasks later changing IINA speed or playback state.
+- [x] **PLAY-02**: Developer can reason about playback coordinator state through actor, main-actor, or serial-executor isolation rather than unsynchronized mutable async state.
+- [x] **PLAY-03**: User keeps GlanceHold-owned speed or pause ownership across transient confirmation snapshot failures when the command itself succeeded.
+- [x] **PLAY-04**: User manual pause, play, or speed takeover remains protected and stops monitoring without unwanted restore or resume behavior.
 
 ### Attention and Calibration Semantics
 
@@ -92,10 +92,10 @@
 | PWR-03 | Phase 8 | Complete |
 | PWR-04 | Phase 8 | Complete |
 | PWR-05 | Phase 11 | Pending |
-| PLAY-01 | Phase 9 | Pending |
-| PLAY-02 | Phase 9 | Pending |
-| PLAY-03 | Phase 9 | Pending |
-| PLAY-04 | Phase 9 | Pending |
+| PLAY-01 | Phase 9 | Complete |
+| PLAY-02 | Phase 9 | Complete |
+| PLAY-03 | Phase 9 | Complete |
+| PLAY-04 | Phase 9 | Complete |
 | ATT-01 | Phase 10 | Pending |
 | ATT-02 | Phase 10 | Pending |
 | ATT-03 | Phase 10 | Pending |

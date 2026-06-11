@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Runtime Reliability and Power Budget
 status: executing
-stopped_at: Phase 9 context gathered
-last_updated: "2026-06-11T03:43:00.861Z"
-last_activity: 2026-06-11 -- Phase 09 planning complete
+stopped_at: Completed 09-01-PLAN.md
+last_updated: "2026-06-11T04:07:23.507Z"
+last_activity: 2026-06-11
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 20
-  completed_plans: 17
+  completed_plans: 18
   percent: 50
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-09 after completing Phase 7)
 
 **Core value:** 当用户注意力离开屏幕时，GlanceHold 能可靠、克制地替用户处理视频速度或播放状态，并在用户回来时恢复到合适状态，且不误恢复用户手动暂停的视频。
-**Current focus:** Phase 9 — playback coordinator ownership and async safety
+**Current focus:** Phase 09 — playback-coordinator-ownership-and-async-safety
 
 ## Current Position
 
-Phase: 9
-Plan: Not started
+Phase: 09 (playback-coordinator-ownership-and-async-safety) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-06-11 -- Phase 09 planning complete
+Last activity: 2026-06-11
 
 ## Performance Metrics
 
@@ -92,6 +92,7 @@ Last activity: 2026-06-11 -- Phase 09 planning complete
 | Phase 08 P06 | 4min | 3 tasks | 4 files |
 | Phase 08.1 P05 | 9 min | 3 tasks | 8 files |
 | Phase 08.1 P06 | 8min | 3 tasks | 5 files |
+| Phase 09 P01 | 14m | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -122,6 +123,8 @@ Recent decisions affecting current work:
 - [Phase 08.1]: 08.1-06 maps every typed IINA plugin bridge protocol failure from `status()` to `pluginUpdateRequired`, while preserving setup-needed for missing plugins and unavailable for true runtime/player failures.
 - [Phase 08.1]: 08.1-06 validates token-free plugin requests as non-array objects with positive safe-integer ids before reading snapshots or invoking playback commands.
 - [Phase 08.1]: 08.1-06 constrains plugin `setSpeed` to finite numeric values from 0.1 through 16.0 inclusive as part of the local bridge trust boundary.
+- [Phase 09]: 09-01 remains regression-harness-only; production playback behavior is deferred to 09-02 and 09-03.
+- [Phase 09]: 09-01 assertion failures are expected red regression coverage for ownership, manual takeover, and latest-state scheduling fixes.
 
 ### Roadmap Evolution
 
@@ -175,9 +178,9 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-11T02:53:55.108Z
-Stopped at: Phase 9 context gathered
-Resume file: .planning/phases/09-playback-coordinator-ownership-and-async-safety/09-CONTEXT.md
+Last session: 2026-06-11T04:07:23.503Z
+Stopped at: Completed 09-01-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 
