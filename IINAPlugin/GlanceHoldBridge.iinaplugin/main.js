@@ -98,7 +98,7 @@ function consumeMatchingCommandEcho(snapshot, property) {
     }
 
     if (property === "speed") {
-      return snapshot.state === "playing" &&
+      return (snapshot.state === "playing" || snapshot.state === "paused") &&
         typeof snapshot.speed === "number" &&
         approximatelyEqual(snapshot.speed, echo.speed);
     }
@@ -131,7 +131,11 @@ function manualActionForPropertyChange(property) {
     return null;
   }
 
-  if (property === "speed" && snapshot.state === "playing") {
+  if (
+    property === "speed" &&
+    (snapshot.state === "playing" || snapshot.state === "paused") &&
+    typeof snapshot.speed === "number"
+  ) {
     return "speedChanged";
   }
 

@@ -298,7 +298,7 @@ struct PlaybackPolicy: Equatable {
 
     private func suppressesPendingSpeedEcho(player: PlayerSnapshot) -> Bool {
         guard state.pendingConfirmationIntent == .holdSpeedAtOne,
-              player.playbackState == .playing else {
+              isControllableSpeedSnapshot(player) else {
             return false
         }
 
@@ -356,9 +356,9 @@ struct PlaybackPolicy: Equatable {
     private func playerConfirms(intent: PlaybackIntent, snapshot: PlayerSnapshot) -> Bool {
         switch intent {
         case .holdSpeedAtOne:
-            return snapshot.playbackState == .playing && approximatelyEqual(snapshot.speed, 1.0)
+            return isControllableSpeedSnapshot(snapshot) && approximatelyEqual(snapshot.speed, 1.0)
         case let .restoreSpeed(speed):
-            return snapshot.playbackState == .playing && approximatelyEqual(snapshot.speed, speed)
+            return isControllableSpeedSnapshot(snapshot) && approximatelyEqual(snapshot.speed, speed)
         case .pause:
             return snapshot.playbackState == .paused && snapshot.speed != nil
         case .resume:
@@ -369,11 +369,20 @@ struct PlaybackPolicy: Equatable {
     }
 
     private func observedSpeedWasManuallyChanged(player: PlayerSnapshot) -> Bool {
-        guard player.playbackState == .playing, let speed = player.speed else {
+        guard isControllableSpeedSnapshot(player), let speed = player.speed else {
             return false
         }
 
         return !approximatelyEqual(speed, 1.0)
+    }
+
+    private func isControllableSpeedSnapshot(_ snapshot: PlayerSnapshot) -> Bool {
+        switch snapshot.playbackState {
+        case .playing, .paused:
+            return snapshot.speed != nil
+        case .idle, .setupNeeded, .playerUnavailable, .pluginUpdateRequired:
+            return false
+        }
     }
 
     private func approximatelyEqual(_ lhs: Double?, _ rhs: Double) -> Bool {

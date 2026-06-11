@@ -57,6 +57,25 @@ final class PlaybackPolicyTests: XCTestCase {
         XCTAssertNil(confirmed.state.capturedSpeed)
     }
 
+    func testPendingSpeedConfirmationsAcceptPausedSnapshots() {
+        var policy = PlaybackPolicy(mode: .speedControl)
+
+        XCTAssertEqual(policy.apply(attention: .lookingAway, player: .playing(speed: 1.75)).intents, [.holdSpeedAtOne])
+        policy.beginPendingConfirmation(for: .holdSpeedAtOne)
+        let heldWhilePaused = policy.applyObservedPlayerSnapshot(.paused(speed: 1.0), monitoringActive: true)
+        XCTAssertEqual(heldWhilePaused.intents, [])
+        XCTAssertEqual(heldWhilePaused.state.capturedSpeed, 1.75)
+
+        let restore = policy.apply(attention: .facing, player: .paused(speed: 1.0))
+        XCTAssertEqual(restore.intents, [.restoreSpeed(1.75)])
+        XCTAssertEqual(restore.state.capturedSpeed, 1.75)
+
+        policy.beginPendingConfirmation(for: .restoreSpeed(1.75))
+        let restoredWhilePaused = policy.applyObservedPlayerSnapshot(.paused(speed: 1.75), monitoringActive: true)
+        XCTAssertEqual(restoredWhilePaused.intents, [])
+        XCTAssertNil(restoredWhilePaused.state.capturedSpeed)
+    }
+
     func testSpeedModeRestoresArbitraryCapturedSpeeds() {
         for speed in [1.25, 1.5, 2.0] {
             var policy = PlaybackPolicy(mode: .speedControl)
@@ -95,6 +114,19 @@ final class PlaybackPolicyTests: XCTestCase {
         XCTAssertFalse(result.state.pauseOwnedByGlanceHold)
         XCTAssertEqual(result.state.stoppedReason, .manualPlayerTakeover)
         assertNoRestoreOrResume(result.intents)
+    }
+
+    func testPausedSpeedChangeWhileOwnedStopsMonitoringWithoutRestore() {
+        var policy = PlaybackPolicy(mode: .speedControl)
+
+        XCTAssertEqual(policy.apply(attention: .lookingAway, player: .playing(speed: 1.75)).intents, [.holdSpeedAtOne])
+
+        let plainPausedChange = policy.apply(attention: .lookingAway, player: .paused(speed: 1.25))
+
+        XCTAssertEqual(plainPausedChange.intents, [.stopMonitoring(reason: .manualPlayerTakeover)])
+        XCTAssertNil(plainPausedChange.state.capturedSpeed)
+        XCTAssertEqual(plainPausedChange.state.stoppedReason, .manualPlayerTakeover)
+        assertNoRestoreOrResume(plainPausedChange.intents)
     }
 
     func testManualSpeedChangedActionWhileSpeedConfirmationPendingStopsMonitoring() {

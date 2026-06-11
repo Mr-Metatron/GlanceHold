@@ -318,6 +318,11 @@ function testManualPropertyChangesAnnotateStatusChanged() {
   harness.setPlayback({ isPaused: false, speed: 1.75 });
   harness.emit("mpv.speed.changed");
   assert.equal(harness.replies.at(-1).body.snapshot.manualAction, "speedChanged");
+
+  harness.setPlayback({ isPaused: true, speed: 1.25 });
+  harness.emit("mpv.speed.changed");
+  assert.equal(harness.replies.at(-1).body.snapshot.state, "paused");
+  assert.equal(harness.replies.at(-1).body.snapshot.manualAction, "speedChanged");
 }
 
 function testBridgeCommandEchoesAreNotAnnotatedAsManualActions() {
@@ -355,6 +360,20 @@ function testBridgeCommandEchoesAreNotAnnotatedAsManualActions() {
   assert.deepEqual(speedResponse, { version: 3, id: 46, ok: true });
   assert.equal(speedStatusChanged.snapshot.state, "paused");
   assert.equal(speedStatusChanged.snapshot.manualAction, undefined);
+
+  const speedEchoStart = harness.replies.length;
+  harness.emit("mpv.speed.changed");
+  const speedEchoReplies = harness.replies.slice(speedEchoStart).map((reply) => reply.body);
+  assert.equal(speedEchoReplies.length, 0);
+
+  const laterManualSpeedStart = harness.replies.length;
+  harness.emit("mpv.speed.changed");
+  const laterManualSpeedReplies = harness.replies.slice(laterManualSpeedStart).map((reply) => reply.body);
+  const laterManualSpeedStatusChanged = laterManualSpeedReplies.find((reply) => reply.type === "statusChanged");
+
+  assert.equal(laterManualSpeedStatusChanged.snapshot.state, "paused");
+  assert.equal(laterManualSpeedStatusChanged.snapshot.speed, 1.5);
+  assert.equal(laterManualSpeedStatusChanged.snapshot.manualAction, "speedChanged");
 }
 
 const tests = [

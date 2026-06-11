@@ -394,9 +394,9 @@ final class PlaybackCoordinator {
     private func confirms(intent: PlaybackIntent, with snapshot: PlayerSnapshot) -> Bool {
         switch intent {
         case .holdSpeedAtOne:
-            return snapshot.playbackState == .playing && approximatelyEqual(snapshot.speed, 1.0)
+            return isControllableSpeedSnapshot(snapshot) && approximatelyEqual(snapshot.speed, 1.0)
         case let .restoreSpeed(speed):
-            return snapshot.playbackState == .playing && approximatelyEqual(snapshot.speed, speed)
+            return isControllableSpeedSnapshot(snapshot) && approximatelyEqual(snapshot.speed, speed)
         case .pause:
             return snapshot.playbackState == .paused && snapshot.speed != nil
         case .resume:
@@ -638,11 +638,11 @@ final class PlaybackCoordinator {
 
         switch pending.intent {
         case .holdSpeedAtOne:
-            return snapshot.playbackState == .playing &&
+            return isControllableSpeedSnapshot(snapshot) &&
                 (approximatelyEqual(snapshot.speed, 1.0) ||
                     approximatelyEqual(snapshot.speed, pending.sourceSnapshot.speed))
         case let .restoreSpeed(speed):
-            return snapshot.playbackState == .playing &&
+            return isControllableSpeedSnapshot(snapshot) &&
                 (approximatelyEqual(snapshot.speed, speed) ||
                     approximatelyEqual(snapshot.speed, pending.sourceSnapshot.speed))
         case .pause, .resume:
@@ -684,7 +684,12 @@ final class PlaybackCoordinator {
     }
 
     private func isControllableSpeedSnapshot(_ snapshot: PlayerSnapshot) -> Bool {
-        snapshot.playbackState == .playing && snapshot.speed != nil
+        switch snapshot.playbackState {
+        case .playing, .paused:
+            return snapshot.speed != nil
+        case .idle, .setupNeeded, .playerUnavailable, .pluginUpdateRequired:
+            return false
+        }
     }
 
     private func isExplicitManualActionSnapshot(_ snapshot: PlayerSnapshot) -> Bool {

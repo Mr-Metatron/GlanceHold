@@ -35,6 +35,32 @@ final class PlaybackCoordinatorTests: XCTestCase {
         XCTAssertEqual(completedActions, [.heldSpeedAtOne, .restoredSpeed(1.25)])
     }
 
+    func testRecoveryRestoresCapturedSpeedWhilePausedWithoutMarkingUnavailable() async throws {
+        let adapter = FakeIINAPlaybackAdapter(
+            snapshots: [
+                .playing(speed: 1.5),
+                .playing(speed: 1.0),
+                .paused(speed: 1.0),
+                .paused(speed: 1.5)
+            ]
+        )
+        let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+        var completedActions: [PlaybackCompletedAction] = []
+        var stopRequests: [StopMonitoringReason] = []
+        coordinator.playbackActionDidComplete = { completedActions.append($0) }
+        coordinator.stopMonitoringRequested = { stopRequests.append($0) }
+
+        await coordinator.handleAttentionState(.lookingAway)
+        await coordinator.handleAttentionState(.facing)
+
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne, .restoreSpeed(1.5)])
+        XCTAssertEqual(completedActions, [.heldSpeedAtOne, .restoredSpeed(1.5)])
+        XCTAssertEqual(stopRequests, [])
+        XCTAssertTrue(coordinator.state.isPlayerControllable)
+        XCTAssertEqual(coordinator.state.playerSnapshot, .paused(speed: 1.5))
+        XCTAssertNil(coordinator.state.stoppedReason)
+    }
+
     func testFailedConfirmationDoesNotEmitCompletedPlaybackAction() async {
         let adapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5), .playing(speed: 1.5)])
         let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
@@ -434,6 +460,29 @@ final class PlaybackCoordinatorTests: XCTestCase {
         XCTAssertEqual(requestedStops, [.manualPlayerTakeover])
         XCTAssertEqual(coordinator.state.stoppedReason, .manualPlayerTakeover)
         XCTAssertEqual(adapter.commands, [])
+        assertNoRestoreOrResume(adapter.commands)
+    }
+
+    func testPushedManualSpeedChangeWhilePausedRequestsStopWithoutRestore() async {
+        let adapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5), .playing(speed: 1.0)])
+        let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+        var completedActions: [PlaybackCompletedAction] = []
+        var requestedStops: [StopMonitoringReason] = []
+        coordinator.playbackActionDidComplete = { completedActions.append($0) }
+        coordinator.stopMonitoringRequested = { reason in
+            requestedStops.append(reason)
+        }
+
+        await coordinator.handleAttentionState(.lookingAway)
+        coordinator.applyPushedPlayerSnapshot(
+            PlayerSnapshot(playbackState: .paused, speed: 1.25, manualAction: .speedChanged)
+        )
+        await coordinator.handleAttentionState(.facing)
+
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
+        XCTAssertEqual(completedActions, [.heldSpeedAtOne])
+        XCTAssertEqual(requestedStops, [.manualPlayerTakeover])
+        XCTAssertEqual(coordinator.state.stoppedReason, .manualPlayerTakeover)
         assertNoRestoreOrResume(adapter.commands)
     }
 
