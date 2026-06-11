@@ -158,6 +158,8 @@ final class PlaybackCoordinator {
             return
         }
 
+        retireSupersededPauseOwnershipIfStillPlaying(snapshot)
+
         if isControllable, applyObservedPlayerSnapshotForManualStopIfNeeded(
             snapshot,
             monitoringActive: true,
@@ -269,7 +271,9 @@ final class PlaybackCoordinator {
         sourceSnapshot: PlayerSnapshot,
         startedIn generation: UUID
     ) {
-        clearSupersededConfirmationTracking(for: intent)
+        if intent == .pause || intent == .resume {
+            supersededPauseMayLandWhileFacing = false
+        }
         policy.beginPendingConfirmation(for: intent)
         pendingConfirmation = PendingPlaybackConfirmation(
             intent: intent,
@@ -505,6 +509,8 @@ final class PlaybackCoordinator {
             return
         }
 
+        retireSupersededPauseOwnershipIfStillPlaying(snapshot)
+
         if isControllable, applyObservedPlayerSnapshotForManualStopIfNeeded(
             snapshot,
             monitoringActive: monitoringSessionActive,
@@ -560,6 +566,15 @@ final class PlaybackCoordinator {
             return true
         }
 
+        if consumeSupersededSpeedCommandEcho(snapshot) {
+            updateState(
+                snapshot: snapshot,
+                isPlayerControllable: isPlayerControllable(snapshot),
+                startedIn: generation
+            )
+            return true
+        }
+
         if isSpeedIntent(pendingConfirmation.intent), isControllableSpeedSnapshot(snapshot) {
             handleStopMonitoring(
                 reason: .manualPlayerTakeover,
@@ -588,12 +603,11 @@ final class PlaybackCoordinator {
             return true
         }
 
-        guard let supersededSpeedPendingConfirmation else {
+        if consumeSupersededSpeedCommandEcho(snapshot) {
             return false
         }
 
-        if isPendingCommandEcho(snapshot, for: supersededSpeedPendingConfirmation) {
-            self.supersededSpeedPendingConfirmation = nil
+        guard supersededSpeedPendingConfirmation != nil else {
             return false
         }
 
@@ -628,6 +642,27 @@ final class PlaybackCoordinator {
         case .stopMonitoring:
             return false
         }
+    }
+
+    private func consumeSupersededSpeedCommandEcho(_ snapshot: PlayerSnapshot) -> Bool {
+        guard let supersededSpeedPendingConfirmation,
+              isPendingCommandEcho(snapshot, for: supersededSpeedPendingConfirmation) else {
+            return false
+        }
+
+        self.supersededSpeedPendingConfirmation = nil
+        return true
+    }
+
+    private func retireSupersededPauseOwnershipIfStillPlaying(_ snapshot: PlayerSnapshot) {
+        guard supersededPauseMayLandWhileFacing,
+              latestAttentionState == .facing,
+              snapshot.playbackState == .playing,
+              snapshot.speed != nil else {
+            return
+        }
+
+        policy.abandonPendingPauseOwnership()
     }
 
     private func isSpeedIntent(_ intent: PlaybackIntent) -> Bool {

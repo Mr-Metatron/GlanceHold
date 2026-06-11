@@ -126,6 +126,15 @@ struct PlaybackPolicy: Equatable {
         return result([])
     }
 
+    @discardableResult
+    mutating func abandonPendingPauseOwnership() -> PlaybackPolicyResult {
+        if state.pendingConfirmationIntent == .pause {
+            state.pendingConfirmationIntent = nil
+        }
+        state.pauseOwnedByGlanceHold = false
+        return result([])
+    }
+
     mutating func apply(attention: DebouncedAttentionState, player: PlayerSnapshot) -> PlaybackPolicyResult {
         guard state.stoppedReason == nil else {
             return result([])
