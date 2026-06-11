@@ -574,8 +574,13 @@ private struct GlanceHoldMenu: View {
     }
 
     private func installPlaybackCoordinatorStateHandler() {
+        let coordinator = playbackCoordinator
         playbackCoordinator.stateDidChange = { coordinatorState in
             Task { @MainActor in
+                guard coordinator === playbackCoordinator else {
+                    return
+                }
+
                 let wasPlayerControllable = state.playerStatus == .playing || state.playerStatus == .paused
                 state.apply(playerControlState: coordinatorState)
                 if coordinatorState.isPlayerControllable && !wasPlayerControllable {
@@ -585,11 +590,19 @@ private struct GlanceHoldMenu: View {
         }
         playbackCoordinator.playbackActionDidComplete = { action in
             Task { @MainActor in
+                guard coordinator === playbackCoordinator else {
+                    return
+                }
+
                 state.recordLastAction(action.lastAction)
             }
         }
         playbackCoordinator.stopMonitoringRequested = { _ in
             Task { @MainActor in
+                guard coordinator === playbackCoordinator else {
+                    return
+                }
+
                 stopMonitoring(source: .manualPlayerTakeover)
             }
         }
@@ -602,15 +615,20 @@ private struct GlanceHoldMenu: View {
     }
 
     private func sendAttentionState(_ attentionState: DebouncedAttentionState, to coordinator: PlaybackCoordinator) {
+        playbackAttentionTask?.cancel()
+        playbackAttentionGeneration = UUID()
+        coordinator.invalidateInFlightAttentionHandling()
         let generation = playbackAttentionGeneration
-        let previousTask = playbackAttentionTask
         playbackAttentionTask = Task { @MainActor in
-            await previousTask?.value
-            guard !Task.isCancelled, generation == playbackAttentionGeneration else {
+            guard !Task.isCancelled, generation == playbackAttentionGeneration, coordinator === playbackCoordinator else {
                 return
             }
 
             await coordinator.handleAttentionState(attentionState)
+
+            guard !Task.isCancelled, generation == playbackAttentionGeneration, coordinator === playbackCoordinator else {
+                return
+            }
         }
     }
 
@@ -666,6 +684,7 @@ private struct GlanceHoldMenu: View {
         playbackAttentionGeneration = UUID()
         playbackAttentionTask?.cancel()
         playbackAttentionTask = nil
+        playbackCoordinator.invalidateInFlightAttentionHandling()
     }
 
     private func stopMonitoringToggleRequestHandling() {
