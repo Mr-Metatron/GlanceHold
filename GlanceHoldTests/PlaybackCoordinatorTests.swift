@@ -1091,6 +1091,37 @@ final class PlaybackCoordinatorTests: XCTestCase {
         XCTAssertFalse(adapter.commands.contains(.resume))
     }
 
+    func testPendingPauseManualSpeedChangeConfirmsPauseWithoutStoppingMonitoring() async {
+        let adapter = FakeIINAPlaybackAdapter(
+            snapshots: [
+                .playing(speed: 1.5),
+                .playerUnavailable,
+                .playerUnavailable
+            ]
+        )
+        let coordinator = PlaybackCoordinator(mode: .pauseResume, adapter: adapter)
+        var completedActions: [PlaybackCompletedAction] = []
+        var stopRequests: [StopMonitoringReason] = []
+        coordinator.playbackActionDidComplete = { completedActions.append($0) }
+        coordinator.stopMonitoringRequested = { stopRequests.append($0) }
+
+        await coordinator.handleAttentionState(.lookingAway)
+        coordinator.applyPushedPlayerSnapshot(
+            PlayerSnapshot(playbackState: .paused, speed: 1.25, manualAction: .speedChanged)
+        )
+
+        XCTAssertEqual(adapter.commands, [.pause])
+        XCTAssertEqual(stopRequests, [])
+        XCTAssertEqual(completedActions, [.pausedByGlanceHold])
+        XCTAssertTrue(coordinator.state.isPlayerControllable)
+        XCTAssertEqual(
+            coordinator.state.playerSnapshot,
+            PlayerSnapshot(playbackState: .paused, speed: 1.25, manualAction: .speedChanged)
+        )
+        XCTAssertNil(coordinator.state.stoppedReason)
+        XCTAssertFalse(adapter.commands.contains(.resume))
+    }
+
     func testPendingHoldManualSpeedChangeToTargetStopsWithoutLaterRestore() async {
         let adapter = FakeIINAPlaybackAdapter(
             snapshots: [
@@ -1146,6 +1177,36 @@ final class PlaybackCoordinatorTests: XCTestCase {
         XCTAssertEqual(stopRequests, [.manualPlayerTakeover])
         XCTAssertEqual(completedActions, [.pausedByGlanceHold])
         XCTAssertEqual(coordinator.state.stoppedReason, .manualPlayerTakeover)
+    }
+
+    func testPendingResumeManualSpeedChangeRetainsPendingResumeWithoutStoppingMonitoring() async {
+        let adapter = FakeIINAPlaybackAdapter(
+            snapshots: [
+                .playing(speed: 1.5),
+                .paused(speed: 1.5),
+                .paused(speed: 1.5),
+                .playerUnavailable
+            ]
+        )
+        let coordinator = PlaybackCoordinator(mode: .pauseResume, adapter: adapter)
+        var completedActions: [PlaybackCompletedAction] = []
+        var stopRequests: [StopMonitoringReason] = []
+        coordinator.playbackActionDidComplete = { completedActions.append($0) }
+        coordinator.stopMonitoringRequested = { stopRequests.append($0) }
+
+        await coordinator.handleAttentionState(.lookingAway)
+        await coordinator.handleAttentionState(.facing)
+        coordinator.applyPushedPlayerSnapshot(
+            PlayerSnapshot(playbackState: .paused, speed: 1.25, manualAction: .speedChanged)
+        )
+        coordinator.applyPushedPlayerSnapshot(.playing(speed: 1.25))
+
+        XCTAssertEqual(adapter.commands, [.pause, .resume])
+        XCTAssertEqual(stopRequests, [])
+        XCTAssertEqual(completedActions, [.pausedByGlanceHold, .resumedPlayback])
+        XCTAssertTrue(coordinator.state.isPlayerControllable)
+        XCTAssertEqual(coordinator.state.playerSnapshot, .playing(speed: 1.25))
+        XCTAssertNil(coordinator.state.stoppedReason)
     }
 
     func testSupersededPendingPauseLandingWhileFacingRequestsManualTakeoverStop() async {

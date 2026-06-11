@@ -543,7 +543,7 @@ final class PlaybackCoordinator {
             return false
         }
 
-        if isExplicitManualActionSnapshot(snapshot) {
+        if isExplicitManualTakeoverSnapshot(snapshot, for: pendingConfirmation.intent) {
             handleStopMonitoring(
                 reason: .manualPlayerTakeover,
                 snapshot: snapshot,
@@ -692,8 +692,19 @@ final class PlaybackCoordinator {
         }
     }
 
-    private func isExplicitManualActionSnapshot(_ snapshot: PlayerSnapshot) -> Bool {
-        snapshot.manualAction != nil && isPlayerControllable(snapshot)
+    private func isExplicitManualTakeoverSnapshot(_ snapshot: PlayerSnapshot, for intent: PlaybackIntent) -> Bool {
+        guard isPlayerControllable(snapshot) else {
+            return false
+        }
+
+        switch intent {
+        case .holdSpeedAtOne, .restoreSpeed:
+            return snapshot.manualAction == .speedChanged
+        case .pause, .resume:
+            return snapshot.manualAction == .playPressed || snapshot.manualAction == .pausePressed
+        case .stopMonitoring:
+            return false
+        }
     }
 
     @discardableResult
