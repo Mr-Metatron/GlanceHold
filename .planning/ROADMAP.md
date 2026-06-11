@@ -127,7 +127,7 @@ Plans:
 
 **Requirements:** PWR-05, BRDG-01, BRDG-02, BRDG-03, BRDG-04, VER-01, VER-02
 
-**Plans:** 3/5 plans executed
+**Plans:** 4/5 plans executed
 
 Plans:
 **Wave 1**
@@ -138,7 +138,7 @@ Plans:
 
 **Wave 2** *(blocked on 11-01 completion)*
 
-- [ ] 11-02-PLAN.md — Isolate legacy MPV IPC from production target membership
+- [x] 11-02-PLAN.md — Isolate legacy MPV IPC from production target membership
 
 **Wave 3** *(blocked on 11-02, 11-03, 11-04 completion)*
 
@@ -168,7 +168,7 @@ Plans:
 | 08.1. IINA bridge local trust model and setup-error UX | v1.1 | 6/6 | Complete    | 2026-06-10 |
 | 9. Playback Coordinator Ownership and Async Safety | v1.1 | 3/3 | Complete   | 2026-06-11 |
 | 10. Attention Semantics, Calibration Robustness, and Settings Validation | v1.1 | 4/4 | Complete    | 2026-06-11 |
-| 11. IINA Bridge Security, Legacy Boundary, and Reliability Verification | v1.1 | 3/5 | In Progress|  |
+| 11. IINA Bridge Security, Legacy Boundary, and Reliability Verification | v1.1 | 4/5 | In Progress|  |
 
 ## Next
 
