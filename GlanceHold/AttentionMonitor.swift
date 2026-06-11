@@ -414,9 +414,11 @@ final class AttentionMonitor {
     }
 
     func resetCalibration() throws {
-        try settingsStore.reset()
-        settings = settingsStore.load()
-        stateMachine = AttentionStateMachine(timing: settings.timing(for: settings.mode))
+        var updatedSettings = settings.withCalibration(nil)
+        updatedSettings.schemaVersion = AttentionSettings.currentSchemaVersion
+        try settingsStore.save(updatedSettings)
+        settings = updatedSettings
+        stateMachine = AttentionStateMachine(timing: updatedSettings.timing(for: updatedSettings.mode))
         setState(.needsCalibration)
     }
 
