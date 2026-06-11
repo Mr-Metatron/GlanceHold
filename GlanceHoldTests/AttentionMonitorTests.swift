@@ -687,6 +687,42 @@ final class AttentionMonitorTests: XCTestCase {
         XCTAssertEqual(fieldValue(.selectedWindowDurationSeconds, in: calibrationEnded), "1.000")
     }
 
+    func testResetCalibrationClearsOnlyCalibrationAndPreservesTuning() throws {
+        let calibration = snapshot(.high)
+        let settings = AttentionSettings(
+            mode: .pauseResume,
+            sensitivity: .strict,
+            headTurnThresholdDegrees: 14.0,
+            speedControlAwayDelay: 1.5,
+            pauseResumeAwayDelay: 2.0,
+            recoveryDelay: 0.5,
+            calibration: calibration
+        )
+        let store = MonitorSettingsStore(settings: settings)
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: store,
+            capture: FakeCameraFrameCapture(),
+            analyzer: FakeVisionAnalyzer()
+        )
+
+        try monitor.resetCalibration()
+
+        let expected = settings.withCalibration(nil)
+        XCTAssertEqual(monitor.settings, expected)
+        XCTAssertEqual(store.load(), expected)
+        XCTAssertNil(monitor.settings.calibration)
+        XCTAssertEqual(monitor.settings.mode, settings.mode)
+        XCTAssertEqual(monitor.settings.sensitivity, settings.sensitivity)
+        XCTAssertEqual(monitor.settings.headTurnThresholdDegrees, settings.headTurnThresholdDegrees)
+        XCTAssertEqual(monitor.settings.speedControlAwayDelay, settings.speedControlAwayDelay)
+        XCTAssertEqual(monitor.settings.pauseResumeAwayDelay, settings.pauseResumeAwayDelay)
+        XCTAssertEqual(monitor.settings.recoveryDelay, settings.recoveryDelay)
+        XCTAssertEqual(store.saveCount, 1)
+        XCTAssertEqual(store.resetCount, 0)
+        XCTAssertEqual(monitor.state, .needsCalibration)
+    }
+
     func testSettingsUpdatesSaveImmediatelyAndSurviveReload() throws {
         let store = MonitorSettingsStore()
         let monitor = AttentionMonitor(
@@ -746,6 +782,8 @@ private final class MonitorPermissionProvider: CameraPermissionProviding {
 private final class MonitorSettingsStore: AttentionSettingsStoring {
     private var storedSettings: AttentionSettings
     private let saveError: Error?
+    private(set) var saveCount = 0
+    private(set) var resetCount = 0
 
     init(settings: AttentionSettings = .defaults, saveError: Error? = nil) {
         self.storedSettings = settings
@@ -760,10 +798,12 @@ private final class MonitorSettingsStore: AttentionSettingsStoring {
         if let saveError {
             throw saveError
         }
+        saveCount += 1
         storedSettings = settings
     }
 
     func reset() throws {
+        resetCount += 1
         storedSettings = .defaults
     }
 }
