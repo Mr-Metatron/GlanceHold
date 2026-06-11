@@ -189,6 +189,7 @@ final class PlaybackCoordinator {
         }
 
         do {
+            policy.beginPendingConfirmation(for: intent)
             playbackMetrics.playbackCommands += 1
             try await adapter.execute(intent)
             guard canStartAttentionSideEffect(startedIn: generation) else {
@@ -199,7 +200,19 @@ final class PlaybackCoordinator {
                 return
             }
 
-            guard confirms(intent: intent, with: confirmation) else {
+            if confirms(intent: intent, with: confirmation) {
+                completeConfirmedCommand(
+                    intent: intent,
+                    sourceSnapshot: snapshot,
+                    confirmation: confirmation,
+                    startedIn: generation
+                )
+                return
+            }
+
+            guard isTransientUntrustedConfirmation(confirmation, for: intent),
+                  let retryConfirmation = await readSnapshot(startedIn: generation),
+                  confirms(intent: intent, with: retryConfirmation) else {
                 recordPlaybackAction(
                     snapshot: snapshot,
                     intent: intent,
@@ -212,22 +225,12 @@ final class PlaybackCoordinator {
                 return
             }
 
-            updateState(
-                snapshot: confirmation,
-                isPlayerControllable: isPlayerControllable(confirmation),
+            completeConfirmedCommand(
+                intent: intent,
+                sourceSnapshot: snapshot,
+                confirmation: retryConfirmation,
                 startedIn: generation
             )
-            if let completedAction = completedAction(for: intent) {
-                recordPlaybackAction(
-                    snapshot: snapshot,
-                    intent: intent,
-                    confirmationOutcome: "confirmed",
-                    completedAction: completedAction,
-                    errorCategory: "none",
-                    startedIn: generation
-                )
-                emitPlaybackActionDidComplete(completedAction, startedIn: generation)
-            }
         } catch {
             guard canStartAttentionSideEffect(startedIn: generation) else {
                 return
@@ -242,6 +245,31 @@ final class PlaybackCoordinator {
                 startedIn: generation
             )
             markNotControllable(snapshot: snapshot, startedIn: generation)
+        }
+    }
+
+    private func completeConfirmedCommand(
+        intent: PlaybackIntent,
+        sourceSnapshot: PlayerSnapshot,
+        confirmation: PlayerSnapshot,
+        startedIn generation: UUID
+    ) {
+        policy.resolvePendingConfirmation(for: intent)
+        updateState(
+            snapshot: confirmation,
+            isPlayerControllable: isPlayerControllable(confirmation),
+            startedIn: generation
+        )
+        if let completedAction = completedAction(for: intent) {
+            recordPlaybackAction(
+                snapshot: sourceSnapshot,
+                intent: intent,
+                confirmationOutcome: "confirmed",
+                completedAction: completedAction,
+                errorCategory: "none",
+                startedIn: generation
+            )
+            emitPlaybackActionDidComplete(completedAction, startedIn: generation)
         }
     }
 
@@ -284,6 +312,15 @@ final class PlaybackCoordinator {
             return snapshot.playbackState == .playing && snapshot.speed != nil
         case .stopMonitoring:
             return false
+        }
+    }
+
+    private func isTransientUntrustedConfirmation(_ snapshot: PlayerSnapshot, for intent: PlaybackIntent) -> Bool {
+        switch snapshot.playbackState {
+        case .playerUnavailable, .setupNeeded, .pluginUpdateRequired, .idle:
+            return true
+        case .playing, .paused:
+            return snapshot.speed == nil
         }
     }
 

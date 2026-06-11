@@ -73,19 +73,22 @@ struct PlaybackPolicyState: Equatable {
     var pauseOwnedByGlanceHold: Bool
     var stoppedReason: StopMonitoringReason?
     var observedPlayingWhileMonitoringActive: Bool
+    var pendingConfirmationIntent: PlaybackIntent?
 
     init(
         mode: MonitoringMode,
         capturedSpeed: Double? = nil,
         pauseOwnedByGlanceHold: Bool = false,
         stoppedReason: StopMonitoringReason? = nil,
-        observedPlayingWhileMonitoringActive: Bool = false
+        observedPlayingWhileMonitoringActive: Bool = false,
+        pendingConfirmationIntent: PlaybackIntent? = nil
     ) {
         self.mode = mode
         self.capturedSpeed = capturedSpeed
         self.pauseOwnedByGlanceHold = pauseOwnedByGlanceHold
         self.stoppedReason = stoppedReason
         self.observedPlayingWhileMonitoringActive = observedPlayingWhileMonitoringActive
+        self.pendingConfirmationIntent = pendingConfirmationIntent
     }
 }
 
@@ -101,6 +104,20 @@ struct PlaybackPolicy: Equatable {
     init(mode: MonitoringMode, manualTakeoverPolicy: ManualTakeoverPolicy = .stopMonitoring) {
         self.manualTakeoverPolicy = manualTakeoverPolicy
         self.state = PlaybackPolicyState(mode: mode)
+    }
+
+    @discardableResult
+    mutating func beginPendingConfirmation(for intent: PlaybackIntent) -> PlaybackPolicyResult {
+        state.pendingConfirmationIntent = intent
+        return result([])
+    }
+
+    @discardableResult
+    mutating func resolvePendingConfirmation(for intent: PlaybackIntent) -> PlaybackPolicyResult {
+        if state.pendingConfirmationIntent == intent {
+            state.pendingConfirmationIntent = nil
+        }
+        return result([])
     }
 
     mutating func apply(attention: DebouncedAttentionState, player: PlayerSnapshot) -> PlaybackPolicyResult {
@@ -206,13 +223,14 @@ struct PlaybackPolicy: Equatable {
 
     private mutating func handleManualTakeoverIfNeeded(player: PlayerSnapshot) -> PlaybackPolicyResult? {
         if state.capturedSpeed != nil {
-            if player.manualAction == .speedChanged || observedSpeedWasManuallyChanged(player: player) {
+            if player.manualAction == .speedChanged ||
+                (state.pendingConfirmationIntent == nil && observedSpeedWasManuallyChanged(player: player)) {
                 return stopMonitoringForManualTakeover()
             }
         }
 
         if state.pauseOwnedByGlanceHold {
-            if player.manualAction == .playPressed || player.manualAction == .pausePressed || player.playbackState == .playing {
+            if player.manualAction == .playPressed || player.manualAction == .pausePressed {
                 return stopMonitoringForManualTakeover()
             }
         }
@@ -235,6 +253,7 @@ struct PlaybackPolicy: Equatable {
             state.pauseOwnedByGlanceHold = false
             state.stoppedReason = .manualPlayerTakeover
             state.observedPlayingWhileMonitoringActive = false
+            state.pendingConfirmationIntent = nil
             return result([.stopMonitoring(reason: .manualPlayerTakeover)])
         }
     }
