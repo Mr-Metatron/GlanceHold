@@ -625,11 +625,13 @@ final class AttentionMonitor {
         signal: RawAttentionSignal
     ) -> AttentionMonitorState {
         switch signal {
-        case .ambiguous, .unknown, .cameraPermissionDenied, .cameraUnavailable:
-            return .unavailable
         case .uncalibrated:
             return .needsCalibration
-        case .facing, .away, .noFace:
+        case .cameraPermissionDenied:
+            return .cameraPermissionDenied
+        case .cameraUnavailable:
+            return .cameraUnavailable
+        case .ambiguous, .unknown, .facing, .away, .noFace:
             break
         }
 
