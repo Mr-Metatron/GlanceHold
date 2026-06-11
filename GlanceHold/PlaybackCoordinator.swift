@@ -21,6 +21,7 @@ enum PlaybackCompletedAction: Equatable {
     case resumedPlayback
 }
 
+@MainActor
 final class PlaybackCoordinator {
     private static let speedEpsilon = 0.000_001
 
@@ -67,6 +68,8 @@ final class PlaybackCoordinator {
 
     func invalidateInFlightAttentionHandling() {
         monitoringGeneration = UUID()
+        pendingConfirmation = nil
+        policy.clearPendingConfirmation()
     }
 
     func stopMonitoring() {
@@ -485,9 +488,14 @@ final class PlaybackCoordinator {
             return false
         }
 
-        guard isValidOperation(startedIn: generation),
-              pendingConfirmation.generation == monitoringGeneration else {
+        guard isValidOperation(startedIn: generation) else {
             return true
+        }
+
+        guard pendingConfirmation.generation == monitoringGeneration else {
+            self.pendingConfirmation = nil
+            policy.clearPendingConfirmation()
+            return false
         }
 
         if confirms(intent: pendingConfirmation.intent, with: snapshot) {

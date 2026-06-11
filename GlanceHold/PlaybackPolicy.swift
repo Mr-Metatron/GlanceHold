@@ -120,6 +120,12 @@ struct PlaybackPolicy: Equatable {
         return result([])
     }
 
+    @discardableResult
+    mutating func clearPendingConfirmation() -> PlaybackPolicyResult {
+        state.pendingConfirmationIntent = nil
+        return result([])
+    }
+
     mutating func apply(attention: DebouncedAttentionState, player: PlayerSnapshot) -> PlaybackPolicyResult {
         guard state.stoppedReason == nil else {
             return result([])

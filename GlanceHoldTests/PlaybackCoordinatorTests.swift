@@ -1,6 +1,7 @@
 import XCTest
 @testable import GlanceHold
 
+@MainActor
 final class PlaybackCoordinatorTests: XCTestCase {
     func testAwaySendsOneHoldSpeedCommand() async throws {
         let adapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5), .playing(speed: 1.0)])
@@ -705,6 +706,28 @@ final class PlaybackCoordinatorTests: XCTestCase {
         adapter.finishStatusEvents()
         statusTask.cancel()
         await statusTask.value
+    }
+
+    func testInvalidationClearsPendingConfirmationSoLaterPushedStatusApplies() async {
+        let adapter = FakeIINAPlaybackAdapter(
+            snapshots: [
+                .playing(speed: 1.5),
+                .playerUnavailable,
+                .playerUnavailable
+            ]
+        )
+        let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+
+        await coordinator.handleAttentionState(.lookingAway)
+        coordinator.invalidateInFlightAttentionHandling()
+        coordinator.applyPushedPlayerSnapshot(.playing(speed: 1.0))
+
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
+        XCTAssertEqual(coordinator.state, PlaybackCoordinatorState(
+            isPlayerControllable: true,
+            playerSnapshot: .playing(speed: 1.0),
+            stoppedReason: nil
+        ))
     }
 
     func testExhaustedConfirmationRetryClearsPendingOwnershipWithoutCompensation() async {
