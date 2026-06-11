@@ -32,6 +32,7 @@ final class PlaybackCoordinator {
     private var suppressCommandsUntilValidSnapshot = false
     private var monitoringSessionActive = false
     private var monitoringGeneration = UUID()
+    private var pendingConfirmation: PendingPlaybackConfirmation?
     private var activeDiagnosticSession: DiagnosticSession?
     private var playbackMetrics = DiagnosticRuntimeMetrics.empty
     private var playbackNoOpAggregates: [PlaybackNoOpReason: PlaybackNoOpAggregate] = [:]
@@ -189,7 +190,7 @@ final class PlaybackCoordinator {
         }
 
         do {
-            policy.beginPendingConfirmation(for: intent)
+            beginPendingConfirmation(intent: intent, sourceSnapshot: snapshot, startedIn: generation)
             playbackMetrics.playbackCommands += 1
             try await adapter.execute(intent)
             guard canStartAttentionSideEffect(startedIn: generation) else {
@@ -211,8 +212,7 @@ final class PlaybackCoordinator {
             }
 
             guard isTransientUntrustedConfirmation(confirmation, for: intent),
-                  let retryConfirmation = await readSnapshot(startedIn: generation),
-                  confirms(intent: intent, with: retryConfirmation) else {
+                  let retryConfirmation = await readSnapshot(startedIn: generation) else {
                 recordPlaybackAction(
                     snapshot: snapshot,
                     intent: intent,
@@ -225,10 +225,10 @@ final class PlaybackCoordinator {
                 return
             }
 
-            completeConfirmedCommand(
+            resolveRetriedConfirmation(
+                retryConfirmation,
                 intent: intent,
                 sourceSnapshot: snapshot,
-                confirmation: retryConfirmation,
                 startedIn: generation
             )
         } catch {
@@ -248,6 +248,19 @@ final class PlaybackCoordinator {
         }
     }
 
+    private func beginPendingConfirmation(
+        intent: PlaybackIntent,
+        sourceSnapshot: PlayerSnapshot,
+        startedIn generation: UUID
+    ) {
+        policy.beginPendingConfirmation(for: intent)
+        pendingConfirmation = PendingPlaybackConfirmation(
+            intent: intent,
+            sourceSnapshot: sourceSnapshot,
+            generation: generation
+        )
+    }
+
     private func completeConfirmedCommand(
         intent: PlaybackIntent,
         sourceSnapshot: PlayerSnapshot,
@@ -255,6 +268,7 @@ final class PlaybackCoordinator {
         startedIn generation: UUID
     ) {
         policy.resolvePendingConfirmation(for: intent)
+        pendingConfirmation = nil
         updateState(
             snapshot: confirmation,
             isPlayerControllable: isPlayerControllable(confirmation),
@@ -271,6 +285,61 @@ final class PlaybackCoordinator {
             )
             emitPlaybackActionDidComplete(completedAction, startedIn: generation)
         }
+    }
+
+    private func resolveRetriedConfirmation(
+        _ retryConfirmation: PlayerSnapshot,
+        intent: PlaybackIntent,
+        sourceSnapshot: PlayerSnapshot,
+        startedIn generation: UUID
+    ) {
+        if confirms(intent: intent, with: retryConfirmation) {
+            completeConfirmedCommand(
+                intent: intent,
+                sourceSnapshot: sourceSnapshot,
+                confirmation: retryConfirmation,
+                startedIn: generation
+            )
+            return
+        }
+
+        if shouldAwaitTrustedPushedStatus(after: retryConfirmation) {
+            recordPlaybackAction(
+                snapshot: sourceSnapshot,
+                intent: intent,
+                confirmationOutcome: "transientUntrusted",
+                completedAction: nil,
+                errorCategory: "transientUntrusted",
+                startedIn: generation
+            )
+            return
+        }
+
+        exhaustPendingConfirmation(
+            intent: intent,
+            sourceSnapshot: sourceSnapshot,
+            degradedSnapshot: .playerUnavailable,
+            startedIn: generation
+        )
+    }
+
+    private func exhaustPendingConfirmation(
+        intent: PlaybackIntent,
+        sourceSnapshot: PlayerSnapshot,
+        degradedSnapshot: PlayerSnapshot,
+        startedIn generation: UUID
+    ) {
+        recordPlaybackAction(
+            snapshot: sourceSnapshot,
+            intent: intent,
+            confirmationOutcome: "exhausted",
+            completedAction: nil,
+            errorCategory: "exhausted",
+            startedIn: generation
+        )
+        resetPolicy()
+        suppressCommandsUntilValidSnapshot = true
+        updateState(snapshot: degradedSnapshot, isPlayerControllable: false, startedIn: generation)
     }
 
     private func canStartAttentionSideEffect(startedIn generation: UUID) -> Bool {
@@ -324,6 +393,15 @@ final class PlaybackCoordinator {
         }
     }
 
+    private func shouldAwaitTrustedPushedStatus(after snapshot: PlayerSnapshot) -> Bool {
+        switch snapshot.playbackState {
+        case .playerUnavailable, .setupNeeded, .pluginUpdateRequired, .idle:
+            return true
+        case .playing, .paused:
+            return false
+        }
+    }
+
     private func completedAction(for intent: PlaybackIntent) -> PlaybackCompletedAction? {
         switch intent {
         case .holdSpeedAtOne:
@@ -359,6 +437,7 @@ final class PlaybackCoordinator {
 
     private func resetPolicy() {
         policy = PlaybackPolicy(mode: mode)
+        pendingConfirmation = nil
     }
 
     private func applyReadOnlyPlayerSnapshot(_ snapshot: PlayerSnapshot, startedIn generation: UUID? = nil) {
@@ -379,6 +458,10 @@ final class PlaybackCoordinator {
             return
         }
 
+        if resolvePendingConfirmationFromPushedSnapshotIfNeeded(snapshot, startedIn: generation) {
+            return
+        }
+
         if isControllable, applyObservedPlayerSnapshotForManualStopIfNeeded(
             snapshot,
             monitoringActive: monitoringSessionActive,
@@ -391,6 +474,37 @@ final class PlaybackCoordinator {
             suppressCommandsUntilValidSnapshot = false
         }
         updateState(snapshot: snapshot, isPlayerControllable: isControllable, startedIn: generation)
+    }
+
+    @discardableResult
+    private func resolvePendingConfirmationFromPushedSnapshotIfNeeded(
+        _ snapshot: PlayerSnapshot,
+        startedIn generation: UUID? = nil
+    ) -> Bool {
+        guard let pendingConfirmation else {
+            return false
+        }
+
+        guard isValidOperation(startedIn: generation),
+              pendingConfirmation.generation == monitoringGeneration else {
+            return true
+        }
+
+        if confirms(intent: pendingConfirmation.intent, with: snapshot) {
+            completeConfirmedCommand(
+                intent: pendingConfirmation.intent,
+                sourceSnapshot: pendingConfirmation.sourceSnapshot,
+                confirmation: snapshot,
+                startedIn: pendingConfirmation.generation
+            )
+            return true
+        }
+
+        if isTransientUntrustedConfirmation(snapshot, for: pendingConfirmation.intent) {
+            return true
+        }
+
+        return false
     }
 
     @discardableResult
@@ -662,6 +776,12 @@ private struct PlaybackNoOpAggregate: Equatable {
         count += 1
         latest = breadcrumb
     }
+}
+
+private struct PendingPlaybackConfirmation: Equatable {
+    var intent: PlaybackIntent
+    var sourceSnapshot: PlayerSnapshot
+    var generation: UUID
 }
 
 private extension PlayerPlaybackState {
