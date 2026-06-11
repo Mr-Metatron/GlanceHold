@@ -62,10 +62,16 @@ struct AttentionStateMachine: Equatable {
     private var state: DebouncedAttentionState
     private var candidateSignal: RawAttentionSignal?
     private var candidateStartTime: TimeInterval?
+    private var recoveryPausedDuration: TimeInterval
+    private var uncertaintyStartTime: TimeInterval?
+    private var requiresRecoveryAfterUnavailable: Bool
 
     init(timing: AttentionTiming = .init()) {
         self.timing = timing
         self.state = .facing
+        self.recoveryPausedDuration = 0.0
+        self.uncertaintyStartTime = nil
+        self.requiresRecoveryAfterUnavailable = false
     }
 
     mutating func apply(_ sample: RawAttentionSample) -> DebouncedAttentionState {
@@ -90,9 +96,12 @@ struct AttentionStateMachine: Equatable {
                 previousState: previousState,
                 targetState: .noFaceDetected
             )
-        case .ambiguous, .unknown, .uncalibrated, .cameraPermissionDenied, .cameraUnavailable:
-            candidateSignal = nil
-            candidateStartTime = nil
+        case .ambiguous, .unknown:
+            return applyUncertaintyWithDiagnostics(sample: sample, previousState: previousState)
+        case .uncalibrated, .cameraPermissionDenied, .cameraUnavailable:
+            resetCandidate()
+            uncertaintyStartTime = nil
+            requiresRecoveryAfterUnavailable = false
             state = .unavailable
             return result(
                 sample: sample,
@@ -108,13 +117,17 @@ struct AttentionStateMachine: Equatable {
         sample: RawAttentionSample,
         previousState: DebouncedAttentionState
     ) -> AttentionStateMachineResult {
+        finishUncertaintyPauseIfNeeded(at: sample.time)
+
         switch state {
         case .lookingAway, .noFaceDetected, .recovering:
             return applyRecoveryCandidateWithDiagnostics(sample: sample, previousState: previousState)
+        case .unavailable where requiresRecoveryAfterUnavailable:
+            return applyRecoveryCandidateWithDiagnostics(sample: sample, previousState: previousState)
         case .facing, .unavailable:
             let hadCandidate = candidateSignal != nil
-            candidateSignal = nil
-            candidateStartTime = nil
+            resetCandidate()
+            requiresRecoveryAfterUnavailable = false
             state = .facing
             return result(
                 sample: sample,
@@ -133,6 +146,7 @@ struct AttentionStateMachine: Equatable {
         if candidateSignal != .facing {
             candidateSignal = .facing
             candidateStartTime = sample.time
+            recoveryPausedDuration = 0.0
             state = .recovering
             return result(
                 sample: sample,
@@ -143,11 +157,10 @@ struct AttentionStateMachine: Equatable {
             )
         }
 
-        let startedAt = candidateStartTime ?? sample.time
-        let elapsed = sample.time - startedAt
-        if hasReachedThreshold(from: startedAt, to: sample.time, threshold: timing.recoveryDelay) {
-            candidateSignal = nil
-            candidateStartTime = nil
+        let elapsed = recoveryElapsed(at: sample.time) ?? 0.0
+        if hasReachedThreshold(elapsed: elapsed, threshold: timing.recoveryDelay) {
+            resetCandidate()
+            requiresRecoveryAfterUnavailable = false
             state = .facing
             return result(
                 sample: sample,
@@ -173,9 +186,11 @@ struct AttentionStateMachine: Equatable {
         previousState: DebouncedAttentionState,
         targetState: DebouncedAttentionState
     ) -> AttentionStateMachineResult {
+        uncertaintyStartTime = nil
+
         if state == targetState {
-            candidateSignal = nil
-            candidateStartTime = nil
+            resetCandidate()
+            requiresRecoveryAfterUnavailable = false
             return result(
                 sample: sample,
                 previousState: previousState,
@@ -189,6 +204,7 @@ struct AttentionStateMachine: Equatable {
             let reason: AttentionTransitionReason = candidateSignal == nil ? .candidateStarted : .candidateReset
             candidateSignal = sample.signal
             candidateStartTime = sample.time
+            recoveryPausedDuration = 0.0
             return result(
                 sample: sample,
                 previousState: previousState,
@@ -201,8 +217,8 @@ struct AttentionStateMachine: Equatable {
         let startedAt = candidateStartTime ?? sample.time
         let elapsed = sample.time - startedAt
         if hasReachedThreshold(from: startedAt, to: sample.time, threshold: timing.awayDelay) {
-            candidateSignal = nil
-            candidateStartTime = nil
+            resetCandidate()
+            requiresRecoveryAfterUnavailable = false
             state = targetState
             return result(
                 sample: sample,
@@ -222,8 +238,94 @@ struct AttentionStateMachine: Equatable {
         )
     }
 
+    private mutating func applyUncertaintyWithDiagnostics(
+        sample: RawAttentionSample,
+        previousState: DebouncedAttentionState
+    ) -> AttentionStateMachineResult {
+        guard state != .unavailable else {
+            resetCandidate()
+            uncertaintyStartTime = nil
+            return result(
+                sample: sample,
+                previousState: previousState,
+                elapsed: nil,
+                requiredThreshold: nil,
+                reason: .unavailable
+            )
+        }
+
+        if state != .recovering {
+            resetCandidate()
+        }
+
+        if uncertaintyStartTime == nil {
+            uncertaintyStartTime = sample.time
+        }
+
+        let startedAt = uncertaintyStartTime ?? sample.time
+        let uncertaintyElapsed = sample.time - startedAt
+        if hasReachedThreshold(from: startedAt, to: sample.time, threshold: timing.recoveryDelay) {
+            resetCandidate()
+            uncertaintyStartTime = nil
+            state = .unavailable
+            requiresRecoveryAfterUnavailable = true
+            return result(
+                sample: sample,
+                previousState: previousState,
+                elapsed: uncertaintyElapsed,
+                requiredThreshold: timing.recoveryDelay,
+                reason: .unavailable
+            )
+        }
+
+        let elapsed = state == .recovering ? recoveryElapsed(at: sample.time) : uncertaintyElapsed
+        return result(
+            sample: sample,
+            previousState: previousState,
+            elapsed: elapsed,
+            requiredThreshold: timing.recoveryDelay,
+            reason: .thresholdPending
+        )
+    }
+
+    private mutating func finishUncertaintyPauseIfNeeded(at time: TimeInterval) {
+        guard let uncertaintyStartTime else {
+            return
+        }
+
+        if state == .recovering, candidateSignal == .facing {
+            recoveryPausedDuration += max(0.0, time - uncertaintyStartTime)
+        }
+        self.uncertaintyStartTime = nil
+    }
+
+    private func recoveryElapsed(at time: TimeInterval) -> TimeInterval? {
+        guard candidateSignal == .facing, let candidateStartTime else {
+            return nil
+        }
+
+        let currentPauseDuration: TimeInterval
+        if let uncertaintyStartTime {
+            currentPauseDuration = max(0.0, time - uncertaintyStartTime)
+        } else {
+            currentPauseDuration = 0.0
+        }
+
+        return max(0.0, time - candidateStartTime - recoveryPausedDuration - currentPauseDuration)
+    }
+
+    private mutating func resetCandidate() {
+        candidateSignal = nil
+        candidateStartTime = nil
+        recoveryPausedDuration = 0.0
+    }
+
     private func hasReachedThreshold(from startTime: TimeInterval, to time: TimeInterval, threshold: TimeInterval) -> Bool {
         time - startTime + Self.thresholdEpsilon >= threshold
+    }
+
+    private func hasReachedThreshold(elapsed: TimeInterval, threshold: TimeInterval) -> Bool {
+        elapsed + Self.thresholdEpsilon >= threshold
     }
 
     private func result(
