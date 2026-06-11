@@ -30,6 +30,8 @@ enum AttentionSensitivity: String, CaseIterable, Equatable, Codable {
 
 struct AttentionSettings: Equatable, Codable {
     static let currentSchemaVersion = 1
+    static let headTurnThresholdBounds: ClosedRange<Double> = 12.0...24.0
+    static let delayBounds: ClosedRange<TimeInterval> = 0.5...2.0
 
     var schemaVersion: Int
     var mode: MonitoringMode
