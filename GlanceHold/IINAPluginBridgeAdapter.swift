@@ -61,22 +61,3 @@ struct IINAPluginBridgeAdapter: IINAPlaybackAdapting {
         try await client.execute(intent)
     }
 }
-
-private extension IINAPlayerStatus {
-    var playerSnapshot: PlayerSnapshot {
-        switch self {
-        case .setupNeeded:
-            return .setupNeeded
-        case .unavailable:
-            return .playerUnavailable
-        case .pluginUpdateRequired:
-            return .pluginUpdateRequired
-        case .idle:
-            return .idle
-        case let .paused(speed, manualAction):
-            return PlayerSnapshot(playbackState: .paused, speed: speed, manualAction: manualAction)
-        case let .playing(speed, manualAction):
-            return PlayerSnapshot(playbackState: .playing, speed: speed, manualAction: manualAction)
-        }
-    }
-}
