@@ -36,11 +36,7 @@ final class PlaybackCoordinator {
     private var playbackMetrics = DiagnosticRuntimeMetrics.empty
     private var playbackNoOpAggregates: [PlaybackNoOpReason: PlaybackNoOpAggregate] = [:]
 
-    private(set) var state: PlaybackCoordinatorState {
-        didSet {
-            stateDidChange?(state)
-        }
-    }
+    private(set) var state: PlaybackCoordinatorState
 
     var stateDidChange: ((PlaybackCoordinatorState) -> Void)?
     var stopMonitoringRequested: ((StopMonitoringReason) -> Void)?
@@ -68,19 +64,27 @@ final class PlaybackCoordinator {
         playbackNoOpAggregates.removeAll()
     }
 
+    func invalidateInFlightAttentionHandling() {
+        monitoringGeneration = UUID()
+    }
+
     func stopMonitoring() {
         monitoringGeneration = UUID()
         monitoringSessionActive = false
         recordFinalPlaybackSummary()
         resetPolicy()
-        state = .unavailable
+        setState(.unavailable)
     }
 
     func refreshPlayerState() async {
-        let snapshot = await readSnapshot()
-        guard !Task.isCancelled else {
+        let generation = monitoringGeneration
+        guard let snapshot = await readSnapshot(startedIn: generation) else {
             return
         }
+        guard canStartAttentionSideEffect(startedIn: generation) else {
+            return
+        }
+
         applyReadOnlyPlayerSnapshot(snapshot)
     }
 
@@ -123,29 +127,37 @@ final class PlaybackCoordinator {
         }
 
         monitoringSessionActive = true
-        let snapshot = await readSnapshot()
+        guard let snapshot = await readSnapshot(startedIn: generation) else {
+            return
+        }
         guard canStartAttentionSideEffect(startedIn: generation) else {
             return
         }
+
         let isControllable = isPlayerControllable(snapshot)
 
         if self.state.stoppedReason != nil {
-            applyReadOnlyPlayerSnapshot(snapshot)
+            applyReadOnlyPlayerSnapshot(snapshot, startedIn: generation)
             return
         }
 
-        if isControllable, applyObservedPlayerSnapshotForManualStopIfNeeded(snapshot, monitoringActive: true) {
+        if isControllable, applyObservedPlayerSnapshotForManualStopIfNeeded(
+            snapshot,
+            monitoringActive: true,
+            startedIn: generation
+        ) {
             return
         }
 
-        updateState(snapshot: snapshot, isPlayerControllable: isControllable)
+        updateState(snapshot: snapshot, isPlayerControllable: isControllable, startedIn: generation)
 
         guard isControllable else {
             recordPlaybackNoOp(
                 reason: noOpReasonForUncontrollableSnapshot(snapshot),
                 attentionState: state,
                 snapshot: snapshot,
-                intent: nil
+                intent: nil,
+                startedIn: generation
             )
             return
         }
@@ -161,13 +173,14 @@ final class PlaybackCoordinator {
                 reason: noOpReasonForNoIntent(attentionState: state),
                 attentionState: state,
                 snapshot: snapshot,
-                intent: nil
+                intent: nil,
+                startedIn: generation
             )
             return
         }
 
         if case let .stopMonitoring(reason) = intent {
-            handleStopMonitoring(reason: reason, snapshot: snapshot)
+            handleStopMonitoring(reason: reason, snapshot: snapshot, startedIn: generation)
             return
         }
 
@@ -178,12 +191,11 @@ final class PlaybackCoordinator {
         do {
             playbackMetrics.playbackCommands += 1
             try await adapter.execute(intent)
-            guard isSameAttentionGeneration(startedIn: generation) else {
+            guard canStartAttentionSideEffect(startedIn: generation) else {
                 return
             }
 
-            let confirmation = await readSnapshot()
-            guard isSameAttentionGeneration(startedIn: generation) else {
+            guard let confirmation = await readSnapshot(startedIn: generation) else {
                 return
             }
 
@@ -193,25 +205,31 @@ final class PlaybackCoordinator {
                     intent: intent,
                     confirmationOutcome: "failed",
                     completedAction: nil,
-                    errorCategory: "confirmationFailed"
+                    errorCategory: "confirmationFailed",
+                    startedIn: generation
                 )
-                markNotControllable(snapshot: confirmation)
+                markNotControllable(snapshot: confirmation, startedIn: generation)
                 return
             }
 
-            updateState(snapshot: confirmation, isPlayerControllable: isPlayerControllable(confirmation))
+            updateState(
+                snapshot: confirmation,
+                isPlayerControllable: isPlayerControllable(confirmation),
+                startedIn: generation
+            )
             if let completedAction = completedAction(for: intent) {
                 recordPlaybackAction(
                     snapshot: snapshot,
                     intent: intent,
                     confirmationOutcome: "confirmed",
                     completedAction: completedAction,
-                    errorCategory: "none"
+                    errorCategory: "none",
+                    startedIn: generation
                 )
-                playbackActionDidComplete?(completedAction)
+                emitPlaybackActionDidComplete(completedAction, startedIn: generation)
             }
         } catch {
-            guard isSameAttentionGeneration(startedIn: generation) else {
+            guard canStartAttentionSideEffect(startedIn: generation) else {
                 return
             }
 
@@ -220,22 +238,27 @@ final class PlaybackCoordinator {
                 intent: intent,
                 confirmationOutcome: "notAttempted",
                 completedAction: nil,
-                errorCategory: "commandFailed"
+                errorCategory: "commandFailed",
+                startedIn: generation
             )
-            markNotControllable(snapshot: snapshot)
+            markNotControllable(snapshot: snapshot, startedIn: generation)
         }
     }
 
     private func canStartAttentionSideEffect(startedIn generation: UUID) -> Bool {
-        !Task.isCancelled && isSameAttentionGeneration(startedIn: generation)
+        isSameAttentionGeneration(startedIn: generation)
     }
 
     private func isSameAttentionGeneration(startedIn generation: UUID) -> Bool {
         generation == monitoringGeneration
     }
 
-    private func readSnapshot() async -> PlayerSnapshot {
+    private func readSnapshot(startedIn generation: UUID? = nil) async -> PlayerSnapshot? {
         let snapshot = await adapter.snapshot()
+        guard isValidOperation(startedIn: generation) else {
+            return nil
+        }
+
         playbackMetrics.playbackSnapshots += 1
         return snapshot
     }
@@ -287,68 +310,142 @@ final class PlaybackCoordinator {
         return abs(lhs - rhs) <= Self.speedEpsilon
     }
 
-    private func markNotControllable(snapshot: PlayerSnapshot) {
+    private func markNotControllable(snapshot: PlayerSnapshot, startedIn generation: UUID? = nil) {
+        guard isValidOperation(startedIn: generation) else {
+            return
+        }
+
         resetPolicy()
         suppressCommandsUntilValidSnapshot = true
-        updateState(snapshot: snapshot, isPlayerControllable: false)
+        updateState(snapshot: snapshot, isPlayerControllable: false, startedIn: generation)
     }
 
     private func resetPolicy() {
         policy = PlaybackPolicy(mode: mode)
     }
 
-    private func applyReadOnlyPlayerSnapshot(_ snapshot: PlayerSnapshot) {
+    private func applyReadOnlyPlayerSnapshot(_ snapshot: PlayerSnapshot, startedIn generation: UUID? = nil) {
+        guard isValidOperation(startedIn: generation) else {
+            return
+        }
+
         let isControllable = isPlayerControllable(snapshot)
         if let stoppedReason = state.stoppedReason {
-            state = PlaybackCoordinatorState(
-                isPlayerControllable: false,
-                playerSnapshot: snapshot,
-                stoppedReason: stoppedReason
+            setState(
+                PlaybackCoordinatorState(
+                    isPlayerControllable: false,
+                    playerSnapshot: snapshot,
+                    stoppedReason: stoppedReason
+                ),
+                startedIn: generation
             )
             return
         }
 
-        if isControllable, applyObservedPlayerSnapshotForManualStopIfNeeded(snapshot, monitoringActive: monitoringSessionActive) {
+        if isControllable, applyObservedPlayerSnapshotForManualStopIfNeeded(
+            snapshot,
+            monitoringActive: monitoringSessionActive,
+            startedIn: generation
+        ) {
             return
         }
 
         if isControllable {
             suppressCommandsUntilValidSnapshot = false
         }
-        updateState(snapshot: snapshot, isPlayerControllable: isControllable)
+        updateState(snapshot: snapshot, isPlayerControllable: isControllable, startedIn: generation)
     }
 
     @discardableResult
     private func applyObservedPlayerSnapshotForManualStopIfNeeded(
         _ snapshot: PlayerSnapshot,
-        monitoringActive: Bool
+        monitoringActive: Bool,
+        startedIn generation: UUID? = nil
     ) -> Bool {
+        guard isValidOperation(startedIn: generation) else {
+            return false
+        }
+
         let result = policy.applyObservedPlayerSnapshot(snapshot, monitoringActive: monitoringActive)
         guard case let .stopMonitoring(reason)? = result.intents.first else {
             return false
         }
 
-        handleStopMonitoring(reason: reason, snapshot: snapshot)
+        handleStopMonitoring(reason: reason, snapshot: snapshot, startedIn: generation)
         return true
     }
 
-    private func handleStopMonitoring(reason: StopMonitoringReason, snapshot: PlayerSnapshot) {
+    private func handleStopMonitoring(
+        reason: StopMonitoringReason,
+        snapshot: PlayerSnapshot,
+        startedIn generation: UUID? = nil
+    ) {
+        guard isValidOperation(startedIn: generation) else {
+            return
+        }
+
         monitoringSessionActive = false
         resetPolicy()
-        state = PlaybackCoordinatorState(
-            isPlayerControllable: false,
-            playerSnapshot: snapshot,
-            stoppedReason: reason
+        setState(
+            PlaybackCoordinatorState(
+                isPlayerControllable: false,
+                playerSnapshot: snapshot,
+                stoppedReason: reason
+            ),
+            startedIn: generation
         )
+        emitStopMonitoringRequested(reason, startedIn: generation)
+    }
+
+    private func updateState(
+        snapshot: PlayerSnapshot,
+        isPlayerControllable: Bool,
+        startedIn generation: UUID? = nil
+    ) {
+        setState(
+            PlaybackCoordinatorState(
+                isPlayerControllable: isPlayerControllable,
+                playerSnapshot: snapshot,
+                stoppedReason: nil
+            ),
+            startedIn: generation
+        )
+    }
+
+    private func setState(_ newState: PlaybackCoordinatorState, startedIn generation: UUID? = nil) {
+        guard isValidOperation(startedIn: generation) else {
+            return
+        }
+
+        state = newState
+        stateDidChange?(newState)
+    }
+
+    private func isValidOperation(startedIn generation: UUID?) -> Bool {
+        guard let generation else {
+            return true
+        }
+
+        return isSameAttentionGeneration(startedIn: generation)
+    }
+
+    private func emitStopMonitoringRequested(_ reason: StopMonitoringReason, startedIn generation: UUID?) {
+        guard isValidOperation(startedIn: generation) else {
+            return
+        }
+
         stopMonitoringRequested?(reason)
     }
 
-    private func updateState(snapshot: PlayerSnapshot, isPlayerControllable: Bool) {
-        state = PlaybackCoordinatorState(
-            isPlayerControllable: isPlayerControllable,
-            playerSnapshot: snapshot,
-            stoppedReason: nil
-        )
+    private func emitPlaybackActionDidComplete(
+        _ completedAction: PlaybackCompletedAction,
+        startedIn generation: UUID?
+    ) {
+        guard isValidOperation(startedIn: generation) else {
+            return
+        }
+
+        playbackActionDidComplete?(completedAction)
     }
 
     private func recordFinalPlaybackSummary() {
@@ -387,8 +484,13 @@ final class PlaybackCoordinator {
         reason: PlaybackNoOpReason,
         attentionState: DebouncedAttentionState,
         snapshot: PlayerSnapshot,
-        intent: PlaybackIntent?
+        intent: PlaybackIntent?,
+        startedIn generation: UUID? = nil
     ) {
+        guard isValidOperation(startedIn: generation) else {
+            return
+        }
+
         guard diagnosticMode == .diagnostic, activeDiagnosticSession != nil else {
             return
         }
@@ -399,10 +501,18 @@ final class PlaybackCoordinator {
             speedPresent: snapshot.speed != nil,
             intentType: intent?.diagnosticName ?? "none"
         )
-        recordPlaybackNoOp(reason: reason, breadcrumb: breadcrumb)
+        recordPlaybackNoOp(reason: reason, breadcrumb: breadcrumb, startedIn: generation)
     }
 
-    private func recordPlaybackNoOp(reason: PlaybackNoOpReason, breadcrumb: PlaybackNoOpBreadcrumb) {
+    private func recordPlaybackNoOp(
+        reason: PlaybackNoOpReason,
+        breadcrumb: PlaybackNoOpBreadcrumb,
+        startedIn generation: UUID? = nil
+    ) {
+        guard isValidOperation(startedIn: generation) else {
+            return
+        }
+
         guard diagnosticMode == .diagnostic, activeDiagnosticSession != nil else {
             return
         }
@@ -447,8 +557,13 @@ final class PlaybackCoordinator {
         intent: PlaybackIntent,
         confirmationOutcome: String,
         completedAction: PlaybackCompletedAction?,
-        errorCategory: String
+        errorCategory: String,
+        startedIn generation: UUID? = nil
     ) {
+        guard isValidOperation(startedIn: generation) else {
+            return
+        }
+
         guard diagnosticMode == .diagnostic, let diagnosticSession = activeDiagnosticSession else {
             return
         }
