@@ -30,12 +30,12 @@
 
 ### Attention and Calibration Semantics
 
-- [ ] **ATT-01**: User returning from looking away does not bypass recovery delay because of a brief ambiguous, unknown, or unavailable signal.
-- [ ] **ATT-02**: User sees sustained camera or Vision unavailability degrade to an unavailable state without confusing it with short transient uncertainty.
-- [ ] **ATT-03**: User can reset calibration without losing mode, sensitivity, delay, or threshold settings.
-- [ ] **ATT-04**: User calibration cannot be accepted as high quality from a tiny stable micro-window that does not meet minimum sample-count and duration requirements.
-- [ ] **ATT-05**: Developer can inspect calibration diagnostics including selected window duration, selected sample count, spread, quality, and failure reason.
-- [ ] **ATT-06**: UserDefaults settings are validated or migrated on load so corrupt, non-finite, negative, or out-of-range timing/threshold values cannot destabilize monitoring.
+- [x] **ATT-01**: User returning from looking away does not bypass recovery delay because of a brief ambiguous, unknown, or unavailable signal.
+- [x] **ATT-02**: User sees sustained camera or Vision unavailability degrade to an unavailable state without confusing it with short transient uncertainty.
+- [x] **ATT-03**: User can reset calibration without losing mode, sensitivity, delay, or threshold settings.
+- [x] **ATT-04**: User calibration cannot be accepted as high quality from a tiny stable micro-window that does not meet minimum sample-count and duration requirements.
+- [x] **ATT-05**: Developer can inspect calibration diagnostics including selected window duration, selected sample count, spread, quality, and failure reason.
+- [x] **ATT-06**: UserDefaults settings are validated or migrated on load so corrupt, non-finite, negative, or out-of-range timing/threshold values cannot destabilize monitoring.
 
 ### IINA Bridge and Legacy Boundary
 
@@ -96,12 +96,12 @@
 | PLAY-02 | Phase 9 | Complete |
 | PLAY-03 | Phase 9 | Complete |
 | PLAY-04 | Phase 9 | Complete |
-| ATT-01 | Phase 10 | Pending |
-| ATT-02 | Phase 10 | Pending |
-| ATT-03 | Phase 10 | Pending |
-| ATT-04 | Phase 10 | Pending |
-| ATT-05 | Phase 10 | Pending |
-| ATT-06 | Phase 10 | Pending |
+| ATT-01 | Phase 10 | Complete |
+| ATT-02 | Phase 10 | Complete |
+| ATT-03 | Phase 10 | Complete |
+| ATT-04 | Phase 10 | Complete |
+| ATT-05 | Phase 10 | Complete |
+| ATT-06 | Phase 10 | Complete |
 | BRDG-01 | Phase 08.1 | Complete |
 | BRDG-02 | Phase 08.1 | Complete |
 | BRDG-03 | Phase 08.1 | Complete |
