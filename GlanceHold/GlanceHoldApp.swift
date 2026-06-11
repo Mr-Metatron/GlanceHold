@@ -505,8 +505,8 @@ private struct GlanceHoldMenu: View {
             state.stopMonitoringAfterUserRequest()
         case .manualPlayerTakeover:
             permissionRequestID = nil
-            monitor.stopMonitoring()
             playbackCoordinator.stopMonitoring()
+            monitor.stopMonitoring()
             state.stopMonitoringAfterManualPlayerTakeover()
         }
     }

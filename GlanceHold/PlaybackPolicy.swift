@@ -234,18 +234,30 @@ struct PlaybackPolicy: Equatable {
     private mutating func handleManualTakeoverIfNeeded(player: PlayerSnapshot) -> PlaybackPolicyResult? {
         if state.capturedSpeed != nil {
             if player.manualAction == .speedChanged ||
-                (state.pendingConfirmationIntent == nil && observedSpeedWasManuallyChanged(player: player)) {
+                (!suppressesPendingSpeedEcho(player: player) && observedSpeedWasManuallyChanged(player: player)) {
                 return stopMonitoringForManualTakeover()
             }
         }
 
         if state.pauseOwnedByGlanceHold {
-            if player.manualAction == .playPressed || player.manualAction == .pausePressed {
+            if player.manualAction == .playPressed ||
+                player.manualAction == .pausePressed ||
+                (state.pendingConfirmationIntent == nil && player.playbackState == .playing && player.speed != nil) {
                 return stopMonitoringForManualTakeover()
             }
         }
 
         return nil
+    }
+
+    private func suppressesPendingSpeedEcho(player: PlayerSnapshot) -> Bool {
+        guard state.pendingConfirmationIntent == .holdSpeedAtOne,
+              player.playbackState == .playing else {
+            return false
+        }
+
+        return approximatelyEqual(player.speed, 1.0) ||
+            (state.capturedSpeed.map { approximatelyEqual(player.speed, $0) } ?? false)
     }
 
     private mutating func resolvePendingConfirmationIfObserved(player: PlayerSnapshot) {

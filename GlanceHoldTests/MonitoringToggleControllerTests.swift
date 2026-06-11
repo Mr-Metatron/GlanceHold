@@ -224,6 +224,24 @@ final class MonitoringToggleControllerTests: XCTestCase {
         XCTAssertFalse(statusUpdateSource.contains("10_000_000_000"))
     }
 
+    func testManualPlayerTakeoverStopsPlaybackBeforeEndingMonitorSession() throws {
+        let source = try String(contentsOf: projectFileURL("GlanceHold/GlanceHoldApp.swift"), encoding: .utf8)
+        let body = try sourceSlice(
+            in: source,
+            from: "private func stopMonitoring(source: MonitoringStopSource)",
+            to: "private func performLifecycleCleanup"
+        )
+        let manualCase = try XCTUnwrap(body.range(of: "case .manualPlayerTakeover:"))
+        let manualBody = body[manualCase.lowerBound...]
+
+        let playbackStopRange = try XCTUnwrap(manualBody.range(of: "playbackCoordinator.stopMonitoring()"))
+        let monitorStopRange = try XCTUnwrap(manualBody.range(of: "monitor.stopMonitoring()"))
+        let stateRange = try XCTUnwrap(manualBody.range(of: "state.stopMonitoringAfterManualPlayerTakeover()"))
+
+        XCTAssertLessThan(playbackStopRange.lowerBound, monitorStopRange.lowerBound)
+        XCTAssertLessThan(monitorStopRange.lowerBound, stateRange.lowerBound)
+    }
+
     func testAppPlaybackAttentionSchedulingSupersedesStaleInFlightAttention() throws {
         let source = try String(contentsOf: projectFileURL("GlanceHold/GlanceHoldApp.swift"), encoding: .utf8)
         let body = try sourceSlice(

@@ -378,6 +378,26 @@ final class PlaybackCoordinatorTests: XCTestCase {
         assertNoRestoreOrResume(pauseAdapter.commands)
     }
 
+    func testPlainPlayingAfterOwnedPauseRequestsManualTakeoverStopWithoutResume() async {
+        let adapter = FakeIINAPlaybackAdapter(
+            snapshots: [
+                .playing(speed: 1.5),
+                .paused(speed: 1.5)
+            ]
+        )
+        let coordinator = PlaybackCoordinator(mode: .pauseResume, adapter: adapter)
+        var requestedStops: [StopMonitoringReason] = []
+        coordinator.stopMonitoringRequested = { requestedStops.append($0) }
+
+        await coordinator.handleAttentionState(.lookingAway)
+        coordinator.applyPushedPlayerSnapshot(.playing(speed: 1.5))
+
+        XCTAssertEqual(adapter.commands, [.pause])
+        XCTAssertEqual(requestedStops, [.manualPlayerTakeover])
+        XCTAssertEqual(coordinator.state.stoppedReason, .manualPlayerTakeover)
+        assertNoRestoreOrResume(adapter.commands)
+    }
+
     func testManualTakeoverRequestsAppLevelMonitoringStop() async {
         let adapter = FakeIINAPlaybackAdapter(
             snapshots: [
@@ -750,6 +770,28 @@ final class PlaybackCoordinatorTests: XCTestCase {
         XCTAssertEqual(requestedStops, [])
         XCTAssertNil(coordinator.state.stoppedReason)
         XCTAssertEqual(coordinator.state.playerSnapshot, .playing(speed: 1.5))
+    }
+
+    func testInvalidatedPendingSpeedConfirmationStillStopsForNonEchoSpeedTakeover() async {
+        let adapter = FakeIINAPlaybackAdapter(
+            snapshots: [
+                .playing(speed: 1.5),
+                .playerUnavailable,
+                .playerUnavailable
+            ]
+        )
+        let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+        var requestedStops: [StopMonitoringReason] = []
+        coordinator.stopMonitoringRequested = { requestedStops.append($0) }
+
+        await coordinator.handleAttentionState(.lookingAway)
+        coordinator.invalidateInFlightAttentionHandling()
+        coordinator.applyPushedPlayerSnapshot(.playing(speed: 2.0))
+
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
+        XCTAssertEqual(requestedStops, [.manualPlayerTakeover])
+        XCTAssertEqual(coordinator.state.stoppedReason, .manualPlayerTakeover)
+        assertNoRestoreOrResume(adapter.commands)
     }
 
     func testExhaustedConfirmationRetryClearsPendingOwnershipWithoutCompensation() async {
