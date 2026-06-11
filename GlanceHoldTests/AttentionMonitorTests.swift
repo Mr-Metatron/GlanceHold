@@ -186,8 +186,10 @@ final class AttentionMonitorTests: XCTestCase {
             .pose(makePose(yaw: -10.0, pitch: 5.0, roll: 1.0, time: 0.0)),
             .pose(makePose(yaw: 8.0, pitch: -4.0, roll: -1.0, time: 0.1)),
             .pose(makePose(yaw: 0.2, pitch: -0.1, roll: 0.1, time: 0.2)),
-            .pose(makePose(yaw: 0.4, pitch: 0.0, roll: -0.1, time: 0.3)),
-            .pose(makePose(yaw: 0.3, pitch: 0.1, roll: 0.0, time: 0.4))
+            .pose(makePose(yaw: 0.4, pitch: 0.0, roll: -0.1, time: 0.5)),
+            .pose(makePose(yaw: 0.3, pitch: 0.1, roll: 0.0, time: 0.8)),
+            .pose(makePose(yaw: 0.1, pitch: 0.0, roll: 0.1, time: 1.1)),
+            .pose(makePose(yaw: 0.2, pitch: 0.1, roll: 0.0, time: 1.4))
         ])
         let monitor = AttentionMonitor(
             permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
@@ -199,12 +201,12 @@ final class AttentionMonitorTests: XCTestCase {
         let resultTask = Task {
             await monitor.captureCalibrationSampleSet(
                 targetSampleCount: 5,
-                maximumFrameCount: 5
+                maximumFrameCount: 7
             )
         }
 
         await capture.waitForFrameHandler()
-        for time in stride(from: 0.0, through: 0.4, by: 0.1) {
+        for time in [0.0, 0.1, 0.2, 0.5, 0.8, 1.1, 1.4] {
             capture.emitFrame(time: time)
         }
 
@@ -259,10 +261,10 @@ final class AttentionMonitorTests: XCTestCase {
         let capture = FakeCameraFrameCapture()
         let analyzer = SequencedVisionAnalyzer(observations: [
             .pose(makePose(yaw: 0.0, pitch: 0.0, time: 0.0)),
-            .pose(makePose(yaw: 0.1, pitch: 0.0, time: 0.1)),
-            .pose(makePose(yaw: 0.2, pitch: 0.0, time: 0.2)),
-            .pose(makePose(yaw: 0.1, pitch: 0.1, time: 0.3)),
-            .pose(makePose(yaw: 0.2, pitch: 0.1, time: 0.4))
+            .pose(makePose(yaw: 0.1, pitch: 0.0, time: 0.25)),
+            .pose(makePose(yaw: 0.2, pitch: 0.0, time: 0.5)),
+            .pose(makePose(yaw: 0.1, pitch: 0.1, time: 0.75)),
+            .pose(makePose(yaw: 0.2, pitch: 0.1, time: 1.0))
         ])
         let monitor = AttentionMonitor(
             permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
@@ -356,7 +358,79 @@ final class AttentionMonitorTests: XCTestCase {
         XCTAssertEqual(monitor.applySample(.noFace(time: 2.8)), .noFaceDetected)
     }
 
-    func testUncalibratedAndAmbiguousObservationsAreSafeUnavailableStates() {
+    func testTransientAmbiguousAndFailedObservationsPreserveFacingState() {
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: MonitorSettingsStore(settings: .defaults.withCalibration(snapshot(.high))),
+            capture: FakeCameraFrameCapture(),
+            analyzer: FakeVisionAnalyzer()
+        )
+
+        XCTAssertEqual(monitor.applySample(.pose(makePose(yaw: 0.0, pitch: 0.0, time: 0.0))), .facing)
+        XCTAssertEqual(monitor.applySample(.ambiguous(time: 0.2)), .facing)
+        XCTAssertEqual(monitor.applySample(.failed(time: 0.3)), .facing)
+    }
+
+    func testTransientAmbiguousAndFailedObservationsPreserveAwayAndNoFaceStates() {
+        let awayMonitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: MonitorSettingsStore(settings: .defaults.withCalibration(snapshot(.high))),
+            capture: FakeCameraFrameCapture(),
+            analyzer: FakeVisionAnalyzer()
+        )
+
+        XCTAssertEqual(awayMonitor.applySample(.pose(makePose(yaw: 30.0, pitch: 0.0, time: 0.0))), .facing)
+        XCTAssertEqual(awayMonitor.applySample(.pose(makePose(yaw: 30.0, pitch: 0.0, time: 0.8))), .lookingAway)
+        XCTAssertEqual(awayMonitor.applySample(.ambiguous(time: 1.0)), .lookingAway)
+        XCTAssertEqual(awayMonitor.applySample(.failed(time: 1.1)), .lookingAway)
+
+        let noFaceMonitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: MonitorSettingsStore(settings: .defaults.withCalibration(snapshot(.high))),
+            capture: FakeCameraFrameCapture(),
+            analyzer: FakeVisionAnalyzer()
+        )
+
+        XCTAssertEqual(noFaceMonitor.applySample(.noFace(time: 0.0)), .facing)
+        XCTAssertEqual(noFaceMonitor.applySample(.noFace(time: 0.8)), .noFaceDetected)
+        XCTAssertEqual(noFaceMonitor.applySample(.ambiguous(time: 1.0)), .noFaceDetected)
+        XCTAssertEqual(noFaceMonitor.applySample(.failed(time: 1.1)), .noFaceDetected)
+    }
+
+    func testTransientAmbiguousAndFailedObservationsPreserveRecoveringStateUntilDelayCompletes() {
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: MonitorSettingsStore(settings: .defaults.withCalibration(snapshot(.high))),
+            capture: FakeCameraFrameCapture(),
+            analyzer: FakeVisionAnalyzer()
+        )
+
+        XCTAssertEqual(monitor.applySample(.pose(makePose(yaw: 30.0, pitch: 0.0, time: 0.0))), .facing)
+        XCTAssertEqual(monitor.applySample(.pose(makePose(yaw: 30.0, pitch: 0.0, time: 0.8))), .lookingAway)
+        XCTAssertEqual(monitor.applySample(.pose(makePose(yaw: 0.0, pitch: 0.0, time: 0.9))), .recovering)
+        XCTAssertEqual(monitor.applySample(.ambiguous(time: 1.1)), .recovering)
+        XCTAssertEqual(monitor.applySample(.failed(time: 1.2)), .recovering)
+        XCTAssertEqual(monitor.applySample(.pose(makePose(yaw: 0.0, pitch: 0.0, time: 1.5))), .recovering)
+        XCTAssertEqual(monitor.applySample(.pose(makePose(yaw: 0.0, pitch: 0.0, time: 1.9))), .facing)
+    }
+
+    func testSustainedUnavailableRequiresRecoveryBeforeFacingStateReturns() {
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: MonitorSettingsStore(settings: .defaults.withCalibration(snapshot(.high))),
+            capture: FakeCameraFrameCapture(),
+            analyzer: FakeVisionAnalyzer()
+        )
+
+        XCTAssertEqual(monitor.applySample(.pose(makePose(yaw: 0.0, pitch: 0.0, time: 0.0))), .facing)
+        XCTAssertEqual(monitor.applySample(.ambiguous(time: 0.1)), .facing)
+        XCTAssertEqual(monitor.applySample(.failed(time: 0.7)), .unavailable)
+        XCTAssertEqual(monitor.applySample(.pose(makePose(yaw: 0.0, pitch: 0.0, time: 0.8))), .recovering)
+        XCTAssertEqual(monitor.applySample(.pose(makePose(yaw: 0.0, pitch: 0.0, time: 1.3))), .recovering)
+        XCTAssertEqual(monitor.applySample(.pose(makePose(yaw: 0.0, pitch: 0.0, time: 1.4))), .facing)
+    }
+
+    func testUncalibratedObservationRemainsNeedsCalibrationAndSustainedAmbiguousBecomesUnavailable() {
         let uncalibrated = AttentionMonitor(
             permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
             settingsStore: MonitorSettingsStore(),
@@ -373,7 +447,8 @@ final class AttentionMonitorTests: XCTestCase {
             analyzer: FakeVisionAnalyzer()
         )
 
-        XCTAssertEqual(calibrated.applySample(.ambiguous(time: 0.0)), .unavailable)
+        XCTAssertEqual(calibrated.applySample(.ambiguous(time: 0.0)), .facing)
+        XCTAssertEqual(calibrated.applySample(.ambiguous(time: 0.6)), .unavailable)
     }
 
     func testMonitorNotifiesWhenSamplesChangeVisibleState() {
@@ -608,7 +683,8 @@ final class AttentionMonitorTests: XCTestCase {
         XCTAssertFalse(fieldNames.contains("image"))
         XCTAssertFalse(fieldNames.contains("faceBox"))
         XCTAssertFalse(fieldNames.contains("rawPoseStream"))
-        XCTAssertEqual(fieldValue(.selectedWindowDurationSeconds, in: calibrationEnded), "0.200")
+        XCTAssertEqual(fieldValue(.selectedWindowSampleCount, in: calibrationEnded), "5")
+        XCTAssertEqual(fieldValue(.selectedWindowDurationSeconds, in: calibrationEnded), "1.000")
     }
 
     func testSettingsUpdatesSaveImmediatelyAndSurviveReload() throws {
@@ -639,8 +715,10 @@ final class AttentionMonitorTests: XCTestCase {
     private func samples(spread: Double) -> [PoseSample] {
         [
             makePose(yaw: 0.0, pitch: 0.0, time: 0.0),
-            makePose(yaw: spread, pitch: spread, time: 0.1),
-            makePose(yaw: spread / 2.0, pitch: spread / 2.0, time: 0.2)
+            makePose(yaw: spread, pitch: spread, time: 0.25),
+            makePose(yaw: spread / 2.0, pitch: spread / 2.0, time: 0.5),
+            makePose(yaw: spread / 4.0, pitch: spread / 4.0, time: 0.75),
+            makePose(yaw: spread * 0.75, pitch: spread * 0.75, time: 1.0)
         ]
     }
 }
