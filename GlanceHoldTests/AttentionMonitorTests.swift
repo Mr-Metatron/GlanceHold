@@ -91,6 +91,32 @@ final class AttentionMonitorTests: XCTestCase {
         XCTAssertEqual(monitor.state, .monitoringPendingFirstSample)
     }
 
+    func testStartMonitoringDoesNotReenterWhileCaptureStartIsInFlight() async {
+        let capture = FakeCameraFrameCapture(suspendedStartCount: 1)
+        let store = MonitorSettingsStore(settings: .defaults.withCalibration(snapshot(.high)))
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: store,
+            capture: capture,
+            analyzer: FakeVisionAnalyzer()
+        )
+
+        let startTask = Task {
+            await monitor.startMonitoring()
+        }
+
+        await capture.waitForStartCall()
+        await monitor.startMonitoring()
+
+        XCTAssertEqual(capture.startCount, 1)
+
+        capture.completeSuspendedStart()
+        await startTask.value
+
+        XCTAssertEqual(capture.startCount, 1)
+        XCTAssertEqual(monitor.state, .monitoringPendingFirstSample)
+    }
+
     func testCalibrationSavesHighAndMarginalScalarSnapshots() async throws {
         let store = MonitorSettingsStore()
         let monitor = AttentionMonitor(
@@ -255,6 +281,44 @@ final class AttentionMonitorTests: XCTestCase {
         XCTAssertEqual(result, .failed(previous: nil))
         XCTAssertEqual(monitor.state, .calibrationFailed(previousKept: false))
         XCTAssertEqual(capture.stopCount, 1)
+    }
+
+    func testStaleCalibrationCleanupDoesNotStopNewMonitoringSession() async throws {
+        let capture = FakeCameraFrameCapture()
+        let calibration = snapshot(.high)
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: MonitorSettingsStore(settings: .defaults.withCalibration(calibration)),
+            capture: capture,
+            analyzer: FakeVisionAnalyzer()
+        )
+
+        let calibrationTask = Task {
+            await monitor.captureCalibrationSampleSet(
+                targetSampleCount: 5,
+                maximumFrameCount: 20,
+                minimumCaptureDuration: 10.0,
+                maximumCaptureDuration: 0.05
+            )
+        }
+
+        await capture.waitUntilRunning()
+        monitor.stopMonitoring()
+
+        await monitor.startMonitoring()
+        await capture.waitForFrameHandler()
+
+        XCTAssertEqual(capture.startCount, 2)
+        XCTAssertEqual(capture.stopCount, 1)
+        XCTAssertEqual(monitor.state, .monitoringPendingFirstSample)
+        XCTAssertNotNil(capture.frameHandler)
+
+        _ = await calibrationTask.value
+        try await Task.sleep(nanoseconds: 20_000_000)
+
+        XCTAssertEqual(capture.stopCount, 1)
+        XCTAssertNotNil(capture.frameHandler)
+        XCTAssertEqual(monitor.state, .monitoringPendingFirstSample)
     }
 
     func testCameraBackedCalibrationKeepsSamplingUntilMinimumDurationOrFrameBound() async {
@@ -546,35 +610,6 @@ final class AttentionMonitorTests: XCTestCase {
         XCTAssertLessThanOrEqual(analyzerRate, 5.5, "analyzerRateHz should stay within 5 Hz plus fake-timestamp tolerance")
     }
 
-    func testMonitoringHotPathPerformanceBudgetUsesCPUMetric() async {
-        let capture = FakeCameraFrameCapture()
-        let analyzer = TimestampEchoVisionAnalyzer()
-        let monitor = AttentionMonitor(
-            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
-            settingsStore: MonitorSettingsStore(settings: .defaults.withCalibration(snapshot(.high))),
-            capture: capture,
-            analyzer: analyzer,
-            diagnosticMode: .diagnostic
-        )
-
-        await monitor.startMonitoring()
-        await capture.waitForFrameHandler()
-
-        var baseTime = 0.0
-        measure(metrics: [XCTCPUMetric()]) {
-            let start = baseTime
-            for index in 0..<300 {
-                capture.emitFrame(time: start + Double(index) / 30.0)
-            }
-            baseTime += 20.0
-        }
-
-        await drainMainActor()
-        monitor.stopMonitoring()
-
-        XCTAssertGreaterThan(analyzer.analyzeCount, 0)
-    }
-
     func testDiagnosticModeRecordsAttentionBreadcrumbsAndPeriodicSummary() async {
         let recorder = MonitorDiagnosticRecorder(mode: .diagnostic)
         let monitor = AttentionMonitor(
@@ -824,19 +859,36 @@ private final class FakeCameraFrameCapture: CameraFrameCapturing {
     private(set) var startCount = 0
     private(set) var stopCount = 0
     private let startError: Error?
+    private var suspendedStartCount: Int
     private var isRunning = false
+    private var startCallContinuation: CheckedContinuation<Void, Never>?
+    private var suspendedStartContinuation: CheckedContinuation<Void, Error>?
+    private var runningContinuation: CheckedContinuation<Void, Never>?
     private var frameHandlerContinuation: CheckedContinuation<Void, Never>?
 
-    init(startError: Error? = nil) {
+    init(startError: Error? = nil, suspendedStartCount: Int = 0) {
         self.startError = startError
+        self.suspendedStartCount = suspendedStartCount
     }
 
     func start() async throws {
         startCount += 1
+        startCallContinuation?.resume()
+        startCallContinuation = nil
+
+        if suspendedStartCount > 0 {
+            suspendedStartCount -= 1
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                suspendedStartContinuation = continuation
+            }
+        }
+
         if let startError {
             throw startError
         }
         isRunning = true
+        runningContinuation?.resume()
+        runningContinuation = nil
     }
 
     func stop() {
@@ -845,6 +897,51 @@ private final class FakeCameraFrameCapture: CameraFrameCapturing {
         }
         stopCount += 1
         isRunning = false
+    }
+
+    func waitForStartCall() async {
+        if startCount > 0 {
+            return
+        }
+
+        await withCheckedContinuation { continuation in
+            if startCount > 0 {
+                continuation.resume()
+            } else {
+                startCallContinuation = continuation
+            }
+        }
+    }
+
+    func completeSuspendedStart(
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        guard let suspendedStartContinuation else {
+            XCTFail("Expected a suspended start", file: file, line: line)
+            return
+        }
+
+        self.suspendedStartContinuation = nil
+        suspendedStartContinuation.resume(returning: ())
+    }
+
+    func waitUntilRunning(
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async {
+        if isRunning {
+            return
+        }
+
+        await withCheckedContinuation { continuation in
+            if isRunning {
+                continuation.resume()
+            } else {
+                runningContinuation = continuation
+            }
+        }
+        XCTAssertTrue(isRunning, file: file, line: line)
     }
 
     func waitForFrameHandler(

@@ -29,6 +29,13 @@ private enum CalibrationCaptureEndReason: String {
     case sessionCancelled
 }
 
+private enum CaptureLifecycleState: Equatable {
+    case idle
+    case starting(UUID)
+    case running(UUID)
+    case stopping(UUID)
+}
+
 private struct CalibrationCaptureMetrics {
     var frameCount = 0
     var poseCount = 0
@@ -63,7 +70,7 @@ final class AttentionMonitor {
     private let diagnosticMode: DiagnosticMode
     private let runtimeSummaryInterval: TimeInterval
     private var stateMachine: AttentionStateMachine
-    private var isCaptureRunning = false
+    private var captureLifecycleState: CaptureLifecycleState = .idle
     private var activeSessionID: UUID?
     private var activeDiagnosticSession: DiagnosticSession?
     private var monitoringMetrics = DiagnosticRuntimeMetrics.empty
@@ -104,10 +111,6 @@ final class AttentionMonitor {
     }
 
     func startMonitoring() async {
-        guard !isCaptureRunning else {
-            return
-        }
-
         guard await resolvePermission() else {
             setState(.cameraPermissionDenied)
             return
@@ -119,8 +122,11 @@ final class AttentionMonitor {
         }
 
         let sessionID = UUID()
+        guard beginCaptureSession(sessionID: sessionID) else {
+            return
+        }
+
         let diagnosticSession = DiagnosticSession(id: sessionID, kind: .monitoring)
-        activeSessionID = sessionID
         activeDiagnosticSession = diagnosticSession
         monitoringMetrics = .empty
         monitoringStartedAt = nil
@@ -171,31 +177,30 @@ final class AttentionMonitor {
 
         do {
             try await capture.start()
-            isCaptureRunning = true
+            guard completeCaptureStart(sessionID: sessionID) else {
+                clearActiveDiagnosticSession(diagnosticSession)
+                return
+            }
+
             diagnosticSessionDidChange?(diagnosticSession)
             setState(.monitoringPendingFirstSample)
         } catch CameraFrameCaptureError.unavailable {
-            recordFailure(category: .camera, in: diagnosticSession)
-            clearActiveCapture(sessionID: sessionID)
-            clearActiveDiagnosticSession(diagnosticSession)
-            setState(.cameraUnavailable)
+            if handleCaptureStartFailure(sessionID: sessionID) {
+                recordFailure(category: .camera, in: diagnosticSession)
+                clearActiveDiagnosticSession(diagnosticSession)
+                setState(.cameraUnavailable)
+            }
         } catch {
-            recordFailure(category: .monitoring, in: diagnosticSession)
-            clearActiveCapture(sessionID: sessionID)
-            clearActiveDiagnosticSession(diagnosticSession)
-            setState(.unavailable)
+            if handleCaptureStartFailure(sessionID: sessionID) {
+                recordFailure(category: .monitoring, in: diagnosticSession)
+                clearActiveDiagnosticSession(diagnosticSession)
+                setState(.unavailable)
+            }
         }
     }
 
     func stopMonitoring() {
         finishMonitoringDiagnostics()
-
-        guard isCaptureRunning else {
-            activeSessionID = nil
-            capture.frameHandler = nil
-            setState(.off)
-            return
-        }
 
         clearActiveCapture(sessionID: activeSessionID)
         setState(.off)
@@ -217,8 +222,11 @@ final class AttentionMonitor {
         }
 
         let sessionID = UUID()
+        guard beginCaptureSession(sessionID: sessionID) else {
+            return .failed(previous: settings.calibration)
+        }
+
         let diagnosticSession = DiagnosticSession(id: sessionID, kind: .calibration)
-        activeSessionID = sessionID
         diagnosticRecorder.record(DiagnosticEventRequest(category: .calibration, name: .sessionStarted), in: diagnosticSession)
         setState(.calibrating)
 
@@ -253,24 +261,28 @@ final class AttentionMonitor {
             }
         }
 
-        do {
-            try await capture.start()
-            isCaptureRunning = true
-        } catch CameraFrameCaptureError.unavailable {
-            recordFailure(category: .camera, in: diagnosticSession)
-            clearActiveCapture(sessionID: sessionID)
-            setState(.cameraUnavailable)
-            return .failed(previous: settings.calibration)
-        } catch {
-            recordFailure(category: .calibration, in: diagnosticSession)
-            clearActiveCapture(sessionID: sessionID)
-            setState(.unavailable)
-            return .failed(previous: settings.calibration)
-        }
-
         defer {
             timeoutTask.cancel()
             streamContinuation?.finish()
+        }
+
+        do {
+            try await capture.start()
+            guard completeCaptureStart(sessionID: sessionID) else {
+                return .failed(previous: settings.calibration)
+            }
+        } catch CameraFrameCaptureError.unavailable {
+            if handleCaptureStartFailure(sessionID: sessionID) {
+                recordFailure(category: .camera, in: diagnosticSession)
+                setState(.cameraUnavailable)
+            }
+            return .failed(previous: settings.calibration)
+        } catch {
+            if handleCaptureStartFailure(sessionID: sessionID) {
+                recordFailure(category: .calibration, in: diagnosticSession)
+                setState(.unavailable)
+            }
+            return .failed(previous: settings.calibration)
         }
 
         for await event in stream {
@@ -599,13 +611,71 @@ final class AttentionMonitor {
         return field
     }
 
-    private func clearActiveCapture(sessionID: UUID?) {
-        if activeSessionID == sessionID || sessionID == nil {
-            activeSessionID = nil
+    private func beginCaptureSession(sessionID: UUID) -> Bool {
+        guard captureLifecycleState == .idle else {
+            return false
         }
+
+        activeSessionID = sessionID
+        captureLifecycleState = .starting(sessionID)
+        return true
+    }
+
+    private func completeCaptureStart(sessionID: UUID) -> Bool {
+        switch captureLifecycleState {
+        case .starting(let lifecycleSessionID) where lifecycleSessionID == sessionID:
+            captureLifecycleState = .running(sessionID)
+            return activeSessionID == sessionID
+        case .stopping(let lifecycleSessionID) where lifecycleSessionID == sessionID:
+            captureLifecycleState = .idle
+            capture.frameHandler = nil
+            capture.stop()
+            return false
+        case .idle, .starting, .running, .stopping:
+            return false
+        }
+    }
+
+    private func handleCaptureStartFailure(sessionID: UUID) -> Bool {
+        switch captureLifecycleState {
+        case .starting(let lifecycleSessionID) where lifecycleSessionID == sessionID:
+            activeSessionID = nil
+            captureLifecycleState = .idle
+            capture.frameHandler = nil
+            return true
+        case .stopping(let lifecycleSessionID) where lifecycleSessionID == sessionID:
+            captureLifecycleState = .idle
+            capture.frameHandler = nil
+            return false
+        case .idle, .starting, .running, .stopping:
+            return false
+        }
+    }
+
+    private func clearActiveCapture(sessionID: UUID?) {
+        if let sessionID, activeSessionID != sessionID {
+            return
+        }
+
+        let shouldStopCapture: Bool
+        switch captureLifecycleState {
+        case .idle:
+            shouldStopCapture = false
+        case .starting(let lifecycleSessionID):
+            captureLifecycleState = .stopping(lifecycleSessionID)
+            shouldStopCapture = false
+        case .running:
+            captureLifecycleState = .idle
+            shouldStopCapture = true
+        case .stopping:
+            shouldStopCapture = false
+        }
+
+        activeSessionID = nil
         capture.frameHandler = nil
-        capture.stop()
-        isCaptureRunning = false
+        if shouldStopCapture {
+            capture.stop()
+        }
     }
 
     private func clearActiveDiagnosticSession(_ session: DiagnosticSession) {
