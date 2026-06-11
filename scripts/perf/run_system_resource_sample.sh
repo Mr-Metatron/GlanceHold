@@ -56,6 +56,9 @@ Evidence policy:
   and manually supplied DiagnosticRuntimeMetrics counters. It does not collect
   camera frames, screenshots, raw network payloads, media identity, or visual data.
   There is no fixed watt pass/fail threshold.
+  The Phase 11 ABBA evidence feeds the Phase 8 back-reference finalized in 11-05.
+  The final phase11-abba evidence run is collected with real IINA, plugin, camera,
+  and Diagnostic Mode counter notes; syntax and help checks do not require them.
 USAGE
 }
 
