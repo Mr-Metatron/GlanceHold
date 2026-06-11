@@ -83,7 +83,7 @@
 
 **Requirements:** PLAY-01, PLAY-02, PLAY-03, PLAY-04
 
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 **Wave 1**
@@ -96,7 +96,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 09-03-PLAN.md — Preserve ownership across transient confirmation failures and tighten manual takeover
+- [x] 09-03-PLAN.md — Preserve ownership across transient confirmation failures and tighten manual takeover
 
 **Success criteria:**
 
@@ -149,7 +149,7 @@ Plans:
 | 7. Structured Runtime Logging and Diagnostics Foundation | v1.1 | 5/5 | Complete    | 2026-06-09 |
 | 8. Power Hot Path Sampling and Notification Deduplication | v1.1 | 6/6 | Complete   | 2026-06-10 |
 | 08.1. IINA bridge local trust model and setup-error UX | v1.1 | 6/6 | Complete    | 2026-06-10 |
-| 9. Playback Coordinator Ownership and Async Safety | v1.1 | 2/3 | In Progress | — |
+| 9. Playback Coordinator Ownership and Async Safety | v1.1 | 3/3 | Complete   | 2026-06-11 |
 | 10. Attention Semantics, Calibration Robustness, and Settings Validation | v1.1 | 0/? | Planned | — |
 | 11. IINA Bridge Security, Legacy Boundary, and Reliability Verification | v1.1 | 0/? | Planned | — |
 
