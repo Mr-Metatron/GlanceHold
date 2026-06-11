@@ -302,6 +302,43 @@ function testValidSnapshotReadsSnapshot() {
   assert.deepEqual(harness.calls.mpvGetNumber, ["speed"]);
 }
 
+function testUnknownRequestTypeIsRejectedWithoutSideEffects() {
+  const harness = createHarness();
+
+  const response = harness.sendRequest({
+    id: 47,
+    version: 3,
+    type: "status"
+  });
+
+  assert.deepEqual(response, {
+    version: 3,
+    id: 47,
+    ok: false,
+    error: "unknown_type"
+  });
+  assertNoSideEffects(harness.calls);
+}
+
+function testUnknownCommandIsRejectedWithoutSideEffects() {
+  const harness = createHarness();
+
+  const response = harness.sendRequest({
+    id: 48,
+    version: 3,
+    type: "command",
+    command: "seek"
+  });
+
+  assert.deepEqual(response, {
+    version: 3,
+    id: 48,
+    ok: false,
+    error: "unknown_command"
+  });
+  assertNoSideEffects(harness.calls);
+}
+
 function testManualPropertyChangesAnnotateStatusChanged() {
   const harness = createHarness();
   harness.connect();
@@ -384,6 +421,8 @@ const tests = [
   testInvalidSetSpeedValuesAreRejectedWithoutSideEffects,
   testPauseAndResumeStillWorkAfterSpeedValidation,
   testValidSnapshotReadsSnapshot,
+  testUnknownRequestTypeIsRejectedWithoutSideEffects,
+  testUnknownCommandIsRejectedWithoutSideEffects,
   testManualPropertyChangesAnnotateStatusChanged,
   testBridgeCommandEchoesAreNotAnnotatedAsManualActions
 ];
