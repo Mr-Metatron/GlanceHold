@@ -730,6 +730,28 @@ final class PlaybackCoordinatorTests: XCTestCase {
         ))
     }
 
+    func testInvalidatedPendingSpeedConfirmationDoesNotTreatOriginalSpeedPushAsManualTakeover() async {
+        let adapter = FakeIINAPlaybackAdapter(
+            snapshots: [
+                .playing(speed: 1.5),
+                .playerUnavailable,
+                .playerUnavailable
+            ]
+        )
+        let coordinator = PlaybackCoordinator(mode: .speedControl, adapter: adapter)
+        var requestedStops: [StopMonitoringReason] = []
+        coordinator.stopMonitoringRequested = { requestedStops.append($0) }
+
+        await coordinator.handleAttentionState(.lookingAway)
+        coordinator.invalidateInFlightAttentionHandling()
+        coordinator.applyPushedPlayerSnapshot(.playing(speed: 1.5))
+
+        XCTAssertEqual(adapter.commands, [.holdSpeedAtOne])
+        XCTAssertEqual(requestedStops, [])
+        XCTAssertNil(coordinator.state.stoppedReason)
+        XCTAssertEqual(coordinator.state.playerSnapshot, .playing(speed: 1.5))
+    }
+
     func testExhaustedConfirmationRetryClearsPendingOwnershipWithoutCompensation() async {
         let recorder = PlaybackDiagnosticRecorder(mode: .diagnostic)
         let adapter = FakeIINAPlaybackAdapter(

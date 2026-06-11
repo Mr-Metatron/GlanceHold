@@ -131,6 +131,8 @@ struct PlaybackPolicy: Equatable {
             return result([])
         }
 
+        resolvePendingConfirmationIfObserved(player: player)
+
         if let takeoverResult = handleManualTakeoverIfNeeded(player: player) {
             return takeoverResult
         }
@@ -154,6 +156,8 @@ struct PlaybackPolicy: Equatable {
         guard state.stoppedReason == nil else {
             return result([])
         }
+
+        resolvePendingConfirmationIfObserved(player: player)
 
         if let takeoverResult = handleManualTakeoverIfNeeded(player: player) {
             return takeoverResult
@@ -244,12 +248,48 @@ struct PlaybackPolicy: Equatable {
         return nil
     }
 
+    private mutating func resolvePendingConfirmationIfObserved(player: PlayerSnapshot) {
+        guard let pendingIntent = state.pendingConfirmationIntent,
+              playerConfirms(intent: pendingIntent, snapshot: player) else {
+            return
+        }
+
+        state.pendingConfirmationIntent = nil
+    }
+
+    private func playerConfirms(intent: PlaybackIntent, snapshot: PlayerSnapshot) -> Bool {
+        switch intent {
+        case .holdSpeedAtOne:
+            return snapshot.playbackState == .playing && approximatelyEqual(snapshot.speed, 1.0)
+        case let .restoreSpeed(speed):
+            return snapshot.playbackState == .playing && approximatelyEqual(snapshot.speed, speed)
+        case .pause:
+            return snapshot.playbackState == .paused && snapshot.speed != nil
+        case .resume:
+            return snapshot.playbackState == .playing && snapshot.speed != nil
+        case .stopMonitoring:
+            return false
+        }
+    }
+
     private func observedSpeedWasManuallyChanged(player: PlayerSnapshot) -> Bool {
         guard player.playbackState == .playing, let speed = player.speed else {
             return false
         }
 
-        return abs(speed - 1.0) > 0.000_001
+        return !approximatelyEqual(speed, 1.0)
+    }
+
+    private func approximatelyEqual(_ lhs: Double?, _ rhs: Double) -> Bool {
+        guard let lhs else {
+            return false
+        }
+
+        return approximatelyEqual(lhs, rhs)
+    }
+
+    private func approximatelyEqual(_ lhs: Double, _ rhs: Double) -> Bool {
+        abs(lhs - rhs) <= 0.000_001
     }
 
     private mutating func stopMonitoringForManualTakeover() -> PlaybackPolicyResult {

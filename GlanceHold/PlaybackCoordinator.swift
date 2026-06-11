@@ -69,7 +69,6 @@ final class PlaybackCoordinator {
     func invalidateInFlightAttentionHandling() {
         monitoringGeneration = UUID()
         pendingConfirmation = nil
-        policy.clearPendingConfirmation()
     }
 
     func stopMonitoring() {
@@ -494,7 +493,6 @@ final class PlaybackCoordinator {
 
         guard pendingConfirmation.generation == monitoringGeneration else {
             self.pendingConfirmation = nil
-            policy.clearPendingConfirmation()
             return false
         }
 
