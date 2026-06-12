@@ -112,10 +112,10 @@ Plans:
 **Goal:** Create the missing Phase 09 verification artifact and confirm the v1.1 milestone audit no longer treats PLAY-01 through PLAY-04 as orphaned.
 **Requirements**: PLAY-01, PLAY-02, PLAY-03, PLAY-04
 **Depends on:** Phase 9
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 09.1-01-PLAN.md — Create Phase 09 verification evidence and confirm PLAY audit closure
+- [x] 09.1-01-PLAN.md — Create Phase 09 verification evidence and confirm PLAY audit closure
 
 ### Phase 10: Attention Semantics, Calibration Robustness, and Settings Validation
 
@@ -178,7 +178,7 @@ Plans:
 | 8. Power Hot Path Sampling and Notification Deduplication | v1.1 | 6/6 | Complete   | 2026-06-10 |
 | 08.1. IINA bridge local trust model and setup-error UX | v1.1 | 6/6 | Complete    | 2026-06-10 |
 | 9. Playback Coordinator Ownership and Async Safety | v1.1 | 3/3 | Complete   | 2026-06-11 |
-| 09.1. Close gap: Phase 09 verification evidence | v1.1 | 0/1 | Pending | - |
+| 09.1. Close gap: Phase 09 verification evidence | v1.1 | 1/1 | Complete   | 2026-06-12 |
 | 10. Attention Semantics, Calibration Robustness, and Settings Validation | v1.1 | 4/4 | Complete    | 2026-06-11 |
 | 11. IINA Bridge Security, Legacy Boundary, and Reliability Verification | v1.1 | 5/5 | Complete | 2026-06-12 |
 
