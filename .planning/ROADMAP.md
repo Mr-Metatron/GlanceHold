@@ -178,7 +178,7 @@ Plans:
 | 8. Power Hot Path Sampling and Notification Deduplication | v1.1 | 6/6 | Complete   | 2026-06-10 |
 | 08.1. IINA bridge local trust model and setup-error UX | v1.1 | 6/6 | Complete    | 2026-06-10 |
 | 9. Playback Coordinator Ownership and Async Safety | v1.1 | 3/3 | Complete   | 2026-06-11 |
-| 09.1. Close gap: Phase 09 verification evidence | v1.1 | 1/1 | Complete   | 2026-06-12 |
+| 09.1. Close gap: Phase 09 verification evidence | v1.1 | 1/1 | Complete    | 2026-06-12 |
 | 10. Attention Semantics, Calibration Robustness, and Settings Validation | v1.1 | 4/4 | Complete    | 2026-06-11 |
 | 11. IINA Bridge Security, Legacy Boundary, and Reliability Verification | v1.1 | 5/5 | Complete | 2026-06-12 |
 
