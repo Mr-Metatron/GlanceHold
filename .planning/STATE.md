@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Runtime Reliability and Power Budget
 status: executing
-stopped_at: Completed 11-02-PLAN.md
-last_updated: "2026-06-11T19:37:45.777Z"
-last_activity: 2026-06-11
+stopped_at: Completed 11-05-PLAN.md artifacts; Phase 11 verification blocked on cleanup/counter evidence
+last_updated: "2026-06-12T04:05:00.000Z"
+last_activity: 2026-06-12
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 30
-  completed_plans: 29
+  completed_plans: 30
   percent: 83
 ---
 
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-06-09 after completing Phase 7)
 
 Phase: 11 (iina-bridge-security-legacy-boundary-and-reliability-verific) — EXECUTING
 Plan: 5 of 5
-Status: Ready to execute
-Last activity: 2026-06-11
+Status: Blocked on live disable/quit cleanup confirmation and Diagnostic Mode counter values
+Last activity: 2026-06-12
 
 ## Performance Metrics
 
@@ -105,6 +105,7 @@ Last activity: 2026-06-11
 | Phase 11 P03 | 6 min | 3 tasks | 3 files |
 | Phase 11 P04 | 15min | 3 tasks | 2 files |
 | Phase 11 P02 | 13 min | 3 tasks | 6 files |
+| Phase 11 P05 | live checkpoint | 3 tasks | planning/resource artifacts |
 
 ## Accumulated Context
 
@@ -151,8 +152,11 @@ Recent decisions affecting current work:
 - [Phase ?]: 11-01 keeps the concrete MPV IPC adapter source reference-only for now; production target isolation is deferred to 11-02.
 - [Phase 11]: 11-03 keeps bridge security verification split into standalone Node protocol behavior and static no-token runtime/docs scanning; Swift bridge focused XCTest is skipped unless Swift bridge files change. — Plan 11-03 changed only the plugin protocol harness and a shell static gate.
 - [Phase 11]: 11-04 records xctrace and powermetrics as optional skipped evidence unless collected, with powermetrics probed only through sudo -n.
-- [Phase 11]: 11-04 uses scripts/perf/run_system_resource_sample.sh as the scalar ABBA sampler; real 60-second IINA/plugin/camera ABBA evidence remains in 11-05.
+- [Phase 11]: 11-04 uses scripts/perf/run_system_resource_sample.sh as the scalar ABBA sampler; real 60-second IINA/plugin/camera ABBA evidence was collected and recorded in 11-05.
 - [Phase 11]: 11-02 keeps legacy MPV IPC source and tests on disk as reference material only, excluded from normal production app target and normal test hard-gate evidence. — The production path is the IINA plugin bridge; target-aware static verification now enforces that boundary.
+- [Phase 11]: 11-05 collected real phase11-abba resource evidence as four user-controlled 60-second single-segment runs and combined them in off,on,on,off order. — The interrupted earlier run was moved to macOS Trash and is excluded from evidence.
+- [Phase 11]: 11-05 keeps Phase 11 non-compliant despite live playback and bridge passes because disable/quit cleanup could not be confirmed and Diagnostic Mode counter values were unavailable.
+- [Phase 08]: Phase 8 pending-resource-evidence is closed by the Phase 11 phase11-abba scalar ABBA back-reference without introducing a fixed watt pass/fail threshold.
 
 ### Roadmap Evolution
 
@@ -181,7 +185,8 @@ Recent decisions affecting current work:
 - [v1.1]: Logging must be default-quiet and privacy-safe; diagnostic mode may add detail but must not store frames or upload visual data.
 - [v1.1]: Phase 08.1 completed the no-token local IINA bridge trust model; Phase 11 should inherit it without reintroducing pairing, client ids, manual token copy/paste, or equivalent ceremony.
 - [Phase 7]: Live Diagnostic Mode unified-log evidence passed. Pre-paused IINA startup semantics were fixed in quick task 260609-jit.
-- [Phase 08]: Post-change 1-minute stable-viewing resource observation is pending; need IINA/plugin/camera state plus CPU, energy impact if available, wakeups if available, WebSocket/network scalar, and analyzer received/analyzed/skipped/rate counters before marking verification passed or nyquist_compliant true.
+- [Phase 08]: Post-change scalar resource evidence is closed by Phase 11 `phase11-abba`; Diagnostic counter values remained unavailable and are recorded as a Phase 11 VER-02 blocker rather than a fixed watt threshold failure.
+- [Phase 11]: Disable/quit cleanup could not be confirmed in live UAT, so Phase 11 remains blocked even though Speed Control, Pause/Resume, manual takeover, bridge setup/status, and ABBA resource evidence passed.
 
 ### Quick Tasks Completed
 
@@ -206,11 +211,11 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-11T19:37:45.773Z
-Stopped at: Completed 11-02-PLAN.md
+Last session: 2026-06-12T04:05:00.000Z
+Stopped at: Completed 11-05-PLAN.md artifacts with Phase 11 verification blocker
 Resume file: None
 
 ## Operator Next Steps
 
-- Proceed to Phase 9 verification for playback coordinator ownership and async safety.
-- Per user request on 2026-06-09, do not start code review immediately after execution unless explicitly requested.
+- Re-run or manually confirm Phase 11 disable/quit cleanup, then update `11-UAT.md`, `11-VERIFICATION.md`, `11-VALIDATION.md`, and `REQUIREMENTS.md` if VER-02 becomes complete.
+- Diagnostic Mode counter values were unavailable in this UAT; capture them if practical during the cleanup recheck.

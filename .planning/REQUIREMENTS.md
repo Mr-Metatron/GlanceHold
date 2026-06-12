@@ -19,7 +19,7 @@
 - [x] **PWR-02**: User can remain in the same attention state without duplicate semantic notifications triggering repeated playback snapshots.
 - [x] **PWR-03**: User can monitor IINA without stable-state playback checks creating high-frequency WebSocket round trips.
 - [x] **PWR-04**: Developer can verify power hot-path behavior with fake high-frame-rate tests that bound analyzer calls, semantic notifications, playback snapshots, and commands.
-- [ ] **PWR-05**: User can compare before/after power behavior with a manual measurement checklist focused on the previously observed ~5W overhead.
+- [x] **PWR-05**: User can compare before/after power behavior with a manual measurement checklist focused on the previously observed ~5W overhead.
 
 ### Playback Ownership Safety
 
@@ -91,7 +91,7 @@
 | PWR-02 | Phase 8 | Complete |
 | PWR-03 | Phase 8 | Complete |
 | PWR-04 | Phase 8 | Complete |
-| PWR-05 | Phase 11 | Pending |
+| PWR-05 | Phase 11 | Complete |
 | PLAY-01 | Phase 9 | Complete |
 | PLAY-02 | Phase 9 | Complete |
 | PLAY-03 | Phase 9 | Complete |
@@ -117,4 +117,4 @@
 
 ---
 *Requirements defined: 2026-06-09*
-*Last updated: 2026-06-10 after inserting Phase 08.1 for IINA bridge local trust model*
+*Last updated: 2026-06-12 after Phase 11 ABBA resource evidence closed PWR-05 while VER-02 cleanup evidence remained pending*

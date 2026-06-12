@@ -127,7 +127,7 @@ Plans:
 
 **Requirements:** PWR-05, BRDG-01, BRDG-02, BRDG-03, BRDG-04, VER-01, VER-02
 
-**Plans:** 4/5 plans executed
+**Plans:** 5/5 plans executed; phase verification blocked on cleanup/counter evidence
 
 Plans:
 **Wave 1**
@@ -142,7 +142,7 @@ Plans:
 
 **Wave 3** *(blocked on 11-02, 11-03, 11-04 completion)*
 
-- [ ] 11-05-PLAN.md — Complete automated closeout, real IINA/camera UAT, and Phase 8 back-reference
+- [x] 11-05-PLAN.md — Complete automated closeout, real IINA/camera UAT, and Phase 8 back-reference; final phase status blocked on disable/quit cleanup confirmation and unavailable Diagnostic counters
 
 **Success criteria:**
 
@@ -168,12 +168,14 @@ Plans:
 | 08.1. IINA bridge local trust model and setup-error UX | v1.1 | 6/6 | Complete    | 2026-06-10 |
 | 9. Playback Coordinator Ownership and Async Safety | v1.1 | 3/3 | Complete   | 2026-06-11 |
 | 10. Attention Semantics, Calibration Robustness, and Settings Validation | v1.1 | 4/4 | Complete    | 2026-06-11 |
-| 11. IINA Bridge Security, Legacy Boundary, and Reliability Verification | v1.1 | 4/5 | In Progress|  |
+| 11. IINA Bridge Security, Legacy Boundary, and Reliability Verification | v1.1 | 5/5 | Blocked |  |
 
 ## Next
 
-Start Phase 9 when ready:
+Resolve the remaining Phase 11 verification blocker before closing v1.1:
 
 ```bash
-$gsd-discuss-phase 9
+$gsd-verify-work 11
 ```
+
+Current blocker: live Speed Control, Pause/Resume, manual takeover, bridge setup/status, and `phase11-abba` resource evidence passed, but disable/quit cleanup could not be confirmed and Diagnostic Mode counter values were unavailable.
