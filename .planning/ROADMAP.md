@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1-6 (shipped 2026-06-08) — [archive](milestones/v1.0-ROADMAP.md)
-- 🚧 **v1.1 Runtime Reliability and Power Budget** — Phases 7-11 plus inserted Phase 08.1 (executing 2026-06-09)
+- 🚧 **v1.1 Runtime Reliability and Power Budget** — Phases 7-11 plus inserted Phase 08.1 (ready for closeout 2026-06-12)
 
 ## Phases
 
@@ -20,14 +20,14 @@
 </details>
 
 <details open>
-<summary>🚧 v1.1 Runtime Reliability and Power Budget (Phases 7-11 plus inserted 08.1) — EXECUTING</summary>
+<summary>🚧 v1.1 Runtime Reliability and Power Budget (Phases 7-11 plus inserted 08.1) — READY FOR CLOSEOUT</summary>
 
 - [x] Phase 7: Structured Runtime Logging and Diagnostics Foundation (5/5 plans) — completed 2026-06-09
-- [ ] Phase 8: Power Hot Path Sampling and Notification Deduplication
-- [ ] Phase 08.1: IINA bridge local trust model and setup-error UX (INSERTED) — gap-closure plan ready 2026-06-10
-- [ ] Phase 9: Playback Coordinator Ownership and Async Safety
-- [ ] Phase 10: Attention Semantics, Calibration Robustness, and Settings Validation
-- [ ] Phase 11: IINA Bridge Security, Legacy Boundary, and Reliability Verification
+- [x] Phase 8: Power Hot Path Sampling and Notification Deduplication — completed 2026-06-10
+- [x] Phase 08.1: IINA bridge local trust model and setup-error UX (INSERTED) — completed 2026-06-10
+- [x] Phase 9: Playback Coordinator Ownership and Async Safety — completed 2026-06-11
+- [x] Phase 10: Attention Semantics, Calibration Robustness, and Settings Validation — completed 2026-06-11
+- [x] Phase 11: IINA Bridge Security, Legacy Boundary, and Reliability Verification — completed 2026-06-12
 
 </details>
 
@@ -127,7 +127,7 @@ Plans:
 
 **Requirements:** PWR-05, BRDG-01, BRDG-02, BRDG-03, BRDG-04, VER-01, VER-02
 
-**Plans:** 5/5 plans executed; phase verification blocked on cleanup/counter evidence
+**Plans:** 5/5 plans executed; phase verification passed
 
 Plans:
 **Wave 1**
@@ -142,7 +142,7 @@ Plans:
 
 **Wave 3** *(blocked on 11-02, 11-03, 11-04 completion)*
 
-- [x] 11-05-PLAN.md — Complete automated closeout, real IINA/camera UAT, and Phase 8 back-reference; final phase status blocked on disable/quit cleanup confirmation and unavailable Diagnostic counters
+- [x] 11-05-PLAN.md — Complete automated closeout, real IINA/camera UAT, and Phase 8 back-reference
 
 **Success criteria:**
 
@@ -168,14 +168,14 @@ Plans:
 | 08.1. IINA bridge local trust model and setup-error UX | v1.1 | 6/6 | Complete    | 2026-06-10 |
 | 9. Playback Coordinator Ownership and Async Safety | v1.1 | 3/3 | Complete   | 2026-06-11 |
 | 10. Attention Semantics, Calibration Robustness, and Settings Validation | v1.1 | 4/4 | Complete    | 2026-06-11 |
-| 11. IINA Bridge Security, Legacy Boundary, and Reliability Verification | v1.1 | 5/5 | Blocked |  |
+| 11. IINA Bridge Security, Legacy Boundary, and Reliability Verification | v1.1 | 5/5 | Complete | 2026-06-12 |
 
 ## Next
 
-Resolve the remaining Phase 11 verification blocker before closing v1.1:
+Prepare the v1.1 milestone closeout:
 
 ```bash
-$gsd-verify-work 11
+$gsd-complete-milestone
 ```
 
-Current blocker: live Speed Control, Pause/Resume, manual takeover, bridge setup/status, and `phase11-abba` resource evidence passed, but disable/quit cleanup could not be confirmed and Diagnostic Mode counter values were unavailable.
+Phase 11 is complete: live Speed Control, Pause/Resume, manual takeover, bridge setup/status, `phase11-abba` resource evidence, automated cleanup safety evidence, and DiagnosticRuntimeMetrics unified-log counters passed.

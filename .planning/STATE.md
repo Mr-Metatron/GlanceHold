@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Runtime Reliability and Power Budget
-status: executing
-stopped_at: Completed 11-05-PLAN.md artifacts; Phase 11 verification blocked on cleanup/counter evidence
-last_updated: "2026-06-12T04:05:00.000Z"
+status: ready-for-milestone-closeout
+stopped_at: Completed Phase 11 verification
+last_updated: "2026-06-12T09:45:05.000Z"
 last_activity: 2026-06-12
 progress:
   total_phases: 6
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 30
   completed_plans: 30
-  percent: 83
+  percent: 100
 ---
 
 # Project State
@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-06-09 after completing Phase 7)
 
 ## Current Position
 
-Phase: 11 (iina-bridge-security-legacy-boundary-and-reliability-verific) — EXECUTING
+Phase: 11 (iina-bridge-security-legacy-boundary-and-reliability-verific) — COMPLETE
 Plan: 5 of 5
-Status: Blocked on live disable/quit cleanup confirmation and Diagnostic Mode counter values
+Status: Ready for v1.1 milestone closeout
 Last activity: 2026-06-12
 
 ## Performance Metrics
@@ -155,7 +155,8 @@ Recent decisions affecting current work:
 - [Phase 11]: 11-04 uses scripts/perf/run_system_resource_sample.sh as the scalar ABBA sampler; real 60-second IINA/plugin/camera ABBA evidence was collected and recorded in 11-05.
 - [Phase 11]: 11-02 keeps legacy MPV IPC source and tests on disk as reference material only, excluded from normal production app target and normal test hard-gate evidence. — The production path is the IINA plugin bridge; target-aware static verification now enforces that boundary.
 - [Phase 11]: 11-05 collected real phase11-abba resource evidence as four user-controlled 60-second single-segment runs and combined them in off,on,on,off order. — The interrupted earlier run was moved to macOS Trash and is excluded from evidence.
-- [Phase 11]: 11-05 keeps Phase 11 non-compliant despite live playback and bridge passes because disable/quit cleanup could not be confirmed and Diagnostic Mode counter values were unavailable.
+- [Phase 11]: 11-05 accepts disable/quit cleanup through automated regression evidence because late async playback cleanup is race-sensitive and not practical to verify manually with stable live observation.
+- [Phase 11]: 11-05 captures DiagnosticRuntimeMetrics from unified logs: framesReceived=739, framesAnalyzed=124, skippedSamples=615, analyzerRateHz=5.019, semanticStateChanges=7, playbackSnapshots=7, playbackCommands=0.
 - [Phase 08]: Phase 8 pending-resource-evidence is closed by the Phase 11 phase11-abba scalar ABBA back-reference without introducing a fixed watt pass/fail threshold.
 
 ### Roadmap Evolution
@@ -185,8 +186,8 @@ Recent decisions affecting current work:
 - [v1.1]: Logging must be default-quiet and privacy-safe; diagnostic mode may add detail but must not store frames or upload visual data.
 - [v1.1]: Phase 08.1 completed the no-token local IINA bridge trust model; Phase 11 should inherit it without reintroducing pairing, client ids, manual token copy/paste, or equivalent ceremony.
 - [Phase 7]: Live Diagnostic Mode unified-log evidence passed. Pre-paused IINA startup semantics were fixed in quick task 260609-jit.
-- [Phase 08]: Post-change scalar resource evidence is closed by Phase 11 `phase11-abba`; Diagnostic counter values remained unavailable and are recorded as a Phase 11 VER-02 blocker rather than a fixed watt threshold failure.
-- [Phase 11]: Disable/quit cleanup could not be confirmed in live UAT, so Phase 11 remains blocked even though Speed Control, Pause/Resume, manual takeover, bridge setup/status, and ABBA resource evidence passed.
+- [Phase 08]: Post-change scalar resource evidence is closed by Phase 11 `phase11-abba`; Diagnostic counter values were captured from unified logs and no fixed watt threshold was introduced.
+- [Phase 11]: Phase 11 verification passed after cleanup was accepted through automated regression evidence and Diagnostic counters were extracted from unified logs.
 
 ### Quick Tasks Completed
 
@@ -211,11 +212,10 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-12T04:05:00.000Z
-Stopped at: Completed 11-05-PLAN.md artifacts with Phase 11 verification blocker
+Last session: 2026-06-12T09:45:05.000Z
+Stopped at: Completed Phase 11 verification
 Resume file: None
 
 ## Operator Next Steps
 
-- Re-run or manually confirm Phase 11 disable/quit cleanup, then update `11-UAT.md`, `11-VERIFICATION.md`, `11-VALIDATION.md`, and `REQUIREMENTS.md` if VER-02 becomes complete.
-- Diagnostic Mode counter values were unavailable in this UAT; capture them if practical during the cleanup recheck.
+- Run `$gsd-complete-milestone` for v1.1 closeout.

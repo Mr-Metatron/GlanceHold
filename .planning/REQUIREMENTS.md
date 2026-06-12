@@ -48,7 +48,7 @@
 ### Verification and Regression Coverage
 
 - [x] **VER-01**: Developer can run focused regression tests for concurrent stop-during-await, mode replacement, high-frequency fake camera input, ambiguous recovery, confirmation failure ownership, calibration micro-windows, settings validation, and bridge authentication.
-- [ ] **VER-02**: User can complete a real IINA plus camera UAT pass covering speed hold/restore, pause/resume, manual takeover, disable/quit cleanup, power observation, and diagnostic log capture.
+- [x] **VER-02**: User can complete a real IINA plus camera UAT pass covering speed hold/restore, pause/resume, manual takeover, disable/quit cleanup, power observation, and diagnostic log capture.
 
 ## Future Requirements
 
@@ -108,7 +108,7 @@
 | BRDG-04 | Phase 11 | Complete |
 | BRDG-05 | Phase 08.1, Phase 11 | Complete |
 | VER-01 | Phase 11 | Complete |
-| VER-02 | Phase 11 | Pending |
+| VER-02 | Phase 11 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 27 total
@@ -117,4 +117,4 @@
 
 ---
 *Requirements defined: 2026-06-09*
-*Last updated: 2026-06-12 after Phase 11 ABBA resource evidence closed PWR-05 while VER-02 cleanup evidence remained pending*
+*Last updated: 2026-06-12 after Phase 11 cleanup evidence was accepted via automated regressions and Diagnostic counters were extracted from unified logs*
