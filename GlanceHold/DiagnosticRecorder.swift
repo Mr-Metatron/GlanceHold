@@ -67,6 +67,9 @@ enum DiagnosticFieldName: String, Equatable, Hashable {
     case candidateStartedAt
     case elapsedSinceCandidateStart
     case requiredThreshold
+    case yawDeltaDegrees
+    case pitchDeltaDegrees
+    case headTurnThresholdDegrees
     case previousEmittedState
     case transitionReason
     case snapshotState

@@ -636,6 +636,12 @@ final class AttentionMonitorTests: XCTestCase {
                 && fieldValue(.nextState, in: event) == "lookingAway"
                 && fieldValue(.transitionReason, in: event) == "thresholdReached"
         })
+        XCTAssertTrue(transitions.contains { event in
+            fieldValue(.rawSignal, in: event) == "away"
+                && fieldValue(.yawDeltaDegrees, in: event) == "30.000"
+                && fieldValue(.pitchDeltaDegrees, in: event) == "0.000"
+                && fieldValue(.headTurnThresholdDegrees, in: event) == "18.000"
+        })
         XCTAssertTrue(recorder.events.contains { $0.name == .runtimeSummary && fieldValue(.summaryKind, in: $0) == "periodic" })
     }
 

@@ -391,20 +391,27 @@ final class AttentionMonitor {
         }
 
         let signal: RawAttentionSignal
+        let classification: CalibratedAttentionClassification?
         let time: TimeInterval
+        let classifier = CalibratedAttentionClassifier(settings: settings)
 
         switch observation {
         case .pose(let sample):
-            signal = CalibratedAttentionClassifier(settings: settings).classify(.pose(sample))
+            let result = classifier.classifyDetailed(.pose(sample))
+            signal = result.signal
+            classification = result
             time = sample.time
         case .noFace(let sampleTime):
-            signal = CalibratedAttentionClassifier(settings: settings).classify(.noFace)
+            signal = classifier.classify(.noFace)
+            classification = nil
             time = sampleTime
         case .ambiguous(let sampleTime):
-            signal = CalibratedAttentionClassifier(settings: settings).classify(.ambiguous)
+            signal = classifier.classify(.ambiguous)
+            classification = nil
             time = sampleTime
         case .failed(let sampleTime):
             signal = .unknown
+            classification = nil
             time = sampleTime
         }
 
@@ -414,7 +421,7 @@ final class AttentionMonitor {
         if state != previousVisibleState {
             monitoringMetrics.semanticStateChanges += 1
         }
-        recordAttentionDiagnostics(for: transition, sampleTime: time)
+        recordAttentionDiagnostics(for: transition, classification: classification, sampleTime: time)
         return state
     }
 
@@ -528,6 +535,7 @@ final class AttentionMonitor {
 
     private func recordAttentionDiagnostics(
         for transition: AttentionStateMachineResult,
+        classification: CalibratedAttentionClassification?,
         sampleTime: TimeInterval
     ) {
         guard let diagnosticSession = activeDiagnosticSession else {
@@ -543,7 +551,7 @@ final class AttentionMonitor {
             DiagnosticEventRequest(
                 category: .attention,
                 name: .attentionTransition,
-                fields: attentionFields(for: transition)
+                fields: attentionFields(for: transition, classification: classification)
             ),
             in: diagnosticSession
         )
@@ -579,7 +587,10 @@ final class AttentionMonitor {
         return metrics
     }
 
-    private func attentionFields(for transition: AttentionStateMachineResult) -> [DiagnosticField] {
+    private func attentionFields(
+        for transition: AttentionStateMachineResult,
+        classification: CalibratedAttentionClassification?
+    ) -> [DiagnosticField] {
         var fields = [
             diagnosticField(.rawSignal, .string(String(describing: transition.rawSignal))),
             diagnosticField(.previousState, .string(String(describing: transition.previousState))),
@@ -599,6 +610,15 @@ final class AttentionMonitor {
         }
         if let requiredThreshold = transition.requiredThreshold {
             fields.append(diagnosticField(.requiredThreshold, .double(requiredThreshold)))
+        }
+        if let yawDeltaDegrees = classification?.yawDeltaDegrees {
+            fields.append(diagnosticField(.yawDeltaDegrees, .double(yawDeltaDegrees)))
+        }
+        if let pitchDeltaDegrees = classification?.pitchDeltaDegrees {
+            fields.append(diagnosticField(.pitchDeltaDegrees, .double(pitchDeltaDegrees)))
+        }
+        if let headTurnThresholdDegrees = classification?.headTurnThresholdDegrees {
+            fields.append(diagnosticField(.headTurnThresholdDegrees, .double(headTurnThresholdDegrees)))
         }
 
         return fields

@@ -88,6 +88,9 @@ final class DiagnosticRecorderTests: XCTestCase {
                 try DiagnosticField(.rawSignal, .string("lookingAway")),
                 try DiagnosticField(.previousState, .string("facing")),
                 try DiagnosticField(.nextState, .string("lookingAway")),
+                try DiagnosticField(.yawDeltaDegrees, .double(3.0)),
+                try DiagnosticField(.pitchDeltaDegrees, .double(19.0)),
+                try DiagnosticField(.headTurnThresholdDegrees, .double(18.0)),
                 try DiagnosticField(.transitionReason, .string("thresholdReached"))
             ]
         )

@@ -57,6 +57,13 @@ enum CalibratedAttentionInput: Equatable {
     case unknown
 }
 
+struct CalibratedAttentionClassification: Equatable {
+    var signal: RawAttentionSignal
+    var yawDeltaDegrees: Double?
+    var pitchDeltaDegrees: Double?
+    var headTurnThresholdDegrees: Double?
+}
+
 enum CalibrationModel {
     private static let minimumSampleCount = 5
     private static let minimumWindowDurationSeconds = 1.0
@@ -260,26 +267,58 @@ struct CalibratedAttentionClassifier: Equatable {
     var settings: AttentionSettings
 
     func classify(_ input: CalibratedAttentionInput) -> RawAttentionSignal {
+        classifyDetailed(input).signal
+    }
+
+    func classifyDetailed(_ input: CalibratedAttentionInput) -> CalibratedAttentionClassification {
         switch input {
         case .pose(let pose):
             guard let calibration = settings.calibration else {
-                return .uncalibrated
+                return CalibratedAttentionClassification(
+                    signal: .uncalibrated,
+                    yawDeltaDegrees: nil,
+                    pitchDeltaDegrees: nil,
+                    headTurnThresholdDegrees: nil
+                )
             }
 
             let yawDelta = abs(pose.yawDegrees - calibration.neutralPose.yawDegrees)
             let pitchDelta = abs(pose.pitchDegrees - calibration.neutralPose.pitchDegrees)
+            let signal: RawAttentionSignal
 
             if yawDelta > settings.headTurnThresholdDegrees || pitchDelta > settings.headTurnThresholdDegrees {
-                return .away
+                signal = .away
+            } else {
+                signal = .facing
             }
 
-            return .facing
+            return CalibratedAttentionClassification(
+                signal: signal,
+                yawDeltaDegrees: yawDelta,
+                pitchDeltaDegrees: pitchDelta,
+                headTurnThresholdDegrees: settings.headTurnThresholdDegrees
+            )
         case .noFace:
-            return .noFace
+            return CalibratedAttentionClassification(
+                signal: .noFace,
+                yawDeltaDegrees: nil,
+                pitchDeltaDegrees: nil,
+                headTurnThresholdDegrees: nil
+            )
         case .ambiguous:
-            return .ambiguous
+            return CalibratedAttentionClassification(
+                signal: .ambiguous,
+                yawDeltaDegrees: nil,
+                pitchDeltaDegrees: nil,
+                headTurnThresholdDegrees: nil
+            )
         case .unknown:
-            return .unknown
+            return CalibratedAttentionClassification(
+                signal: .unknown,
+                yawDeltaDegrees: nil,
+                pitchDeltaDegrees: nil,
+                headTurnThresholdDegrees: nil
+            )
         }
     }
 }

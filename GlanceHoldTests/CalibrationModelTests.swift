@@ -214,9 +214,22 @@ final class CalibrationModelTests: XCTestCase {
 
         XCTAssertEqual(classifier.classify(.pose(pose(yaw: 19.0, pitch: 0.0))), .away)
         XCTAssertEqual(classifier.classify(.pose(pose(yaw: 0.0, pitch: 19.0))), .away)
+        XCTAssertEqual(classifier.classify(.pose(pose(yaw: 0.0, pitch: -19.0))), .away)
         XCTAssertEqual(classifier.classify(.pose(pose(yaw: 8.0, pitch: 6.0))), .facing)
         XCTAssertEqual(classifier.classify(.noFace), .noFace)
         XCTAssertEqual(classifier.classify(.ambiguous), .ambiguous)
+    }
+
+    func testClassifierReportsScalarDeltasForDiagnosticMode() {
+        let settings = AttentionSettings.defaults.withCalibration(snapshot(quality: .high, yaw: 2.0))
+        let classifier = CalibratedAttentionClassifier(settings: settings)
+
+        let result = classifier.classifyDetailed(.pose(pose(yaw: -1.0, pitch: -19.0)))
+
+        XCTAssertEqual(result.signal, .away)
+        XCTAssertEqual(result.yawDeltaDegrees ?? -1.0, 3.0, accuracy: 0.001)
+        XCTAssertEqual(result.pitchDeltaDegrees ?? -1.0, 19.0, accuracy: 0.001)
+        XCTAssertEqual(result.headTurnThresholdDegrees ?? -1.0, 18.0, accuracy: 0.001)
     }
 
     func testClassifierWithoutCalibrationIsUncalibrated() {
