@@ -261,16 +261,16 @@ final class PlaybackPolicyTests: XCTestCase {
         assertNoRestoreOrResume(result.intents)
     }
 
-    func testPauseResumePlainPlayingSnapshotWhileOwnedStopsAsLiveManualTakeover() {
+    func testPauseResumePlainPlayingSnapshotWhileOwnedDoesNotStopWithoutExplicitManualAction() {
         var policy = PlaybackPolicy(mode: .pauseResume)
 
         XCTAssertEqual(policy.apply(attention: .lookingAway, player: .playing(speed: 1.5)).intents, [.pause])
 
         let result = policy.apply(attention: .facing, player: .playing(speed: 1.5))
 
-        XCTAssertEqual(result.intents, [.stopMonitoring(reason: .manualPlayerTakeover)])
-        XCTAssertFalse(result.state.pauseOwnedByGlanceHold)
-        XCTAssertEqual(result.state.stoppedReason, .manualPlayerTakeover)
+        XCTAssertEqual(result.intents, [])
+        XCTAssertTrue(result.state.pauseOwnedByGlanceHold)
+        XCTAssertNil(result.state.stoppedReason)
         assertNoRestoreOrResume(result.intents)
     }
 

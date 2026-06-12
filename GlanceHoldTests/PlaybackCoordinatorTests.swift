@@ -404,7 +404,7 @@ final class PlaybackCoordinatorTests: XCTestCase {
         assertNoRestoreOrResume(pauseAdapter.commands)
     }
 
-    func testPlainPlayingAfterOwnedPauseRequestsManualTakeoverStopWithoutResume() async {
+    func testPlainPlayingAfterOwnedPauseDoesNotRequestManualTakeoverWithoutExplicitAction() async {
         let adapter = FakeIINAPlaybackAdapter(
             snapshots: [
                 .playing(speed: 1.5),
@@ -419,8 +419,9 @@ final class PlaybackCoordinatorTests: XCTestCase {
         coordinator.applyPushedPlayerSnapshot(.playing(speed: 1.5))
 
         XCTAssertEqual(adapter.commands, [.pause])
-        XCTAssertEqual(requestedStops, [.manualPlayerTakeover])
-        XCTAssertEqual(coordinator.state.stoppedReason, .manualPlayerTakeover)
+        XCTAssertEqual(requestedStops, [])
+        XCTAssertNil(coordinator.state.stoppedReason)
+        XCTAssertEqual(coordinator.state.playerSnapshot, .playing(speed: 1.5))
         assertNoRestoreOrResume(adapter.commands)
     }
 
@@ -707,6 +708,55 @@ final class PlaybackCoordinatorTests: XCTestCase {
         XCTAssertFalse(recorder.events.contains { event in
             event.name == .playbackAction &&
                 fieldValue(.completedActionEmitted, in: event) != "none"
+        })
+    }
+
+    func testSupersededAttentionRecordsInvalidatedDiagnosticWithoutCompletedAction() async throws {
+        let recorder = PlaybackDiagnosticRecorder(mode: .diagnostic)
+        let adapter = SuspendingConfirmationSnapshotPlaybackAdapter(
+            initialSnapshot: .playing(speed: 1.5),
+            confirmationSnapshot: .playing(speed: 1.0)
+        )
+        let coordinator = PlaybackCoordinator(
+            mode: .speedControl,
+            adapter: adapter,
+            diagnosticRecorder: recorder,
+            diagnosticMode: .diagnostic,
+            diagnosticSession: DiagnosticSession(kind: .monitoring)
+        )
+        var completedActions: [PlaybackCompletedAction] = []
+        var stopRequests: [StopMonitoringReason] = []
+        coordinator.playbackActionDidComplete = { completedActions.append($0) }
+        coordinator.stopMonitoringRequested = { stopRequests.append($0) }
+
+        let task = Task {
+            await coordinator.handleAttentionState(.lookingAway)
+        }
+        await adapter.waitForConfirmationSnapshotRequest()
+
+        coordinator.invalidateInFlightAttentionHandling()
+        adapter.resumeConfirmationSnapshot()
+        await task.value
+
+        let invalidatedEvent = try XCTUnwrap(recorder.events.first { event in
+            event.name == .playbackAction &&
+                fieldValue(.confirmationOutcome, in: event) == "invalidated"
+        })
+        assertPlaybackAction(
+            invalidatedEvent,
+            snapshotState: "playing",
+            speedPresent: "true",
+            intentType: "holdSpeedAtOne",
+            commandType: "holdSpeedAtOne",
+            confirmationOutcome: "invalidated",
+            completedActionEmitted: "none",
+            errorCategory: "invalidated"
+        )
+        XCTAssertEqual(completedActions, [])
+        XCTAssertEqual(stopRequests, [])
+        XCTAssertFalse(recorder.events.contains { event in
+            event.name == .playbackAction &&
+                fieldValue(.confirmationOutcome, in: event) == "confirmed"
         })
     }
 
@@ -1535,7 +1585,7 @@ final class PlaybackCoordinatorTests: XCTestCase {
         )
     }
 
-    func testDiagnosticModeRecordsCommandAndConfirmationFailuresWithoutCompletedAction() async throws {
+    func testDiagnosticModeRecordsCommandFailureAndTrustedContradictionWithoutCompletedAction() async throws {
         let commandRecorder = PlaybackDiagnosticRecorder(mode: .diagnostic)
         let commandAdapter = FakeIINAPlaybackAdapter(snapshots: [.playing(speed: 1.5)])
         commandAdapter.failingCommands = [.holdSpeedAtOne]
@@ -1571,10 +1621,10 @@ final class PlaybackCoordinatorTests: XCTestCase {
 
         await confirmationCoordinator.handleAttentionState(.lookingAway)
 
-        let confirmationFailure = try XCTUnwrap(confirmationRecorder.events.first { $0.name == .playbackAction })
-        XCTAssertEqual(fieldValue(.confirmationOutcome, in: confirmationFailure), "failed")
-        XCTAssertEqual(fieldValue(.completedActionEmitted, in: confirmationFailure), "none")
-        XCTAssertEqual(fieldValue(.errorCategory, in: confirmationFailure), "confirmationFailed")
+        let trustedContradiction = try XCTUnwrap(confirmationRecorder.events.first { $0.name == .playbackAction })
+        XCTAssertEqual(fieldValue(.confirmationOutcome, in: trustedContradiction), "trustedContradiction")
+        XCTAssertEqual(fieldValue(.completedActionEmitted, in: trustedContradiction), "none")
+        XCTAssertEqual(fieldValue(.errorCategory, in: trustedContradiction), "trustedContradiction")
         XCTAssertEqual(confirmationCompletedActions, [])
     }
 

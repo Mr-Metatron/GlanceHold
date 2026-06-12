@@ -212,10 +212,12 @@ final class PlaybackCoordinator {
             playbackMetrics.playbackCommands += 1
             try await adapter.execute(intent)
             guard canStartAttentionSideEffect(startedIn: generation) else {
+                recordInvalidatedPlaybackAction(snapshot: snapshot, intent: intent)
                 return
             }
 
             guard let confirmation = await readSnapshot(startedIn: generation) else {
+                recordInvalidatedPlaybackAction(snapshot: snapshot, intent: intent)
                 return
             }
 
@@ -229,17 +231,18 @@ final class PlaybackCoordinator {
                 return
             }
 
-            guard isTransientUntrustedConfirmation(confirmation, for: intent),
-                  let retryConfirmation = await readSnapshot(startedIn: generation) else {
-                recordPlaybackAction(
-                    snapshot: snapshot,
+            guard isTransientUntrustedConfirmation(confirmation, for: intent) else {
+                handleTrustedContradiction(
                     intent: intent,
-                    confirmationOutcome: "failed",
-                    completedAction: nil,
-                    errorCategory: "confirmationFailed",
+                    sourceSnapshot: snapshot,
+                    contradictionSnapshot: confirmation,
                     startedIn: generation
                 )
-                markNotControllable(snapshot: confirmation, startedIn: generation)
+                return
+            }
+
+            guard let retryConfirmation = await readSnapshot(startedIn: generation) else {
+                recordInvalidatedPlaybackAction(snapshot: snapshot, intent: intent)
                 return
             }
 
@@ -251,6 +254,7 @@ final class PlaybackCoordinator {
             )
         } catch {
             guard canStartAttentionSideEffect(startedIn: generation) else {
+                recordInvalidatedPlaybackAction(snapshot: snapshot, intent: intent)
                 return
             }
 
@@ -337,12 +341,39 @@ final class PlaybackCoordinator {
             return
         }
 
+        if !isTransientUntrustedConfirmation(retryConfirmation, for: intent) {
+            handleTrustedContradiction(
+                intent: intent,
+                sourceSnapshot: sourceSnapshot,
+                contradictionSnapshot: retryConfirmation,
+                startedIn: generation
+            )
+            return
+        }
+
         exhaustPendingConfirmation(
             intent: intent,
             sourceSnapshot: sourceSnapshot,
             degradedSnapshot: .playerUnavailable,
             startedIn: generation
         )
+    }
+
+    private func handleTrustedContradiction(
+        intent: PlaybackIntent,
+        sourceSnapshot: PlayerSnapshot,
+        contradictionSnapshot: PlayerSnapshot,
+        startedIn generation: UUID
+    ) {
+        recordPlaybackAction(
+            snapshot: sourceSnapshot,
+            intent: intent,
+            confirmationOutcome: "trustedContradiction",
+            completedAction: nil,
+            errorCategory: "trustedContradiction",
+            startedIn: generation
+        )
+        markNotControllable(snapshot: contradictionSnapshot, startedIn: generation)
     }
 
     private func exhaustPendingConfirmation(
@@ -411,7 +442,15 @@ final class PlaybackCoordinator {
         case .playerUnavailable, .setupNeeded, .pluginUpdateRequired, .idle:
             return true
         case .playing, .paused:
-            return snapshot.speed == nil
+            if snapshot.speed == nil {
+                return true
+            }
+
+            if case .restoreSpeed = intent, approximatelyEqual(snapshot.speed, 1.0) {
+                return true
+            }
+
+            return false
         }
     }
 
@@ -915,6 +954,35 @@ final class PlaybackCoordinator {
             return
         }
 
+        recordPlaybackActionFields(
+            snapshot: snapshot,
+            intent: intent,
+            confirmationOutcome: confirmationOutcome,
+            completedAction: completedAction,
+            errorCategory: errorCategory
+        )
+    }
+
+    private func recordInvalidatedPlaybackAction(
+        snapshot: PlayerSnapshot,
+        intent: PlaybackIntent
+    ) {
+        recordPlaybackActionFields(
+            snapshot: snapshot,
+            intent: intent,
+            confirmationOutcome: "invalidated",
+            completedAction: nil,
+            errorCategory: "invalidated"
+        )
+    }
+
+    private func recordPlaybackActionFields(
+        snapshot: PlayerSnapshot,
+        intent: PlaybackIntent,
+        confirmationOutcome: String,
+        completedAction: PlaybackCompletedAction?,
+        errorCategory: String
+    ) {
         guard diagnosticMode == .diagnostic, let diagnosticSession = activeDiagnosticSession else {
             return
         }

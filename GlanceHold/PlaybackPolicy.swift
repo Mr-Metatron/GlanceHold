@@ -265,11 +265,7 @@ struct PlaybackPolicy: Equatable {
 
         if state.pauseOwnedByGlanceHold || isPendingPauseResumeConfirmation {
             if player.manualAction == .playPressed ||
-                player.manualAction == .pausePressed ||
-                (state.pauseOwnedByGlanceHold &&
-                    state.pendingConfirmationIntent == nil &&
-                    player.playbackState == .playing &&
-                    player.speed != nil) {
+                player.manualAction == .pausePressed {
                 return stopMonitoringForManualTakeover()
             }
         }
