@@ -12,3 +12,6 @@ xcuserdata/
 
 # Local research/reference checkout; keep it on disk, not in this app repo.
 SemiUHPE/
+
+# Local handoff/export bundles.
+handoff/
