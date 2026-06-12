@@ -26,7 +26,7 @@
 - [x] Phase 8: Power Hot Path Sampling and Notification Deduplication — completed 2026-06-10
 - [x] Phase 08.1: IINA bridge local trust model and setup-error UX (INSERTED) — completed 2026-06-10
 - [x] Phase 9: Playback Coordinator Ownership and Async Safety — completed 2026-06-11
-- [ ] Phase 09.1: Close gap: Phase 09 verification evidence (INSERTED) — not planned yet
+- [x] Phase 09.1: Close gap: Phase 09 verification evidence (INSERTED) — completed 2026-06-12
 - [x] Phase 10: Attention Semantics, Calibration Robustness, and Settings Validation — completed 2026-06-11
 - [x] Phase 11: IINA Bridge Security, Legacy Boundary, and Reliability Verification — completed 2026-06-12
 
@@ -184,10 +184,6 @@ Plans:
 
 ## Next
 
-Plan urgent Phase 09.1 gap closure:
-
-```bash
-$gsd-plan-phase 09.1
-```
-
 Phase 11 is complete: live Speed Control, Pause/Resume, manual takeover, bridge setup/status, `phase11-abba` resource evidence, automated cleanup safety evidence, and DiagnosticRuntimeMetrics unified-log counters passed.
+
+Phase 09.1 and the v1.1 audit closeout metadata gaps are closed; remaining v1.1 notes are non-blocking evidence-boundary follow-ups.
