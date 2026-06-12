@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Runtime Reliability and Power Budget
-status: Awaiting next milestone
+status: "Milestone v1.1 shipped — PR #1"
 stopped_at: v1.1 archived — ready for next milestone
-last_updated: 2026-06-13T02:24:42+0800
-last_activity: 2026-06-13 — Milestone v1.1 completed and archived
+last_updated: "2026-06-12T19:16:57.026Z"
+last_activity: "2026-06-13 — Milestone v1.1 shipped — PR #1"
 progress:
   total_phases: 7
   completed_phases: 7
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-06-13 after shipping v1.1)
 
 Phase: Milestone v1.1 complete
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-06-13 — Milestone v1.1 completed and archived
+Status: Milestone v1.1 shipped — PR #1
+Last activity: 2026-06-13 — Milestone v1.1 shipped — PR #1
 
 ## Performance Metrics
 
