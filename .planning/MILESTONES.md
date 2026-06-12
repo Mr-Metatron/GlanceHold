@@ -25,7 +25,7 @@
 
 **Git range:** `bdf3599 feat(07-01)` -> `7e0d80e docs(quick-260613-269)`
 
-**Archived:** `milestones/v1.1-ROADMAP.md`, `milestones/v1.1-REQUIREMENTS.md`, `milestones/v1.1-MILESTONE-AUDIT.md`, `milestones/v1.1-phases/`
+**Handoff note:** Detailed phase planning artifacts are omitted from this PR. The root `.planning` documents preserve the milestone summary, state, roadmap, and follow-up context needed for the next developer.
 
 **Known non-blocking follow-ups:** BRDG-02 explicit host-bind proof if IINA supports it, stronger direct watt/energy evidence if desired, and a cwd-independent Phase 11 MPV-boundary script.
 

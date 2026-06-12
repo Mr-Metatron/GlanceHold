@@ -15,3 +15,7 @@ SemiUHPE/
 
 # Local handoff/export bundles.
 handoff/
+
+# Local agent and detailed planning logs; keep the public handoff to root docs.
+AGENTS.md
+.planning/*/

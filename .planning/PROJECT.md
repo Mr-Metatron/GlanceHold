@@ -16,14 +16,7 @@ GlanceHold v1.1 shipped on 2026-06-13. The app is a local-only macOS status-bar 
 
 v1.1 hardened the runtime for longer real-world IINA viewing sessions: default-quiet structured diagnostics, bounded camera/Vision hot paths, semantic playback deduplication, generation-safe playback coordination, conservative attention/calibration/settings semantics, a no-token local IINA bridge trust model, legacy MPV production-boundary isolation, scalar ABBA resource evidence, and DiagnosticRuntimeMetrics closeout evidence.
 
-The shipped planning archives live in `.planning/milestones/`:
-
-- `v1.0-ROADMAP.md`
-- `v1.0-REQUIREMENTS.md`
-- `v1.0-MILESTONE-AUDIT.md`
-- `v1.1-ROADMAP.md`
-- `v1.1-REQUIREMENTS.md`
-- `v1.1-MILESTONE-AUDIT.md`
+This PR keeps only the root planning handoff documents needed for the next developer to regain context quickly. Detailed per-phase planning logs, reviews, debug notes, and research artifacts are intentionally omitted from the public handoff.
 
 ## Current Milestone
 
@@ -75,7 +68,7 @@ No active milestone is defined. Start the next cycle with `$gsd-new-milestone` s
 
 The repository now contains the shipped local v1.1 app. The app target is a macOS status-bar utility with local camera permission handling, AVFoundation/Vision attention monitoring, calibration and tuning controls, IINA plugin bridge playback control, Last Action feedback, stop-only disable/quit cleanup, English/Simplified Chinese localization, structured diagnostics, bounded sampling, playback semantic deduplication, and final user documentation/UAT artifacts.
 
-The current codebase map lives in `.planning/codebase/`. It records that the app is a single macOS target using Swift 5.0, SwiftUI, macOS deployment target 14.0, App Sandbox, camera entitlement, and a local IINA plugin bridge. `SemiUHPE/` remains a local ignored research checkout and should remain reference-only for v1/v1.1.
+The current codebase is a single macOS app target using Swift 5.0, SwiftUI, macOS deployment target 14.0, App Sandbox, the camera entitlement, and a local IINA plugin bridge. `SemiUHPE/` remains a local ignored research checkout and should remain reference-only for v1/v1.1.
 
 The first real product direction has been validated: while watching IINA at 2x or another user-selected speed, looking away drops playback to 1x and looking back restores the speed that was active before GlanceHold intervened. Pause/Resume remains available as the secondary mode, with manual pause protection preserved.
 

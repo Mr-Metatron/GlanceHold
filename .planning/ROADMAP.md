@@ -2,8 +2,8 @@
 
 ## Milestones
 
-- ✅ **v1.0 MVP** — Phases 1-6 (shipped 2026-06-08) — [archive](milestones/v1.0-ROADMAP.md)
-- ✅ **v1.1 Runtime Reliability and Power Budget** — Phases 7-11 plus inserted Phases 08.1 and 09.1 (shipped 2026-06-13) — [archive](milestones/v1.1-ROADMAP.md)
+- ✅ **v1.0 MVP** — Phases 1-6 (shipped 2026-06-08)
+- ✅ **v1.1 Runtime Reliability and Power Budget** — Phases 7-11 plus inserted Phases 08.1 and 09.1 (shipped 2026-06-13)
 - 📋 **vNext** — Fresh requirements pending via `$gsd-new-milestone`
 
 ## Phases

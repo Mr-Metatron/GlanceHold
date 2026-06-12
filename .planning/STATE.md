@@ -194,14 +194,14 @@ Recent decisions affecting current work:
 
 ### Quick Tasks Completed
 
-| # | Description | Date | Commit | Directory |
-|---|-------------|------|--------|-----------|
-| 260605-mhn | 修复 Phase 01 的 code review 和 UI review warnings | 2026-06-05 | 4180915 | [260605-mhn-phase-01-code-review-ui-review-warnings](./quick/260605-mhn-phase-01-code-review-ui-review-warnings/) |
-| 260606-1jj | 补齐 Phase 1 01-03 人工验证归档并同步 Roadmap/State | 2026-06-06 | this commit | [260606-1jj-phase-1-01-03-roadmap-state](./quick/260606-1jj-phase-1-01-03-roadmap-state/) |
-| 260607-j1k | Repair Phase 4 MVP goal format so gsd-verify-work can run without replanning the completed phase | 2026-06-07 | this commit | [260607-j1k-repair-phase-4-mvp-goal-format-so-gsd-ve](./quick/260607-j1k-repair-phase-4-mvp-goal-format-so-gsd-ve/) |
-| 260608-s6u | Normalize legacy GSD open-item metadata for completed Phase 4/5 UAT, debug sessions, and quick tasks | 2026-06-08 | this commit | [260608-s6u-normalize-legacy-gsd-open-item-metadata-](./quick/260608-s6u-normalize-legacy-gsd-open-item-metadata-/) |
-| 260609-jit | Fix pre-paused IINA monitoring start ownership semantics | 2026-06-09 | this commit | [260609-jit-fix-pre-paused-iina-monitoring-start-own](./quick/260609-jit-fix-pre-paused-iina-monitoring-start-own/) |
-| 260613-269 | 修复 .planning/v1.1-MILESTONE-AUDIT.md 中的 gap | 2026-06-13 | this commit | [260613-269-planning-v1-1-milestone-audit-md-gap](./quick/260613-269-planning-v1-1-milestone-audit-md-gap/) |
+Detailed quick-task artifacts are omitted from this PR as development logs. The important carry-forward facts are:
+
+- 2026-06-05: Phase 01 code review and UI review warnings were fixed.
+- 2026-06-06: Phase 1 manual verification archive/state gaps were closed.
+- 2026-06-07: Legacy Phase 4 metadata was repaired so verification could run without replanning.
+- 2026-06-08: Legacy GSD open-item metadata was normalized for completed Phase 4/5 UAT, debug sessions, and quick tasks.
+- 2026-06-09: Pre-paused IINA monitoring-start ownership semantics were fixed.
+- 2026-06-13: The v1.1 milestone audit gap was closed before shipping.
 
 ## Deferred Items
 
