@@ -601,11 +601,7 @@ final class PlaybackCoordinator {
             return true
         }
 
-        if isTransientUntrustedConfirmation(snapshot, for: pendingConfirmation.intent) {
-            return true
-        }
-
-        if isPendingCommandEcho(snapshot, for: pendingConfirmation) {
+        if consumeSupersededSpeedCommandEcho(snapshot) {
             updateState(
                 snapshot: snapshot,
                 isPlayerControllable: isPlayerControllable(snapshot),
@@ -614,7 +610,11 @@ final class PlaybackCoordinator {
             return true
         }
 
-        if consumeSupersededSpeedCommandEcho(snapshot) {
+        if isTransientUntrustedConfirmation(snapshot, for: pendingConfirmation.intent) {
+            return true
+        }
+
+        if isPendingCommandEcho(snapshot, for: pendingConfirmation) {
             updateState(
                 snapshot: snapshot,
                 isPlayerControllable: isPlayerControllable(snapshot),
