@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1-6 (shipped 2026-06-08) — [archive](milestones/v1.0-ROADMAP.md)
-- 🚧 **v1.1 Runtime Reliability and Power Budget** — Phases 7-11 plus inserted Phase 08.1 (ready for closeout 2026-06-12)
+- 🚧 **v1.1 Runtime Reliability and Power Budget** — Phases 7-11 plus inserted Phases 08.1 and 09.1 (gap closure inserted 2026-06-12)
 
 ## Phases
 
@@ -20,12 +20,13 @@
 </details>
 
 <details open>
-<summary>🚧 v1.1 Runtime Reliability and Power Budget (Phases 7-11 plus inserted 08.1) — READY FOR CLOSEOUT</summary>
+<summary>🚧 v1.1 Runtime Reliability and Power Budget (Phases 7-11 plus inserted 08.1 and 09.1) — GAP CLOSURE INSERTED</summary>
 
 - [x] Phase 7: Structured Runtime Logging and Diagnostics Foundation (5/5 plans) — completed 2026-06-09
 - [x] Phase 8: Power Hot Path Sampling and Notification Deduplication — completed 2026-06-10
 - [x] Phase 08.1: IINA bridge local trust model and setup-error UX (INSERTED) — completed 2026-06-10
 - [x] Phase 9: Playback Coordinator Ownership and Async Safety — completed 2026-06-11
+- [ ] Phase 09.1: Close gap: Phase 09 verification evidence (INSERTED) — not planned yet
 - [x] Phase 10: Attention Semantics, Calibration Robustness, and Settings Validation — completed 2026-06-11
 - [x] Phase 11: IINA Bridge Security, Legacy Boundary, and Reliability Verification — completed 2026-06-12
 
@@ -106,6 +107,16 @@ Plans:
 4. Manual pause, play, and speed takeover still stop monitoring without restore/resume side effects.
 5. Delayed fake adapter tests cover stop-during-snapshot, stop-during-execute, mode replacement, and confirmation failure paths.
 
+### Phase 09.1: Close gap: Phase 09 verification evidence (INSERTED)
+
+**Goal:** Create the missing Phase 09 verification artifact and confirm the v1.1 milestone audit no longer treats PLAY-01 through PLAY-04 as orphaned.
+**Requirements**: PLAY-01, PLAY-02, PLAY-03, PLAY-04
+**Depends on:** Phase 9
+**Plans:** 1 plan
+
+Plans:
+- [ ] 09.1-01-PLAN.md — Create Phase 09 verification evidence and confirm PLAY audit closure
+
 ### Phase 10: Attention Semantics, Calibration Robustness, and Settings Validation
 
 **Goal:** Tighten the pure attention and calibration rules that can cause premature recovery, false high-quality calibration, or settings-driven instability.
@@ -167,15 +178,16 @@ Plans:
 | 8. Power Hot Path Sampling and Notification Deduplication | v1.1 | 6/6 | Complete   | 2026-06-10 |
 | 08.1. IINA bridge local trust model and setup-error UX | v1.1 | 6/6 | Complete    | 2026-06-10 |
 | 9. Playback Coordinator Ownership and Async Safety | v1.1 | 3/3 | Complete   | 2026-06-11 |
+| 09.1. Close gap: Phase 09 verification evidence | v1.1 | 0/1 | Pending | - |
 | 10. Attention Semantics, Calibration Robustness, and Settings Validation | v1.1 | 4/4 | Complete    | 2026-06-11 |
 | 11. IINA Bridge Security, Legacy Boundary, and Reliability Verification | v1.1 | 5/5 | Complete | 2026-06-12 |
 
 ## Next
 
-Prepare the v1.1 milestone closeout:
+Plan urgent Phase 09.1 gap closure:
 
 ```bash
-$gsd-complete-milestone
+$gsd-plan-phase 09.1
 ```
 
 Phase 11 is complete: live Speed Control, Pause/Resume, manual takeover, bridge setup/status, `phase11-abba` resource evidence, automated cleanup safety evidence, and DiagnosticRuntimeMetrics unified-log counters passed.
