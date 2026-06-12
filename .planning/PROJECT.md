@@ -12,25 +12,22 @@ GlanceHold 是一个 macOS 状态栏工具，用普通摄像头和 Apple Vision 
 
 ## Current State
 
-GlanceHold v1.0 MVP shipped on 2026-06-08. The app is a local-only macOS status-bar utility with camera permission handling, AVFoundation/Vision attention monitoring, calibration and tuning, IINA plugin bridge playback control, Speed Control and Pause/Resume modes, Last Action feedback, stop-only disable/quit cleanup, English/Simplified Chinese localization, user docs, and real-camera plus real-IINA UAT evidence.
+GlanceHold v1.1 shipped on 2026-06-13. The app is a local-only macOS status-bar utility with camera permission handling, AVFoundation/Vision attention monitoring, calibration and tuning, IINA plugin bridge playback control, Speed Control and Pause/Resume modes, Last Action feedback, stop-only disable/quit cleanup, English/Simplified Chinese localization, user docs, and real-camera plus real-IINA UAT evidence.
 
-The v1.0 planning archive lives in `.planning/milestones/`:
+v1.1 hardened the runtime for longer real-world IINA viewing sessions: default-quiet structured diagnostics, bounded camera/Vision hot paths, semantic playback deduplication, generation-safe playback coordination, conservative attention/calibration/settings semantics, a no-token local IINA bridge trust model, legacy MPV production-boundary isolation, scalar ABBA resource evidence, and DiagnosticRuntimeMetrics closeout evidence.
+
+The shipped planning archives live in `.planning/milestones/`:
 
 - `v1.0-ROADMAP.md`
 - `v1.0-REQUIREMENTS.md`
 - `v1.0-MILESTONE-AUDIT.md`
+- `v1.1-ROADMAP.md`
+- `v1.1-REQUIREMENTS.md`
+- `v1.1-MILESTONE-AUDIT.md`
 
-## Current Milestone: v1.1 Runtime Reliability and Power Budget
+## Current Milestone
 
-**Goal:** Make GlanceHold reliable, quiet, diagnosable, and power-conscious during long real-world IINA viewing sessions.
-
-**Target features:**
-
-- Structured runtime logging and diagnostics with levels, session IDs, state-machine transition breadcrumbs, and low-frequency metrics summaries.
-- Power hot-path control for camera/Vision sampling, duplicate attention notifications, and redundant playback snapshots.
-- Playback ownership safety so stop, quit, and mode changes invalidate in-flight playback tasks before they can control IINA.
-- Attention semantics and calibration robustness fixes for transient unavailable signals, confirmation failures, reset calibration, settings validation, and stable-window calibration.
-- IINA bridge security and legacy backend boundary cleanup, with final stress and live-use verification.
+No active milestone is defined. Start the next cycle with `$gsd-new-milestone` so `.planning/REQUIREMENTS.md` can be recreated from fresh goals.
 
 ## Requirements
 
@@ -50,46 +47,51 @@ The v1.0 planning archive lives in `.planning/milestones/`:
 - ✓ IINA-first playback integration is implemented — Phase 4 validated the local IINA plugin bridge, player status, Speed Control, Pause/Resume, and manual takeover behavior.
 - ✓ Control polish and localization are implemented — Phase 5 added checked tuning controls, IINA plugin shortcut routing, and English/Simplified Chinese localization.
 - ✓ Final v1 hardening is complete — Phase 6 added Last Action feedback, stop-only disable/quit cleanup, user docs, full XCTest/build/plugin checks, and real-camera plus real-IINA UAT.
+- ✓ v1.1 observability is implemented — Phase 7 added default-quiet structured diagnostics, session sequencing, scalar runtime summaries, and diagnostic-mode controls.
+- ✓ v1.1 power hot-path work is implemented — Phase 8 bounded Vision analysis, deduplicated stable attention semantics, and removed stable-monitoring fallback snapshot polling.
+- ✓ v1.1 bridge trust cleanup is implemented — Phase 08.1 and Phase 11 removed manual token-copy friction, added protocol-distinct setup/update states, and tested the command whitelist.
+- ✓ v1.1 playback ownership safety is implemented — Phase 9 and Phase 09.1 closed stop/quit/mode replacement, confirmation failure, manual takeover, and PLAY evidence-indexing gaps.
+- ✓ v1.1 attention and calibration semantics are implemented — Phase 10 tightened recovery through uncertain signals, calibration window requirements, reset behavior, scalar diagnostics, and settings repair.
+- ✓ v1.1 reliability verification is complete — Phase 11 recorded scalar ABBA resource evidence, real IINA/camera UAT, DiagnosticRuntimeMetrics counters, legacy MPV target isolation, and a passed milestone audit.
 
 ### Active
 
-- [ ] v1.1 Runtime Reliability and Power Budget requirements are defined in `.planning/REQUIREMENTS.md`.
-- [ ] v1.1 roadmap continues from Phase 7 and prioritizes logging/diagnostics before power and ownership changes.
-- [ ] User-observed ~5W extra power draw during monitoring is treated as a primary regression target for v1.1.
-- [ ] Staff review findings are triaged into implementation phases without expanding scope into distribution or broader player support.
+- [ ] Next milestone requirements need to be freshly defined with `$gsd-new-milestone`.
+- [ ] Distribution readiness: signed/notarized build and a documented update path.
+- [ ] Convenience: launch at login and a troubleshooting or diagnostics window.
+- [ ] Player expansion: browser video, VLC, QuickTime, or explicit player profiles.
+- [ ] Optional hardening follow-ups: explicit IINA plugin host-bind proof if the API supports it, stronger direct watt/energy readings if desired, and a cwd-independent Phase 11 MPV-boundary script.
 
 ### Out of Scope
 
 - Precise eye tracking — the product only needs practical head orientation / face presence detection.
 - Cloud processing — privacy value depends on all visual processing staying local.
-- General multi-player support in v1 — first version prioritizes IINA because it matches the user's current pain point.
-- Browser video control in v1 — useful later, but not the immediate need.
-- Full settings window in v1 — status bar controls are enough for the first usable version.
+- General multi-player support in v1/v1.1 — first versions prioritize IINA because it matches the user's current pain point and reliability needs.
+- Browser video control in v1/v1.1 — useful later, but not the immediate reliability need.
+- Full settings window in v1/v1.1 — status bar controls are enough for the first usable versions.
 - Shipping SemiUHPE as part of the app in v1 — GPLv3 licensing, model weight, PyTorch, and performance concerns make it unsuitable for the first slice.
 
 ## Context
 
-The repository now contains the shipped local v1.0 MVP. The app target is a macOS status-bar utility with local camera permission handling, AVFoundation/Vision attention monitoring, calibration and tuning controls, IINA plugin bridge playback control, Last Action feedback, stop-only disable/quit cleanup, English/Simplified Chinese localization, and final user documentation/UAT artifacts.
+The repository now contains the shipped local v1.1 app. The app target is a macOS status-bar utility with local camera permission handling, AVFoundation/Vision attention monitoring, calibration and tuning controls, IINA plugin bridge playback control, Last Action feedback, stop-only disable/quit cleanup, English/Simplified Chinese localization, structured diagnostics, bounded sampling, playback semantic deduplication, and final user documentation/UAT artifacts.
 
-The current codebase map lives in `.planning/codebase/`. It records that the app is a single macOS target using Swift 5.0, SwiftUI, macOS deployment target 14.0, App Sandbox, camera entitlement, and a local IINA plugin bridge. `SemiUHPE/` remains a local ignored research checkout and should remain reference-only for v1.
+The current codebase map lives in `.planning/codebase/`. It records that the app is a single macOS target using Swift 5.0, SwiftUI, macOS deployment target 14.0, App Sandbox, camera entitlement, and a local IINA plugin bridge. `SemiUHPE/` remains a local ignored research checkout and should remain reference-only for v1/v1.1.
 
 The first real product direction has been validated: while watching IINA at 2x or another user-selected speed, looking away drops playback to 1x and looking back restores the speed that was active before GlanceHold intervened. Pause/Resume remains available as the secondary mode, with manual pause protection preserved.
 
-Milestone closeout stats: 6 phases, 27 plans, 43/43 v1 requirements complete, 6/6 phase verification artifacts passed, and about 7,198 lines across tracked Swift/JavaScript/Markdown source and planning files excluding `SemiUHPE/`.
+v1.1 closeout stats: 7 phases, 31 plans, 27/27 v1.1 requirements complete, 7/7 phase verification artifacts passed, 7/7 phase validation artifacts passed, and about 15,104 lines across tracked app, plugin, test, and top-level Markdown source files excluding planning archives and reference checkouts.
 
-The v1.1 milestone is driven by two inputs: the user's real-use observation that monitoring can add roughly 5W of power draw, and a staff-engineer code review of the current runtime orchestration. The review found credible risks around every-frame state notifications, full-frame-rate Vision analysis, playback snapshots triggered by duplicate attention states, unstructured playback tasks that survive stop/mode changes, transient unavailable signals bypassing recovery delay, short calibration windows, reset-calibration data loss, and IINA bridge authentication gaps.
+The v1.1 audit passed with non-blocking evidence-boundary notes: BRDG-02 loopback host-bind proof is warning-level because the plugin API host binding is not explicit in source, disable/quit cleanup is accepted through automated regression evidence rather than stable live observation, resource evidence is scalar ABBA CPU/RSS/connection/counter evidence with no fixed watt threshold, and one fresh broad XCTest audit rerun was inconclusive while existing phase artifacts remained accepted.
 
 ## Next Milestone Goals
 
-v1.1 focuses on runtime hardening before adding product surface area:
+No next milestone is active yet. Good candidates to discuss:
 
-- Default-quiet structured logging and diagnostic metrics that can explain occasional state-machine or playback-control surprises.
-- Lower-power monitoring through sampling, semantic notification deduplication, and snapshot throttling.
-- Strong playback ownership boundaries for stop, quit, mode switch, command confirmation, and manual takeover paths.
-- More conservative attention recovery and calibration semantics, backed by deterministic tests.
-- IINA bridge authentication cleanup and clear production/legacy backend boundaries.
-
-Deferred directions remain: distribution readiness, launch-at-login convenience, broader player support, and model-based accuracy work.
+- Distribution readiness: signing, notarization, packaging, and update path.
+- Convenience: launch at login and a user-facing troubleshooting/diagnostics surface.
+- Player expansion: browser video or additional local player profiles.
+- Reliability polish: optional stronger energy evidence, explicit bridge bind proof, and small script portability fixes.
+- Accuracy exploration: model-based or improved Vision pose accuracy remains later work unless it becomes the primary pain point.
 
 ## Constraints
 
@@ -116,9 +118,15 @@ Deferred directions remain: distribution readiness, launch-at-login convenience,
 | Respect manual pause but continue auto-managing speed | User explicitly wants pause protection first; speed can stay under GlanceHold control during monitoring | Validated by tests and final UAT |
 | Implement both startup calibration and menu-adjustable thresholds | Calibration handles camera/screen geometry; manual tuning handles edge cases | Validated in Phase 3 and final UAT |
 | Keep SemiUHPE out of v1 implementation | It is useful reference material but creates licensing, dependency, and performance risk | Maintained through v1 |
-| Prioritize runtime reliability and power before new product features in v1.1 | The current MVP works, but user-observed power draw and review findings threaten trust during long viewing sessions | Pending v1.1 |
-| Make logging default-quiet but state-machine-rich when diagnostics are enabled | Normal users should not see log spam, while occasional state/playback bugs need breadcrumbs that survive after the fact | Pending v1.1 |
-| Continue roadmap phase numbering from Phase 7 | v1.0 phases remain historical context and v1.1 can continue without directory collisions | Pending v1.1 |
+| Prioritize runtime reliability and power before new product features in v1.1 | The current MVP works, but user-observed power draw and review findings threaten trust during long viewing sessions | Validated by v1.1 closeout |
+| Make logging default-quiet but state-machine-rich when diagnostics are enabled | Normal users should not see log spam, while occasional state/playback bugs need breadcrumbs that survive after the fact | Validated in Phase 7 |
+| Continue roadmap phase numbering from Phase 7 | v1.0 phases remain historical context and v1.1 can continue without directory collisions | Validated through v1.1 archival |
+| Replace manual IINA bridge token copy with a low-friction local trust model | The intended workflow is a single-user local IINA integration, and the manual token/paste step blocks normal use while adding little practical value | Validated in Phase 08.1 and Phase 11 |
+| Bound Vision and playback hot paths before broader feature work | Power trust depends on avoiding camera-rate analysis and repeated stable-state playback work | Validated in Phase 8 and Phase 11 resource evidence |
+| Use generation checks and read-only confirmation evidence for playback ownership | Stop, quit, mode replacement, transient confirmations, and manual takeover need one session-bound authority | Validated in Phase 9 and Phase 09.1 |
+| Treat uncertain attention/calibration/settings input conservatively | Recovery shortcuts, micro-window calibration, and unsafe persisted values can destabilize monitoring | Validated in Phase 10 |
+| Keep concrete MPV IPC outside normal production target membership | The product path is the IINA plugin bridge; MPV IPC remains reference/experimental boundary material | Validated in Phase 11 |
+| Accept scalar ABBA resource evidence without a fixed watt threshold for v1.1 | The power signal is noisy, so closeout should preserve privacy-safe scalar evidence and avoid overclaiming a watt target | Accepted with caveat in Phase 11 and milestone audit |
 
 ## Evolution
 
@@ -138,4 +146,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-09 after starting v1.1 Runtime Reliability and Power Budget*
+*Last updated: 2026-06-13 after shipping v1.1 Runtime Reliability and Power Budget*

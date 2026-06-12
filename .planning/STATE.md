@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Runtime Reliability and Power Budget
-status: milestone_closeout_complete
-stopped_at: v1.1 audit gaps closed — ready for next milestone
-last_updated: 2026-06-13T01:34:57+0800
-last_activity: 2026-06-13
+status: Awaiting next milestone
+stopped_at: v1.1 archived — ready for next milestone
+last_updated: 2026-06-13T02:24:42+0800
+last_activity: 2026-06-13 — Milestone v1.1 completed and archived
 progress:
   total_phases: 7
   completed_phases: 7
   total_plans: 31
-  completed_plans: 32
+  completed_plans: 31
   percent: 100
 ---
 
@@ -18,17 +18,17 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-09 after completing Phase 7)
+See: .planning/PROJECT.md (updated 2026-06-13 after shipping v1.1)
 
 **Core value:** 当用户注意力离开屏幕时，GlanceHold 能可靠、克制地替用户处理视频速度或播放状态，并在用户回来时恢复到合适状态，且不误恢复用户手动暂停的视频。
-**Current focus:** v1.1 closeout complete — ready for next milestone
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: v1.1 closeout
-Plan: Quick task 260613-269
-Status: Complete
-Last activity: 2026-06-13 - Completed quick task 260613-269: 修复 .planning/v1.1-MILESTONE-AUDIT.md 中的 gap
+Phase: Milestone v1.1 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-13 — Milestone v1.1 completed and archived
 
 ## Performance Metrics
 
@@ -178,16 +178,16 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-- None currently for Phase 08.1. Gap-closure plan 08.1-06 completed; see `08.1-06-SUMMARY.md`.
+- None for v1.1. The next todo set should be created by `$gsd-new-milestone`.
 
 ### Blockers/Concerns
 
 - [Phase 3]: Vision threshold tuning and pose sign/orientation require empirical checks on the target Mac/camera setup.
 - [Phase 5]: Live IINA shortcut/menu/localization check was carried forward and smoke-retested in Phase 6 UAT.
 - [Phase 6]: Final hardening covered disable/quit flows, last-action feedback, final manual checklist coverage, localization sanity, shortcut toggle sanity, and build verification.
-- [v1.1]: User observed roughly 5W additional power draw during real monitoring; Phase 8 and Phase 11 must verify before/after behavior.
-- [v1.1]: Logging must be default-quiet and privacy-safe; diagnostic mode may add detail but must not store frames or upload visual data.
-- [v1.1]: Phase 08.1 completed the no-token local IINA bridge trust model; Phase 11 should inherit it without reintroducing pairing, client ids, manual token copy/paste, or equivalent ceremony.
+- [v1.1]: Runtime reliability and power-budget hardening shipped. Remaining notes are non-blocking evidence-boundary follow-ups tracked in `PROJECT.md` and `MILESTONES.md`.
+- [vNext]: Keep logging default-quiet and privacy-safe; diagnostic mode may add detail but must not store frames or upload visual data.
+- [vNext]: Do not reintroduce pairing, client ids, manual token copy/paste, or equivalent ceremony unless a new threat model justifies it.
 - [Phase 7]: Live Diagnostic Mode unified-log evidence passed. Pre-paused IINA startup semantics were fixed in quick task 260609-jit.
 - [Phase 08]: Post-change scalar resource evidence is closed by Phase 11 `phase11-abba`; Diagnostic counter values were captured from unified logs and no fixed watt threshold was introduced.
 - [Phase 11]: Phase 11 verification passed after cleanup was accepted through automated regression evidence and Diagnostic counters were extracted from unified logs.
@@ -217,9 +217,9 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-06-12T15:10:15.100Z
-Stopped at: Completed 09.1-01-PLAN.md
+Stopped at: v1.1 archived — ready for next milestone
 Resume file: None
 
 ## Operator Next Steps
 
-- Run `$gsd-verify-work 09.1` if a separate verification pass is desired, or plan the remaining non-PLAY v1.1 audit cleanup for ATT-03/ATT-06, Phase 08.1/10 validation metadata, and BRDG-02.
+- Start the next milestone with `$gsd-new-milestone`.

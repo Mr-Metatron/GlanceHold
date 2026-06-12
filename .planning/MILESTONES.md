@@ -1,5 +1,38 @@
 # Milestones
 
+## v1.1 Runtime Reliability and Power Budget (Shipped: 2026-06-13)
+
+**Delivered:** Runtime reliability and power-budget hardening for long IINA sessions, with default-quiet diagnostics, bounded hot paths, safer playback ownership, and a no-token local bridge trust model.
+
+**Phases completed:** 7 phases, 31 plans, 69 tasks
+
+**Key accomplishments:**
+
+- Added default-quiet structured diagnostics with session sequencing, scalar privacy-safe fields, transition breadcrumbs, and runtime metrics summaries.
+- Reduced hot-path work by throttling Vision analysis, deduplicating stable attention semantics, and avoiding repeated stable-state playback snapshots.
+- Hardened playback ownership across stop, quit, mode replacement, transient confirmation failures, and manual takeover paths.
+- Tightened attention, calibration, and settings semantics so uncertain samples cannot bypass recovery, calibration requires real stable windows, reset preserves tuning, and corrupt persisted values are repaired.
+- Replaced manual IINA bridge token-copy friction with a no-token local trust model, protocol-distinct setup/update states, command whitelist tests, and a clear legacy MPV production boundary.
+- Closed v1.1 with scalar ABBA resource evidence, real IINA/camera UAT, DiagnosticRuntimeMetrics counters, and a passed milestone audit.
+
+**Stats:**
+
+- 324 files changed from `v1.0..HEAD` before archival (`+37,454/-1,288`)
+- 243 commits in the milestone window
+- About 15,104 lines across tracked app, plugin, test, and top-level Markdown source files, excluding planning archives and reference checkouts
+- 7 phases, 31 plans, 69 tasks
+- 5 calendar days from first v1.1 commit to closeout (2026-06-08 -> 2026-06-13)
+
+**Git range:** `bdf3599 feat(07-01)` -> `7e0d80e docs(quick-260613-269)`
+
+**Archived:** `milestones/v1.1-ROADMAP.md`, `milestones/v1.1-REQUIREMENTS.md`, `milestones/v1.1-MILESTONE-AUDIT.md`, `milestones/v1.1-phases/`
+
+**Known non-blocking follow-ups:** BRDG-02 explicit host-bind proof if IINA supports it, stronger direct watt/energy evidence if desired, and a cwd-independent Phase 11 MPV-boundary script.
+
+**What's next:** Fresh next-milestone requirements and roadmap via `$gsd-new-milestone`.
+
+---
+
 ## v1.0 MVP (Shipped: 2026-06-08)
 
 **Phases completed:** 6 phases, 27 plans, 71 tasks

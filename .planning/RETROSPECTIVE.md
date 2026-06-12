@@ -2,6 +2,55 @@
 
 *A living document updated after each milestone. Lessons feed forward into future planning.*
 
+## Milestone: v1.1 — Runtime Reliability and Power Budget
+
+**Shipped:** 2026-06-13
+**Phases:** 7 | **Plans:** 31 | **Tasks:** 69
+
+### What Was Built
+
+- Default-quiet structured diagnostics with session sequencing, scalar privacy-safe fields, attention/playback breadcrumbs, and runtime metric summaries.
+- Power hot-path controls for camera/Vision sampling, stable attention semantic deduplication, and playback snapshot throttling.
+- Playback ownership hardening across stop, quit, mode replacement, transient confirmation failures, and manual takeover.
+- Attention, calibration, and settings robustness improvements for uncertain samples, recovery delay, stable-window calibration, reset behavior, and persisted settings repair.
+- No-token local IINA bridge trust model, protocol-distinct setup/update states, command whitelist tests, and a clear legacy MPV production boundary.
+- Scalar ABBA resource evidence, real IINA/camera UAT, DiagnosticRuntimeMetrics counters, and a passed v1.1 milestone audit.
+
+### What Worked
+
+- Starting with diagnostics made later power and ownership changes measurable instead of vibe-based.
+- Treating Phase 08.1 as an inserted trust-model correction prevented the rejected manual token-copy design from leaking into later phases.
+- Generation checks plus read-only confirmation evidence gave playback ownership one clear authority across async boundaries.
+- Keeping resource evidence scalar preserved privacy while still creating a useful before/after trail.
+
+### What Was Inefficient
+
+- Some extractor-facing summary/frontmatter details lagged behind the actual verification evidence, causing audit gaps that needed a small closeout quick task.
+- Power evidence remained indirect CPU/RSS/connection/counter evidence; direct energy or watt readings were optional and not collected.
+- One broad fresh XCTest audit rerun was inconclusive during closeout even though existing phase artifacts had accepted passing evidence.
+
+### Patterns Established
+
+- Use default-quiet diagnostics with explicit high-detail mode rather than logging more by default.
+- Gate playback work on semantic attention changes and monitoring generation, not raw sample cadence.
+- Keep local bridge trust low-friction and narrow; setup/update errors should be explicit user states, not generic unavailability.
+- When live verification is race-sensitive, pair documented rationale with deterministic automated regression coverage.
+
+### Key Lessons
+
+1. Automation-facing frontmatter must be treated as part of the deliverable, not clerical garnish.
+2. Power claims should be bounded by the quality of the evidence; scalar ABBA is useful, but it should not pretend to prove a watt threshold.
+3. Local-only security can still be explicit and testable without adding user-hostile pairing ceremony.
+4. Async media ownership needs stale-work invalidation after every await that can cross a stop, quit, or mode change.
+
+### Cost Observations
+
+- Commits in milestone window: 243.
+- Model mix: not tracked in repo artifacts.
+- Notable: most closeout friction came from evidence/indexing conventions, not product behavior regressions.
+
+---
+
 ## Milestone: v1.0 — MVP
 
 **Shipped:** 2026-06-08
@@ -56,15 +105,19 @@
 
 | Milestone | Phases | Key Change |
 |---|---:|---|
+| v1.1 | 7 | Hardened runtime diagnostics, power hot paths, playback ownership, local bridge trust, and closeout evidence. |
 | v1.0 | 6 | Established the local IINA-first MVP and tightened formal closeout evidence. |
 
 ### Cumulative Quality
 
 | Milestone | Verification | UAT | Notes |
 |---|---|---|---|
+| v1.1 | 7/7 phase verification artifacts passed | Real-camera/IINA UAT plus scalar ABBA resource evidence passed | Remaining notes are evidence-boundary tech debt, not blocking gaps. |
 | v1.0 | 6/6 phase verification artifacts passed | Real-camera and real-IINA UAT passed | Manual pause safety, speed restore, localization, disable, and quit flows verified. |
 
 ### Top Lessons (Verified Across Milestones)
 
 1. Keep pure policy separate from side effects before integrating camera/player systems.
 2. Treat live macOS/IINA behavior as a first-class verification surface.
+3. Make diagnostic and summary metadata audit-friendly while the phase is still fresh.
+4. Bound power/security claims to the evidence actually collected.
