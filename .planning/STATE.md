@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Runtime Reliability and Power Budget
-status: ready-for-milestone-closeout
-stopped_at: Completed Phase 11 verification
-last_updated: "2026-06-12T09:45:05.000Z"
+status: Not planned yet
+stopped_at: Phase 09.1 context gathered
+last_updated: "2026-06-12T13:26:50.125Z"
 last_activity: 2026-06-12
 progress:
-  total_phases: 6
+  total_phases: 7
   completed_phases: 6
   total_plans: 30
-  completed_plans: 30
-  percent: 100
+  completed_plans: 31
+  percent: 86
 ---
 
 # Project State
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-09 after completing Phase 7)
 
 **Core value:** 当用户注意力离开屏幕时，GlanceHold 能可靠、克制地替用户处理视频速度或播放状态，并在用户回来时恢复到合适状态，且不误恢复用户手动暂停的视频。
-**Current focus:** Phase 11 — iina-bridge-security-legacy-boundary-and-reliability-verific
+**Current focus:** Phase 09.1 — close-gap-phase-09-verification-evidence
 
 ## Current Position
 
-Phase: 11 (iina-bridge-security-legacy-boundary-and-reliability-verific) — COMPLETE
-Plan: 5 of 5
-Status: Ready for v1.1 milestone closeout
+Phase: 09.1 (close-gap-phase-09-verification-evidence) — NOT PLANNED
+Plan: 0 of 0
+Status: Not planned yet
 Last activity: 2026-06-12
 
 ## Performance Metrics
@@ -172,6 +172,7 @@ Recent decisions affecting current work:
 - Phase 5/6 split accepted by user on 2026-06-07 so shortcut/localization work can be planned separately from final MVP hardening.
 - Phase 5 shortcut scope revised on 2026-06-07: use the existing IINA plugin bridge/menu key binding path instead of a macOS-wide global hotkey.
 - Phase 08.1 inserted after Phase 8: IINA bridge local trust model and setup-error UX (URGENT)
+- Phase 09.1 inserted after Phase 9: Close gap: Phase 09 verification evidence (URGENT)
 
 ### Pending Todos
 
@@ -212,10 +213,10 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-12T09:45:05.000Z
-Stopped at: Completed Phase 11 verification
-Resume file: None
+Last session: 2026-06-12T13:26:50.120Z
+Stopped at: Phase 09.1 context gathered
+Resume file: .planning/phases/09.1-close-gap-phase-09-verification-evidence/09.1-CONTEXT.md
 
 ## Operator Next Steps
 
-- Run `$gsd-complete-milestone` for v1.1 closeout.
+- Run `$gsd-plan-phase 09.1` for the urgent verification evidence gap closure.
