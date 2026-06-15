@@ -20,6 +20,7 @@ GlanceHold 不是眼动追踪。它不知道你正在看屏幕上的哪个位置
 - [使用方式](#使用方式)
 - [故障排查](#故障排查)
 - [GitHub Release 正文合同](#github-release-正文合同)
+- [许可证](#许可证)
 
 ## 适合你吗？
 
@@ -161,3 +162,7 @@ GlanceHold 连接到 `ws://127.0.0.1:47873`。这是本机回环桥接，不是�
 Release 正文只陈述该版本实际的签名/公证状态；如果未来某个版本已公证，也只应把它作为实际发布状态说明，不把它描述成对应用隐私行为的评估。
 
 Release 正文里的已知限制只列新增、变更或特别重要的 release-specific 限制；基线限制留在 README。
+
+## 许可证
+
+GlanceHold 使用 MIT License 授权。详情见 [LICENSE](LICENSE)。

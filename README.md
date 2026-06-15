@@ -20,6 +20,7 @@ GlanceHold is not eye tracking. It does not know where on the screen you are loo
 - [Troubleshooting](#troubleshooting)
 - [GitHub Release Body Contract](#github-release-body-contract)
 - [Developer And Source Path](#developer-and-source-path)
+- [License](#license)
 
 ## Is This For Me?
 
@@ -159,3 +160,7 @@ Every GitHub Release body must include these fields: App version/build; IINA Bri
 - Known limitations
 
 Known limitations in the release body should list only new, changed, or especially important release-specific limitations; baseline limitations stay in README.
+
+## License
+
+GlanceHold is available under the MIT License. See [LICENSE](LICENSE) for details.
