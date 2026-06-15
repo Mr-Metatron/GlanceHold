@@ -162,7 +162,7 @@ final class GlanceHoldLocalizationTests: XCTestCase {
         XCTAssertTrue(pluginReadme.contains("No request token is required."))
         XCTAssertTrue(pluginReadme.contains("Do not copy or paste a bridge token."))
         XCTAssertTrue(pluginReadme.contains("There is no remote host configuration."))
-        XCTAssertTrue(pluginReadme.contains("Phase 11 inherits this no-token local loopback trust model."))
+        XCTAssertTrue(pluginReadme.contains("The current GlanceHold app/plugin pair uses this no-token local loopback trust model."))
         XCTAssertTrue(
             docs.allSatisfy {
                 $0.contains("Update or reinstall the GlanceHold IINA plugin, then restart IINA.")

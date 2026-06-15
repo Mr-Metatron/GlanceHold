@@ -10,6 +10,10 @@ xcuserdata/
 # Swift Package Manager
 .build/
 
+# Local release packaging outputs.
+dist/build/
+dist/releases/
+
 # Local research/reference checkout; keep it on disk, not in this app repo.
 SemiUHPE/
 
