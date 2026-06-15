@@ -13,6 +13,8 @@ EXPORT_OPTIONS_PLIST="ReleasePackaging/ExportOptions.plist"
 PLUGIN_MAIN_JS="IINAPlugin/GlanceHoldBridge.iinaplugin/main.js"
 PLUGIN_PROTOCOL_TEST="IINAPlugin/GlanceHoldBridge.protocol.test.js"
 XCODE_DERIVED_DATA="/private/tmp/GlanceHoldDerivedData-release-full"
+XCODE_TEST_HOST_BUNDLE_ID="com.metatron.GlanceHold.ReleaseVerifierTestHost"
+LSREGISTER="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
 README_FILE="README.md"
 README_ZH_FILE="README_zh.md"
 PLUGIN_README_FILE="IINAPlugin/README.md"
@@ -188,6 +190,73 @@ require_command_pass() {
   fi
 }
 
+run_full_xctest_release_gate() {
+  local xctestrun_matches=()
+  local entitlements_matches=()
+  local xctestrun_path
+  local app_path
+  local app_info_plist
+  local entitlements_path
+
+  xcodebuild build-for-testing \
+    -project GlanceHold.xcodeproj \
+    -scheme GlanceHold \
+    -destination platform=macOS,arch=arm64 \
+    -derivedDataPath "$XCODE_DERIVED_DATA" \
+    -parallel-testing-enabled NO \
+    -enableCodeCoverage NO || return 1
+
+  shopt -s nullglob
+  xctestrun_matches=("$XCODE_DERIVED_DATA"/Build/Products/*.xctestrun)
+  entitlements_matches=("$XCODE_DERIVED_DATA"/Build/Intermediates.noindex/GlanceHold.build/Debug/GlanceHold.build/GlanceHold.app.xcent)
+  shopt -u nullglob
+
+  if [ "${#xctestrun_matches[@]}" -ne 1 ]; then
+    printf 'Expected exactly one .xctestrun in %s/Build/Products, found %s\n' "$XCODE_DERIVED_DATA" "${#xctestrun_matches[@]}" >&2
+    return 1
+  fi
+  xctestrun_path="${xctestrun_matches[0]}"
+
+  app_path="$XCODE_DERIVED_DATA/Build/Products/Debug/GlanceHold.app"
+  app_info_plist="$app_path/Contents/Info.plist"
+  if [ ! -f "$app_info_plist" ]; then
+    printf 'Expected built test host Info.plist at %s\n' "$app_info_plist" >&2
+    return 1
+  fi
+
+  if [ "${#entitlements_matches[@]}" -ne 1 ]; then
+    printf 'Expected exactly one test host entitlement file, found %s\n' "${#entitlements_matches[@]}" >&2
+    return 1
+  fi
+  entitlements_path="${entitlements_matches[0]}"
+
+  # The app must remain a menu-bar agent in production. For hosted CLI tests,
+  # mutate only the temporary product so LaunchServices can launch and resume it.
+  plutil -replace LSUIElement -bool NO "$app_info_plist" || return 1
+  plutil -replace CFBundleIdentifier -string "$XCODE_TEST_HOST_BUNDLE_ID" "$app_info_plist" || return 1
+  plutil -replace TestConfigurations.0.TestTargets.0.TestHostBundleIdentifier -string "$XCODE_TEST_HOST_BUNDLE_ID" "$xctestrun_path" || return 1
+  plutil -replace TestConfigurations.0.TestTargets.0.BundleIdentifiersForCrashReportEmphasis.0 -string "$XCODE_TEST_HOST_BUNDLE_ID" "$xctestrun_path" || return 1
+  plutil -replace TestConfigurations.0.TestTargets.0.ParallelizationEnabled -bool NO "$xctestrun_path" || return 1
+
+  /usr/bin/codesign \
+    --force \
+    --sign - \
+    --entitlements "$entitlements_path" \
+    --timestamp=none \
+    --generate-entitlement-der \
+    "$app_path" || return 1
+
+  "$LSREGISTER" -f -R -trusted "$app_path" || return 1
+  /usr/bin/codesign --verify --deep --strict --verbose=2 "$app_path" || return 1
+
+  xcodebuild test-without-building \
+    -xctestrun "$xctestrun_path" \
+    -destination platform=macOS,arch=arm64 \
+    -derivedDataPath "$XCODE_DERIVED_DATA" \
+    -parallel-testing-enabled NO \
+    -enableCodeCoverage NO
+}
+
 extract_manifest_value() {
   local key="$1"
   local manifest_path="$2"
@@ -242,7 +311,7 @@ run_source_gates() {
   require_file "$PLUGIN_PROTOCOL_TEST"
 
   require_command_pass "Full XCTest release gate passes" \
-    xcodebuild test -project GlanceHold.xcodeproj -scheme GlanceHold -destination platform=macOS,arch=arm64 -derivedDataPath /private/tmp/GlanceHoldDerivedData-release-full
+    run_full_xctest_release_gate
   require_command_pass "IINA plugin JavaScript syntax passes" \
     node --check IINAPlugin/GlanceHoldBridge.iinaplugin/main.js
   require_command_pass "IINA plugin protocol test passes" \
