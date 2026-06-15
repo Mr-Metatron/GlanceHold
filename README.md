@@ -1,6 +1,6 @@
 # GlanceHold
 
-[简体中文说明](README_zh.md)
+[简体中文](README_zh.md)
 
 GlanceHold is a macOS status-bar utility for long video sessions in IINA. It uses your Mac's built-in camera and Apple Vision to estimate whether your head is facing the screen, then applies conservative playback control when your attention leaves and returns.
 
@@ -140,26 +140,6 @@ If you manually pause or otherwise take over playback, GlanceHold stops monitori
 ### Disable Monitoring Leaves IINA At 1x Or Paused
 
 This is expected stop-only behavior. This troubleshooting item covers disable monitoring leaving IINA at 1x or paused. Disable Monitoring and Quit hand control back to you without sending restore or resume commands.
-
-## GitHub Release Body Contract
-
-Each GitHub Release body is the authoritative release-note location for that release. The README links to the [Latest Release](https://github.com/Mr-Metatron/GlanceHold/releases/latest), but release-specific facts belong in the release body for the exact version being downloaded.
-
-Every GitHub Release body must include these fields: App version/build; IINA Bridge plugin package filename; IINA bridge plugin version; Bridge protocol version; DMG filename; SHA-256 checksum; Signing/notarization status; Verified macOS; Verified Xcode; Verified IINA; Known limitations.
-
-- App version/build
-- IINA Bridge plugin package filename: `GlanceHoldBridge-<app-version>-build-<build>.iinaplgz`
-- IINA bridge plugin version
-- Bridge protocol version
-- DMG filename
-- SHA-256 checksum
-- Signing/notarization status: Unsigned and not notarized; install requires macOS manual open / Open Anyway.
-- Verified macOS
-- Verified Xcode
-- Verified IINA
-- Known limitations
-
-Known limitations in the release body should list only new, changed, or especially important release-specific limitations; baseline limitations stay in README.
 
 ## License
 
