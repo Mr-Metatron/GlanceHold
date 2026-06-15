@@ -286,7 +286,11 @@ require_file "$DOCS_FILE"
 require_file "$README_FILE"
 require_file "$README_ZH_FILE"
 require_file "$PLUGIN_README_FILE"
-require_file "$PHASE15_UAT_FILE"
+if [ -f "$PHASE15_UAT_FILE" ]; then
+  pass "$PHASE15_UAT_FILE exists"
+else
+  pass "$PHASE15_UAT_FILE absent in clean publication tree; skipping private UAT evidence checks"
+fi
 require_executable "$PACKAGE_SCRIPT"
 
 require_command_pass "ExportOptions.plist passes plutil lint" plutil -lint "$EXPORT_OPTIONS_PLIST"
@@ -361,19 +365,23 @@ require_fixed_match "Do not mix app and plugin files from different releases" "$
 require_fixed_match "Speed Control and Pause/Resume playback behavior are verified by the release verification workflow" "$PLUGIN_README_FILE" "plugin README keeps playback behavior in release verification scope"
 require_regex_absent 'plugin checksum|plugin SHA-256|plugin package checksum|plugin package SHA-256' "$PLUGIN_README_FILE" "plugin README avoids plugin checksum requirement"
 
-require_fixed_match "real or realistically fresh IINA smoke" "$PHASE15_UAT_FILE" "UAT records fresh IINA smoke scope"
-require_fixed_match "Observed IINA GUI Behavior" "$PHASE15_UAT_FILE" "UAT records GUI behavior evidence"
-require_fixed_match "Old Plugin Trash Precondition" "$PHASE15_UAT_FILE" "UAT records old-plugin precondition"
-require_fixed_match "/usr/bin/trash" "$PHASE15_UAT_FILE" "UAT requires Trash-first old-plugin cleanup"
-require_fixed_match "Generated Asset Under Test" "$PHASE15_UAT_FILE" "UAT records asset source"
-require_fixed_match "Install Steps" "$PHASE15_UAT_FILE" "UAT records install steps"
-require_fixed_match "IINA Restart" "$PHASE15_UAT_FILE" "UAT records IINA restart"
-require_fixed_match "Plugin Enabled Status" "$PHASE15_UAT_FILE" "UAT records plugin enabled status"
-require_fixed_match "GlanceHold Bridge Connectivity" "$PHASE15_UAT_FILE" "UAT records bridge connectivity"
-require_fixed_match "Connectivity pass criteria met | PASS" "$PHASE15_UAT_FILE" "UAT records install plus bridge connectivity pass"
-require_fixed_match "Speed Control playback behavior is Phase 16 release verification" "$PHASE15_UAT_FILE" "UAT keeps Speed Control in Phase 16"
-require_fixed_match "Pause/Resume playback behavior is Phase 16 release verification" "$PHASE15_UAT_FILE" "UAT keeps Pause/Resume in Phase 16"
-require_fixed_match "Result: PASS" "$PHASE15_UAT_FILE" "UAT records pass/fail result"
+if [ -f "$PHASE15_UAT_FILE" ]; then
+  require_fixed_match "real or realistically fresh IINA smoke" "$PHASE15_UAT_FILE" "UAT records fresh IINA smoke scope"
+  require_fixed_match "Observed IINA GUI Behavior" "$PHASE15_UAT_FILE" "UAT records GUI behavior evidence"
+  require_fixed_match "Old Plugin Trash Precondition" "$PHASE15_UAT_FILE" "UAT records old-plugin precondition"
+  require_fixed_match "/usr/bin/trash" "$PHASE15_UAT_FILE" "UAT requires Trash-first old-plugin cleanup"
+  require_fixed_match "Generated Asset Under Test" "$PHASE15_UAT_FILE" "UAT records asset source"
+  require_fixed_match "Install Steps" "$PHASE15_UAT_FILE" "UAT records install steps"
+  require_fixed_match "IINA Restart" "$PHASE15_UAT_FILE" "UAT records IINA restart"
+  require_fixed_match "Plugin Enabled Status" "$PHASE15_UAT_FILE" "UAT records plugin enabled status"
+  require_fixed_match "GlanceHold Bridge Connectivity" "$PHASE15_UAT_FILE" "UAT records bridge connectivity"
+  require_fixed_match "Connectivity pass criteria met | PASS" "$PHASE15_UAT_FILE" "UAT records install plus bridge connectivity pass"
+  require_fixed_match "Speed Control playback behavior is Phase 16 release verification" "$PHASE15_UAT_FILE" "UAT keeps Speed Control in Phase 16"
+  require_fixed_match "Pause/Resume playback behavior is Phase 16 release verification" "$PHASE15_UAT_FILE" "UAT keeps Pause/Resume in Phase 16"
+  require_fixed_match "Result: PASS" "$PHASE15_UAT_FILE" "UAT records pass/fail result"
+else
+  pass "UAT private evidence checks skipped in clean publication tree"
+fi
 
 require_fixed_match 'PROJECT_FILE="GlanceHold.xcodeproj"' "$PACKAGE_SCRIPT" "package script fixes project file"
 require_fixed_match 'SCHEME="GlanceHold"' "$PACKAGE_SCRIPT" "package script fixes scheme"
