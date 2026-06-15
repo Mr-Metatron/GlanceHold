@@ -1,113 +1,70 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: Runtime Reliability and Power Budget
-status: "Milestone v1.1 shipped — PR #1"
-stopped_at: v1.1 archived — ready for next milestone
-last_updated: "2026-06-12T19:16:57.026Z"
-last_activity: "2026-06-13 — Milestone v1.1 shipped — PR #1"
+milestone: v1.2
+milestone_name: Distribution and Public Release Readiness
+status: executing
+stopped_at: Completed 16-03-PLAN.md
+last_updated: "2026-06-15T13:20:49.382Z"
+last_activity: 2026-06-15
 progress:
-  total_phases: 7
-  completed_phases: 7
-  total_plans: 31
-  completed_plans: 31
-  percent: 100
+  total_phases: 5
+  completed_phases: 4
+  total_plans: 17
+  completed_plans: 16
+  percent: 80
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-13 after shipping v1.1)
+See: .planning/PROJECT.md (updated 2026-06-13 after starting v1.2)
 
 **Core value:** 当用户注意力离开屏幕时，GlanceHold 能可靠、克制地替用户处理视频速度或播放状态，并在用户回来时恢复到合适状态，且不误恢复用户手动暂停的视频。
-**Current focus:** Planning next milestone
+**Current focus:** Phase 16 — release-verification-and-publication-hygiene
 
 ## Current Position
 
-Phase: Milestone v1.1 complete
-Plan: —
-Status: Milestone v1.1 shipped — PR #1
-Last activity: 2026-06-13 — Milestone v1.1 shipped — PR #1
+Phase: 16 (release-verification-and-publication-hygiene) — EXECUTING
+Plan: 4 of 4
+Status: Ready to execute
+Last activity: 2026-06-15
+
+Progress: [█████████░] 94%
 
 ## Performance Metrics
 
-**Velocity:**
-
-- Total plans completed: 45 of 40
-- Average duration: N/A
-- Total execution time: 0.0 hours
+**Velocity:** v1.2 plans completed: 8; average duration: N/A; execution time: see phase summaries
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01 | 3 | - | - |
-| 02 | 2 | - | - |
-| 03 | 3 | 27 min | 9 min |
-| 04 | 10 | live-iterated | - |
-| 05 | 5/5 | 39 min | 8 min |
-| 06 | 4 | - | - |
-| 07 | 5/5 | 41 min | 8 min |
-| 08.1 | 6 | - | - |
-| 10 | 4 | - | - |
-| 09.1 | 1 | - | - |
+| 12 | 4 | - | - |
+| 13 | 3 | - | - |
+| 14 | 2 | - | - |
+| 15 | TBD | - | - |
+| 16 | TBD | - | - |
 
-**Recent Trend:**
-
-- Last 5 completed plans: 07-01, 07-02, 07-03, 07-04, 07-05
-- Trend: steady
+**Recent Trend:** v1.1 shipped 2026-06-13; v1.2 Phases 12 through 15 are complete, and Phase 15 is ready for verification.
 
 *Updated after each plan completion*
-| Phase 01 P01 | 4 min | 2 tasks | 3 files |
-| Phase 01 P02 | 5 min | 2 tasks | 5 files |
-| Phase 01 P03 | reconstructed | 3 tasks | 8 files |
-| Phase 02 P01 | 5 min | 2 tasks | 3 files |
-| Phase 02 P02 | 6 min | 2 tasks | 3 files |
-| Phase 03 P01 | 6 min | 2 tasks | 7 files |
-| Phase 03 P02 | 11min | 3 tasks | 6 files |
-| Phase 03 P03 | 10min | 3 tasks | 8 files |
-| Phase 04 P01 | 17min | 3 tasks | 5 files |
-| Phase 04 P02 | 4min | 2 tasks | 3 files |
-| Phase 04 P03 | 6min | 2 tasks | 3 files |
-| Phase 04 P07 | 9min | 3 tasks | 5 files |
-| Phase 04 P08 | 63min | 4 tasks | 11 files |
-| Phase 04 P09 | 11 min | 5 tasks | 8 files |
-| Phase 04 P10 | 5 min | 4 tasks | 10 files |
-| Phase 05 P01 | 8 min | 2 tasks | 5 files |
-| Phase 05 P02 | 11 min | 2 tasks | 9 files |
-| Phase 05 P03 | 9 min | 2 tasks | 17 files |
-| Phase 05 P04 | 6 min | 2 tasks | 2 files |
-| Phase 05 P05 | 5min | 3 tasks | 9 files |
-| Phase 06 P01 | 4 min | 3 tasks | 8 files |
-| Phase 06 P02 | 3 min | 3 tasks | 5 files |
-| Phase 06 P03 | 5min | 3 tasks | 4 files |
-| Phase 06 P04 | 15 min | 3 tasks | 4 files |
-| Phase 07 P01 | 8 min | 3 tasks | 3 files |
-| Phase 07 P02 | 9 min | 3 tasks | 5 files |
-| Phase 07 P03 | 9 min | 3 tasks | 4 files |
-| Phase 07 P04 | 8 min | 3 tasks | 12 files |
-| Phase 07 P05 | 7 min | 3 tasks | 4 files |
-| Phase 08 P02 | 2min | 3 tasks | 6 files |
-| Phase 08 P03 | 6min | 3 tasks | 10 files |
-| Phase 08 P04 | 6min | 3 tasks | 7 files |
-| Phase 08 P06 | 4min | 3 tasks | 4 files |
-| Phase 08.1 P05 | 9 min | 3 tasks | 8 files |
-| Phase 08.1 P06 | 8min | 3 tasks | 5 files |
-| Phase 09 P01 | 14m | 3 tasks | 3 files |
-| Phase 09 P02 | 13m | 2 tasks | 2 files |
-| Phase 09 P03 | 10min | 3 tasks | 2 files |
-| Phase 09 P04 | 25min | 3 tasks | 5 files |
-| Phase 10 P01 | 6 min | 2 tasks | 2 files |
-| Phase 10 P02 | 7min | 2 tasks | 2 files |
-| Phase 10 P03 | 13min | 3 tasks | 5 files |
-| Phase 10 P04 | 2min | 2 tasks | 1 files |
-| Phase 11 P01 | 6 min | 3 tasks | 4 files |
-| Phase 11 P03 | 6 min | 3 tasks | 3 files |
-| Phase 11 P04 | 15min | 3 tasks | 2 files |
-| Phase 11 P02 | 13 min | 3 tasks | 6 files |
-| Phase 11 P05 | live checkpoint | 3 tasks | planning/resource artifacts |
-| Phase 09.1 P01 | 5min | 2 tasks | 3 files |
+| Phase 12 P01 | 5 min | 3 tasks | 1 files |
+| Phase 12 P03 | 5 min | 2 tasks | 1 files |
+| Phase 12 P02 | 5 min | 2 tasks | 2 files |
+| Phase 12 P04 | 7 min | 3 tasks | 3 files |
+| Phase 13 P01 | 8 min | 3 tasks | 4 files |
+| Phase 13 P02 | 13 min | 2 tasks | 2 files |
+| Phase 13 P03 | 21 min | 3 tasks | 4 files |
+| Phase 14 P01 | 3 min | 3 tasks | 4 files |
+| Phase 14 P02 | 4 min | 2 tasks | 3 files |
+| Phase 15 P01 | 5 min | 2 tasks | 1 files |
+| Phase 15 P02 | 15 min | 3 tasks | 1 files |
+| Phase 15 P03 | 5 min | 3 tasks | 3 files |
+| Phase 15 P04 | 6 min | 2 tasks | 3 files |
+| Phase 16 P01 | 3min | 2 tasks | 2 files |
+| Phase 16 P02 | 8min | 2 tasks | 1 files |
+| Phase 16 P03 | 5min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -116,92 +73,63 @@ Last activity: 2026-06-13 — Milestone v1.1 shipped — PR #1
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- [Roadmap]: v1 is a vertical MVP with 6 coarse phases: menu-bar trust, pure policy, local Vision calibration, IINA control, control polish/i18n, and end-to-end hardening.
-- [Roadmap]: Phase 5 now covers sensitivity menu selected-state polish, IINA plugin monitoring shortcut, and full English/Chinese localization.
-- [Roadmap]: Phase 6 now carries final disable/quit cleanup, last-action feedback, manual UAT, and build verification.
-- [Roadmap]: Speed Control is the primary IINA mode; Pause/Resume remains secondary.
-- [Roadmap]: SemiUHPE remains out of v1 implementation.
-- [Roadmap]: v1.1 prioritizes runtime reliability, power budget, and diagnostics before distribution or player expansion.
-- [Roadmap]: v1.1 continues numbering from Phase 7 and starts with logging/metrics so power and ownership fixes are measurable.
-- [Phase 08]: 08-02 keeps semantic playback deduplication in GlanceHoldApp before sendAttentionState so repeated stable states do not create playback tasks.
-- [Phase 08]: 08-02 resets playback semantic dedup state only from monitoring diagnostic session start/end.
-- [Phase 08]: 08-02 treats recovering as playback-relevant by allowing it through once per semantic transition.
-- [Phase 08]: 08-03 treats heartbeat as id-less liveness only; statusChanged remains the snapshot-carrying pushed status event.
-- [Phase 08]: 08-03 removes fixed 10-second playback fallback snapshot polling during stable monitoring in favor of heartbeat/status stream stale reconnect.
-- [Phase 08]: 08-04 emits no-op reason diagnostics as Diagnostic Mode-only playbackNoOpSummary events; default runtime summaries omit no-op details.
-- [Phase 08]: 08-04 records repeated stable-state suppression at the app dedup boundary using a notRead breadcrumb without calling handleAttentionState, reading snapshots, or emitting commands.
-- [Phase 08]: 08-04 coalesces coordinator no-command decisions per monitoring session with count plus first/latest scalar breadcrumbs.
-- [Phase 08]: 08-06 keeps verification pending-resource-evidence until post-change live resource observations are supplied or explicitly accepted as a limitation. — Manual post-change scalar evidence is required by the plan; automated gates alone cannot make Phase 8 nyquist-compliant.
-- [Phase 08]: 08-06 treats the first full XCTest host kill as transient because the immediate identical retry passed. — The first run failed before test bootstrapping with signal kill, while the identical retry passed without assertion failures.
-- [Phase 08]: 08-06 does not use a fixed watt threshold for resource evidence. — Phase 8 resource readings are noisy, so verification relies on automated quantity gates plus scalar before/after observations.
-- [Bridge UX]: On 2026-06-10 the user rejected the current manual IINA bridge token/paste design as low-value security friction. Next-phase planning should remove or radically simplify this mechanism instead of expanding token/pairing ceremony; `unauthorized` must not be hidden as generic `IINA unavailable`.
-- [Phase 08.1]: 08.1-06 maps every typed IINA plugin bridge protocol failure from `status()` to `pluginUpdateRequired`, while preserving setup-needed for missing plugins and unavailable for true runtime/player failures.
-- [Phase 08.1]: 08.1-06 validates token-free plugin requests as non-array objects with positive safe-integer ids before reading snapshots or invoking playback commands.
-- [Phase 08.1]: 08.1-06 constrains plugin `setSpeed` to finite numeric values from 0.1 through 16.0 inclusive as part of the local bridge trust boundary.
-- [Phase 09]: 09-01 remains regression-harness-only; production playback behavior is deferred to 09-02 and 09-03.
-- [Phase 09]: 09-01 assertion failures are expected red regression coverage for ownership, manual takeover, and latest-state scheduling fixes.
-- [Phase 09]: 09-02 uses PlaybackCoordinator monitoringGeneration as stale playback-work authority; app attention supersession explicitly invalidates coordinator generation instead of waiting for FIFO task completion.
-- [Phase 09]: 09-03 keeps pending ownership in PlaybackPolicy while PlaybackCoordinator owns read-only retry and pushed-status confirmation evidence.
-- [Phase 09]: 09-03 uses one deterministic read-only confirmation retry plus trusted pushed status; exhausted confirmation clears ownership without compensation commands.
-- [Phase 09]: 09-03 treats non-manual controllable pending snapshots as command echo evidence; explicit manual actions still stop monitoring.
-- [Phase 09]: 09-04 closes security gaps by requiring explicit Pause/Resume play/pause manual actions, keeping stop-finalized stale work diagnostically quiet, and recording in-session supersession as scalar `invalidated` Diagnostic Mode evidence.
-- [Phase 10]: 10-02 selects only calibration windows with at least 5 pose samples and at least 1.0 second duration before spread ranking. — Prevents short low-spread micro-windows from creating trusted calibration.
-- [Phase 10]: 10-02 uses stableWindowTooShort for duration-gate failures while preserving unstablePoseSpread for valid but noisy windows. — Keeps calibration diagnostics scalar and lets later monitor diagnostics distinguish count, duration, and spread failures.
-- [Phase 10]: Monitor uncertain samples preserve reducer-visible transient state — Ambiguous and failed analyzer output should not immediately overwrite the last stable-facing, looking-away, no-face, or recovering state.
-- [Phase 10]: Reset calibration clears only calibration — User tuning for mode, sensitivity, thresholds, and delays must survive recalibration so reset does not act like a full settings reset.
-- [Phase 10]: Attention settings repair happens at UserDefaults load — Field-level repair keeps safe user choices while clamping unsafe scalars, defaulting non-finite values, and clearing only unsafe calibration snapshots.
-- [Phase ?]: 11-01 extracted shared IINA playback status/event/protocol types into IINAPlaybackTypes.swift while keeping production wiring on IINAPluginBridgeAdapter.
-- [Phase ?]: 11-01 keeps the concrete MPV IPC adapter source reference-only for now; production target isolation is deferred to 11-02.
-- [Phase 11]: 11-03 keeps bridge security verification split into standalone Node protocol behavior and static no-token runtime/docs scanning; Swift bridge focused XCTest is skipped unless Swift bridge files change. — Plan 11-03 changed only the plugin protocol harness and a shell static gate.
-- [Phase 11]: 11-04 records xctrace and powermetrics as optional skipped evidence unless collected, with powermetrics probed only through sudo -n.
-- [Phase 11]: 11-04 uses scripts/perf/run_system_resource_sample.sh as the scalar ABBA sampler; real 60-second IINA/plugin/camera ABBA evidence was collected and recorded in 11-05.
-- [Phase 11]: 11-02 keeps legacy MPV IPC source and tests on disk as reference material only, excluded from normal production app target and normal test hard-gate evidence. — The production path is the IINA plugin bridge; target-aware static verification now enforces that boundary.
-- [Phase 11]: 11-05 collected real phase11-abba resource evidence as four user-controlled 60-second single-segment runs and combined them in off,on,on,off order. — The interrupted earlier run was moved to macOS Trash and is excluded from evidence.
-- [Phase 11]: 11-05 accepts disable/quit cleanup through automated regression evidence because late async playback cleanup is race-sensitive and not practical to verify manually with stable live observation.
-- [Phase 11]: 11-05 captures DiagnosticRuntimeMetrics from unified logs: framesReceived=739, framesAnalyzed=124, skippedSamples=615, analyzerRateHz=5.019, semanticStateChanges=7, playbackSnapshots=7, playbackCommands=0.
-- [Phase 08]: Phase 8 pending-resource-evidence is closed by the Phase 11 phase11-abba scalar ABBA back-reference without introducing a fixed watt pass/fail threshold.
-
-### Roadmap Evolution
-
-- v1.1 added: Runtime Reliability and Power Budget with phases 7-11.
-- Phase 7 added: Structured Runtime Logging and Diagnostics Foundation.
-- Phase 8 added: Power Hot Path Sampling and Notification Deduplication.
-- Phase 9 added: Playback Coordinator Ownership and Async Safety.
-- Phase 10 added: Attention Semantics, Calibration Robustness, and Settings Validation.
-- Phase 11 added: IINA Bridge Security, Legacy Boundary, and Reliability Verification.
-- Phase 6 added: End-to-End UX Hardening and Manual UAT.
-- Phase 5 edited: Control Polish, IINA Shortcut, and i18n.
-- Phase 5/6 split accepted by user on 2026-06-07 so shortcut/localization work can be planned separately from final MVP hardening.
-- Phase 5 shortcut scope revised on 2026-06-07: use the existing IINA plugin bridge/menu key binding path instead of a macOS-wide global hotkey.
-- Phase 08.1 inserted after Phase 8: IINA bridge local trust model and setup-error UX (URGENT)
-- Phase 09.1 inserted after Phase 9: Close gap: Phase 09 verification evidence (URGENT)
+- [Roadmap]: v1.2 continues numbering from Phase 12 after shipped v1.1 Phase 11.
+- [Roadmap]: v1.2 is distribution/readiness work only; runtime attention and playback behavior changes stay out of scope.
+- [Roadmap]: Coarse granularity maps 25 v1.2 requirements into 5 phases: public docs, packaging, trust evidence, plugin distribution, and release verification.
+- [Release]: Generated DMG/checksum/manifest outputs are release artifacts only and must stay out of git.
+- [Release]: Public copy must disclose actual signing/notarization status, local camera processing, local loopback IINA communication, and supported-player limits.
+- [Phase 12]: README.md is the English public decision path before installation details. — Plan 12-01 made the root README useful before source-build steps.
+- [Phase 12]: GitHub Release bodies remain the source of truth for per-release artifact, checksum, signing, and environment facts. — README links Latest Release and avoids hard-coded release-specific facts.
+- [Phase 12]: Root README keeps bridge trust wording brief and links IINAPlugin/README.md for protocol details. — Detailed local loopback trust model remains in plugin-specific documentation.
+- [Phase 12]: Source checkout copy commands and .iinaplugin-dev links remain documented only as source/development paths. — Public release docs should not make source-tree copy commands the only install story.
+- [Phase 12]: The plugin trust model remains no-token local loopback plus the command whitelist, with the same-Mac connection caveat preserved. — This satisfies DOCS-02 and TRUST-04 without adding token setup or remote-host overclaims.
+- [Phase 12]: IINAPlugin/README.md now directs public users to the matching plugin instructions or asset from the same GitHub Release as the app. — Plan 12-03 keeps release-user plugin guidance aligned with the root README release contract.
+- [Phase 12]: README_zh.md mirrors README.md as the Simplified Chinese public decision path. — Plan 12-02 created a Chinese companion README with section parity to the English public release contract.
+- [Phase 12]: Chinese release-user docs keep Latest Release as the source for exact app/plugin assets, checksums, and signing facts. — This preserves the Phase 12 rule that README files stay stable while GitHub Release bodies carry release-specific facts.
+- [Phase 12]: Chinese bridge wording includes the 127.0.0.1:47873 local loopback caveat without no-network or privacy-review overclaims. — This satisfies DOCS-02 and TRUST-04 for Chinese readers while matching IINAPlugin/README.md trust boundaries.
+- [Phase 12]: README.md keeps release-specific artifact facts in GitHub Release bodies while exposing a same-line required-field contract for automated verification. — Plan 12-04 fixed the release-body key-link pattern without hard-coding concrete app, plugin, protocol, DMG, checksum, or signing facts.
+- [Phase 12]: README_zh.md uses the precise Chinese release-body field names required for parity with README.md. — Plan 12-04 aligned 应用版本/构建号 and IINA Bridge 插件版本 with the final bilingual release-body contract.
+- [Phase 12]: IINAPlugin/README.md remains the detailed local loopback bridge trust-model source after final cross-doc validation. — Plan 12-04 verified the no-token wording, same-Mac caveat, command whitelist, protocol details, and update-needed guidance without needing a plugin README change.
+- [Phase 13]: Generated release outputs are constrained to exact ignored roots dist/build/ and dist/releases/. — Plan 13-01 established the tracked-source versus generated-artifact boundary before archive/export and DMG creation are implemented.
+- [Phase 13]: The package script accepts the final narrow flags but fails closed for default archive/export until Plan 13-02 enables those actions. — Plan 13-01 created the command surface and static preflight without pretending the full package run exists yet.
+- [Phase 13]: Release id is derived from Release build settings before archive/export. — Plan 13-02 made GlanceHold-<MARKETING_VERSION>-build-<CURRENT_PROJECT_VERSION> the deterministic package identity.
+- [Phase 13]: Archive derived data stays under the versioned dist/build release directory. — Plan 13-02 adds -derivedDataPath inside dist/build/<release-id>/ so archive/export intermediates remain generated artifacts.
+- [Phase 13]: The skip-dmg flag is the Plan 13-02 archive/export smoke path. — DMG, checksum, and manifest generation stay fail-closed for Plan 13-03 while exported app validation is available now.
+- [Phase 13]: The Phase 13 DMG contains only GlanceHold.app, an Applications symlink, and Install IINA Plugin.md; the IINA plugin body remains out of the app DMG. — Plan 13-03 finalized the minimal DMG contract and preserved Phase 15 ownership of plugin distribution.
+- [Phase 13]: The release manifest records trust fields as pending-phase-14 and the plugin expected asset as pending-phase-15. — Plan 13-03 prevents signing/notarization or plugin-distribution overclaims before Phases 14 and 15.
+- [Phase 13]: Generated release outputs remain under ignored dist/build/ and dist/releases/ and must not be committed. — Plan 13-03 verified real generated artifacts while keeping git status --short -- dist empty.
+- [Phase 13]: Generated JSON manifests are validated with plutil-backed JSON extraction rather than plutil -lint. — This local plutil rejects non-empty JSON via lint while plutil extraction parses the manifest correctly.
+- [Phase 14]: The v1.2 release trust path is documented as unsigned and not notarized. — Plan 14-01 locked the public release trust sentence in English and Chinese docs and kept manual macOS open handling explicit.
+- [Phase 14]: GitHub Release body signing/notarization fields carry the same trust sentence as public install docs. — Plan 14-01 made the English and Chinese release-body contracts use concrete unsigned/manual-install wording instead of a bare status field.
+- [Phase 14]: Generated manifests do not carry Apple trust fields for the selected unsigned/manual-install path. — Plan 14-01 moved trust status to README and GitHub Release body wording while leaving plugin asset alignment to Phase 15.
+- [Phase 14]: Generated release manifests no longer include Apple trust fields. — Plan 14-02 made the package script emit app, artifact, source, environment, and plugin facts only.
+- [Phase 14]: Static packaging verification rejects regressions to pending Phase 14 trust fields. — The verifier now checks docs, package script source, and optional generated manifests without running Developer ID tooling.
+- [Phase 15]: IINA plugin packages are generated with the bundled iina-plugin pack command and published as release-named .iinaplgz assets. — Plan 15-01 implements the package-script distribution contract without custom zip logic.
+- [Phase 15]: The same plugin_asset_name now drives the standalone asset, DMG asset, generated install pointer, and manifest expectedAssetName. — Plan 15-01 keeps app/plugin release pairing visually and mechanically aligned.
+- [Phase 15]: [Phase 15]: User-reported PASS is accepted as Phase 15 UAT success for install plus bridge connectivity, while missing exact GUI prompt text remains recorded as absent. — Plan 15-02 checkpoint response was pass, but no exact prompt text, old-plugin path, restart method, or final row label was supplied.
+- [Phase 15]: Phase 15 evidence stops before Speed Control and Pause/Resume behavior; those remain Phase 16 release verification. — Plan 15-02 only proves plugin install and bridge connectivity.
+- [Phase 15]: Public release users are directed to install GlanceHoldBridge-<app-version>-build-<build>.iinaplgz from the same GitHub Release as the app DMG, or from the same DMG. — Plan 15-03 finalized the short English and Chinese release-user plugin path.
+- [Phase 15]: GitHub Release bodies now carry plugin package filename, plugin version, and bridge protocol version as separate facts. — Plan 15-03 added the package filename field without adding plugin checksum or size promises.
+- [Phase 15]: Public plugin docs do not quote exact IINA install prompt text. — Phase 15 UAT recorded PASS but did not supply exact GUI prompt wording, so Plan 15-03 kept wording conservative.
+- [Phase 15]: Maintainer packaging docs now treat GlanceHoldBridge-<version>-build-<build>.iinaplgz as the official public plugin asset paired with the app DMG, manifest, and release id. — This keeps maintainer-facing release instructions aligned with the generated Phase 15 package script output.
+- [Phase 15]: Plugin package filename, plugin.version, and plugin.bridgeProtocolVersion remain separate facts; Phase 15 does not add plugin checksum or size fields. — This preserves the Phase 15 manifest scope and avoids unsupported plugin integrity promises in release docs.
+- [Phase 15]: The verifier enforces Phase 15 alignment across package script source, English/Chinese/plugin docs, docs/release-packaging.md, 15-UAT.md, and optional generated manifests. — A single static packaging gate now covers source, docs, UAT evidence, and generated manifest drift before Phase 16 release verification.
+- [Phase 16]: Final release evidence order is source gates, full package verify, release gates, copied-app UAT from mounted DMG, then publication target hygiene. — Plan 16-01 documents the maintainer sequence before verifier implementation.
+- [Phase 16]: GitHub Release body copy is a public reusable template under docs/ and excludes detailed UAT tables, GSD phase records, and private planning artifacts. — Plan 16-01 keeps public release notes limited to release facts and high-level verification.
+- [Phase 16]: The --skip-dmg flag remains an archive/export smoke path and is not final release evidence. — Clean release evidence must come from a complete DMG, checksum, manifest, and matching plugin package set.
+- [Phase 16]: Phase 16 release verification is split into source gates, generated release-set gates, and target-ref publication hygiene gates. — Plan 16-02 implemented scripts/verify_phase16_release.sh with explicit --source-gates, --release-gates, and --publication-gates modes.
+- [Phase 16]: Publication hygiene checks inspect the explicit target ref tree instead of the current dev workspace. — Plan 16-02 requires --target-ref and validates it with git rev-parse plus git ls-tree.
+- [Phase 16]: Plan 16-03 used new-build-number release_id=GlanceHold-1.2.0-build-1 and left old 0.1.0 dist outputs untouched. — Operator correction provided a source checkout with app/plugin version 1.2.0 and build 1; no Trash-first cleanup was needed.
+- [Phase 16]: Release-candidate PASS evidence for 16-03 is source gates, full package verify without --skip-dmg, and release gates against dist/releases/GlanceHold-1.2.0-build-1. — The manifest source.gitSha matched the intended package SHA, source.gitDirty was false, and generated dist artifacts remained ignored/uncommitted.
 
 ### Pending Todos
 
-- None for v1.1. The next todo set should be created by `$gsd-new-milestone`.
+None for v1.2 yet.
 
 ### Blockers/Concerns
 
-- [Phase 3]: Vision threshold tuning and pose sign/orientation require empirical checks on the target Mac/camera setup.
-- [Phase 5]: Live IINA shortcut/menu/localization check was carried forward and smoke-retested in Phase 6 UAT.
-- [Phase 6]: Final hardening covered disable/quit flows, last-action feedback, final manual checklist coverage, localization sanity, shortcut toggle sanity, and build verification.
-- [v1.1]: Runtime reliability and power-budget hardening shipped. Remaining notes are non-blocking evidence-boundary follow-ups tracked in `PROJECT.md` and `MILESTONES.md`.
-- [vNext]: Keep logging default-quiet and privacy-safe; diagnostic mode may add detail but must not store frames or upload visual data.
-- [vNext]: Do not reintroduce pairing, client ids, manual token copy/paste, or equivalent ceremony unless a new threat model justifies it.
-- [Phase 7]: Live Diagnostic Mode unified-log evidence passed. Pre-paused IINA startup semantics were fixed in quick task 260609-jit.
-- [Phase 08]: Post-change scalar resource evidence is closed by Phase 11 `phase11-abba`; Diagnostic counter values were captured from unified logs and no fixed watt threshold was introduced.
-- [Phase 11]: Phase 11 verification passed after cleanup was accepted through automated regression evidence and Diagnostic counters were extracted from unified logs.
-
-### Quick Tasks Completed
-
-Detailed quick-task artifacts are omitted from this PR as development logs. The important carry-forward facts are:
-
-- 2026-06-05: Phase 01 code review and UI review warnings were fixed.
-- 2026-06-06: Phase 1 manual verification archive/state gaps were closed.
-- 2026-06-07: Legacy Phase 4 metadata was repaired so verification could run without replanning.
-- 2026-06-08: Legacy GSD open-item metadata was normalized for completed Phase 4/5 UAT, debug sessions, and quick tasks.
-- 2026-06-09: Pre-paused IINA monitoring-start ownership semantics were fixed.
-- 2026-06-13: The v1.1 milestone audit gap was closed before shipping.
+- [Phase 16]: Final verification must exercise the mounted DMG and copied app, not only the source checkout.
+- [Publication]: Keep `AGENTS.md`, private `.planning` subdirectories, and generated binary artifacts out of public release branches.
 
 ## Deferred Items
 
@@ -211,15 +139,15 @@ Items acknowledged and carried forward from previous milestone close:
 |----------|------|--------|-------------|
 | v2 players | Browser, VLC, QuickTime, and generic player support | Deferred | v1 roadmap |
 | v2 convenience | Launch at login and diagnostics window | Deferred | v1 roadmap |
-| v2 distribution | Signing, notarization, auto-update, App Store work | Deferred | v1 roadmap |
+| v2 distribution | Sparkle auto-update, Homebrew cask, App Store/TestFlight, and CI release automation | Deferred | v1.2 scope |
 | v2 model accuracy | SemiUHPE/model-based integration | Deferred | v1 roadmap |
 
 ## Session Continuity
 
-Last session: 2026-06-12T15:10:15.100Z
-Stopped at: v1.1 archived — ready for next milestone
+Last session: 2026-06-15T13:20:49.139Z
+Stopped at: Completed 16-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
 
-- Start the next milestone with `$gsd-new-milestone`.
+- Start Phase 16 release verification when ready.

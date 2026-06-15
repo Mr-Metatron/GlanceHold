@@ -16,11 +16,22 @@ GlanceHold v1.1 shipped on 2026-06-13. The app is a local-only macOS status-bar 
 
 v1.1 hardened the runtime for longer real-world IINA viewing sessions: default-quiet structured diagnostics, bounded camera/Vision hot paths, semantic playback deduplication, generation-safe playback coordination, conservative attention/calibration/settings semantics, a no-token local IINA bridge trust model, legacy MPV production-boundary isolation, scalar ABBA resource evidence, and DiagnosticRuntimeMetrics closeout evidence.
 
+v1.2 Phase 12 is complete. The English README, Simplified Chinese README, and IINA plugin README now form the public release documentation contract for privacy boundaries, local loopback bridge trust, IINA-first support, install/calibration/troubleshooting flow, unsigned/manual-install wording, and GitHub Release body fields.
+
+v1.2 Phase 13 is complete. Maintainers now have a repeatable archive/export packaging path, a minimal app DMG, SHA-256 checksum generation, JSON release manifest generation, ignored generated output roots, and release-packaging documentation that keeps generated facts explicit for later phases.
+
+v1.2 Phase 14 is complete. Public and maintainer docs now state the selected release trust path as unsigned and not notarized, requiring macOS manual open / Open Anyway handling; generated release manifests no longer include Apple trust fields or pending Phase 14 trust placeholders. The project is ready to plan Phase 15 IINA plugin distribution and compatibility work.
+
 This PR keeps only the root planning handoff documents needed for the next developer to regain context quickly. Detailed per-phase planning logs, reviews, debug notes, and research artifacts are intentionally omitted from the public handoff.
 
-## Current Milestone
+## Current Milestone: v1.2 Distribution and Public Release Readiness
 
-No active milestone is defined. Start the next cycle with `$gsd-new-milestone` so `.planning/REQUIREMENTS.md` can be recreated from fresh goals.
+**Goal:** Prepare GlanceHold for a public/manual release by creating a reliable DMG package, a strong project README/introduction, and a release verification path.
+
+**Target features:**
+- Public README and concise project introduction that explain what GlanceHold does, who it is for, privacy boundaries, supported player path, installation, use, and troubleshooting.
+- Repeatable macOS release packaging that can produce a DMG artifact for the app and clearly document what is or is not signed/notarized for this milestone.
+- Release verification checklist and evidence covering build, DMG install, camera permission, IINA plugin setup, primary playback smoke tests, localization sanity, and privacy/local-only claims.
 
 ## Requirements
 
@@ -46,14 +57,14 @@ No active milestone is defined. Start the next cycle with `$gsd-new-milestone` s
 - ✓ v1.1 playback ownership safety is implemented — Phase 9 and Phase 09.1 closed stop/quit/mode replacement, confirmation failure, manual takeover, and PLAY evidence-indexing gaps.
 - ✓ v1.1 attention and calibration semantics are implemented — Phase 10 tightened recovery through uncertain signals, calibration window requirements, reset behavior, scalar diagnostics, and settings repair.
 - ✓ v1.1 reliability verification is complete — Phase 11 recorded scalar ABBA resource evidence, real IINA/camera UAT, DiagnosticRuntimeMetrics counters, legacy MPV target isolation, and a passed milestone audit.
+- ✓ v1.2 public release documentation contract is complete — Phase 12 updated `README.md`, `README_zh.md`, and `IINAPlugin/README.md` so users and maintainers can understand fit, privacy/trust boundaries, setup, troubleshooting, and release-body requirements without private planning notes.
+- ✓ v1.2 repeatable release packaging is implemented — Phase 13 added `scripts/package_release.sh`, `scripts/verify_phase13_packaging.sh`, `ReleasePackaging/ExportOptions.plist`, and `docs/release-packaging.md` so maintainers can produce an archive/export-based DMG, checksum, and manifest while keeping generated artifacts ignored and trust/plugin facts explicit.
+- ✓ v1.2 release trust evidence path is documented and verified — Phase 14 locked README, Chinese README, packaging docs, package script, and static verifier to the unsigned/manual-install trust path while removing generated Apple trust fields from release manifests.
 
 ### Active
 
-- [ ] Next milestone requirements need to be freshly defined with `$gsd-new-milestone`.
-- [ ] Distribution readiness: signed/notarized build and a documented update path.
-- [ ] Convenience: launch at login and a troubleshooting or diagnostics window.
-- [ ] Player expansion: browser video, VLC, QuickTime, or explicit player profiles.
-- [ ] Optional hardening follow-ups: explicit IINA plugin host-bind proof if the API supports it, stronger direct watt/energy readings if desired, and a cwd-independent Phase 11 MPV-boundary script.
+- [ ] Release verification should prove the packaged app still works for the IINA-first attention-control workflow.
+- [ ] Optional hardening follow-ups remain candidates only if they directly support release confidence.
 
 ### Out of Scope
 
@@ -78,13 +89,13 @@ The v1.1 audit passed with non-blocking evidence-boundary notes: BRDG-02 loopbac
 
 ## Next Milestone Goals
 
-No next milestone is active yet. Good candidates to discuss:
+v1.2 focuses on distribution and public release readiness:
 
-- Distribution readiness: signing, notarization, packaging, and update path.
-- Convenience: launch at login and a user-facing troubleshooting/diagnostics surface.
-- Player expansion: browser video or additional local player profiles.
-- Reliability polish: optional stronger energy evidence, explicit bridge bind proof, and small script portability fixes.
-- Accuracy exploration: model-based or improved Vision pose accuracy remains later work unless it becomes the primary pain point.
+- Create the public-facing README and short project introduction.
+- Add a repeatable DMG release path for the macOS app.
+- Document installation and IINA plugin setup clearly enough for a fresh user.
+- Verify the packaged app against the IINA-first attention-control workflow.
+- Keep launch-at-login, player expansion, and accuracy/model exploration deferred unless they become necessary for release trust.
 
 ## Constraints
 
@@ -120,6 +131,7 @@ No next milestone is active yet. Good candidates to discuss:
 | Treat uncertain attention/calibration/settings input conservatively | Recovery shortcuts, micro-window calibration, and unsafe persisted values can destabilize monitoring | Validated in Phase 10 |
 | Keep concrete MPV IPC outside normal production target membership | The product path is the IINA plugin bridge; MPV IPC remains reference/experimental boundary material | Validated in Phase 11 |
 | Accept scalar ABBA resource evidence without a fixed watt threshold for v1.1 | The power signal is noisy, so closeout should preserve privacy-safe scalar evidence and avoid overclaiming a watt target | Accepted with caveat in Phase 11 and milestone audit |
+| Keep v1.2 release trust status in public docs and release-body wording, not generated manifest trust fields | The actual current release path is unsigned and not notarized; generated manifests should record build/artifact/environment/plugin facts without implying Developer ID evidence | Validated in Phase 14 |
 
 ## Evolution
 
@@ -139,4 +151,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-13 after shipping v1.1 Runtime Reliability and Power Budget*
+*Last updated: 2026-06-13 after completing Phase 14 signing, notarization, and trust evidence*

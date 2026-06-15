@@ -106,6 +106,7 @@ final class AttentionMonitorTests: XCTestCase {
         }
 
         await capture.waitForStartCall()
+        await capture.waitForSuspendedStart()
         await monitor.startMonitoring()
 
         XCTAssertEqual(capture.startCount, 1)
@@ -869,6 +870,7 @@ private final class FakeCameraFrameCapture: CameraFrameCapturing {
     private var isRunning = false
     private var startCallContinuation: CheckedContinuation<Void, Never>?
     private var suspendedStartContinuation: CheckedContinuation<Void, Error>?
+    private var suspendedStartReadyContinuation: CheckedContinuation<Void, Never>?
     private var runningContinuation: CheckedContinuation<Void, Never>?
     private var frameHandlerContinuation: CheckedContinuation<Void, Never>?
 
@@ -886,6 +888,8 @@ private final class FakeCameraFrameCapture: CameraFrameCapturing {
             suspendedStartCount -= 1
             try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
                 suspendedStartContinuation = continuation
+                suspendedStartReadyContinuation?.resume()
+                suspendedStartReadyContinuation = nil
             }
         }
 
@@ -915,6 +919,20 @@ private final class FakeCameraFrameCapture: CameraFrameCapturing {
                 continuation.resume()
             } else {
                 startCallContinuation = continuation
+            }
+        }
+    }
+
+    func waitForSuspendedStart() async {
+        if suspendedStartContinuation != nil {
+            return
+        }
+
+        await withCheckedContinuation { continuation in
+            if suspendedStartContinuation != nil {
+                continuation.resume()
+            } else {
+                suspendedStartReadyContinuation = continuation
             }
         }
     }
