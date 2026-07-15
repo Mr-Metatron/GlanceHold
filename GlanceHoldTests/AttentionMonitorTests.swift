@@ -361,6 +361,46 @@ final class AttentionMonitorTests: XCTestCase {
         XCTAssertEqual(monitor.state, .ready)
     }
 
+    func testCameraBackedCalibrationMeasuresMinimumDurationFromPoseSamples() async {
+        let capture = FakeCameraFrameCapture()
+        let recorder = MonitorDiagnosticRecorder(mode: .default)
+        let sampleTimes = [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5]
+        let analyzer = SequencedVisionAnalyzer(observations: sampleTimes.map { time in
+            .pose(makePose(yaw: 0.1, pitch: 0.1, time: time))
+        })
+        let monitor = AttentionMonitor(
+            permissionProvider: MonitorPermissionProvider(status: .granted, requestResult: true),
+            settingsStore: MonitorSettingsStore(),
+            capture: capture,
+            analyzer: analyzer,
+            diagnosticRecorder: recorder
+        )
+
+        let resultTask = Task {
+            await monitor.captureCalibrationSampleSet(
+                targetSampleCount: 5,
+                maximumFrameCount: 7,
+                minimumCaptureDuration: 1.2,
+                maximumCaptureDuration: 20.0
+            )
+        }
+
+        await capture.waitForFrameHandler()
+        for time in sampleTimes {
+            capture.emitFrame(time: time)
+        }
+
+        guard case .accepted = await resultTask.value else {
+            return XCTFail("Expected pose samples spanning the minimum duration to calibrate")
+        }
+        guard let calibrationEnded = recorder.events.first(where: { $0.name == .calibrationEnded }) else {
+            return XCTFail("Expected calibration diagnostics")
+        }
+
+        XCTAssertEqual(fieldValue(.calibrationFrameCount, in: calibrationEnded), "6")
+        XCTAssertEqual(fieldValue(.captureEndReason, in: calibrationEnded), "targetReached")
+    }
+
     func testMarginalReplacementDecisionPersistsChosenCalibration() async throws {
         let existing = snapshot(.high)
         let store = MonitorSettingsStore(settings: .defaults.withCalibration(existing))

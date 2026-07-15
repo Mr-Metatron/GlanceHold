@@ -313,7 +313,10 @@ final class AttentionMonitor {
                 break
             }
 
-            if poseSamples.count >= targetSampleCount && elapsed >= minimumCaptureDuration {
+            let poseSampleDuration = poseSamples.last.map { lastSample in
+                max(lastSample.time - (poseSamples.first?.time ?? lastSample.time), 0.0)
+            } ?? 0.0
+            if poseSamples.count >= targetSampleCount && poseSampleDuration >= minimumCaptureDuration {
                 endReason = .targetReached
                 break
             }
