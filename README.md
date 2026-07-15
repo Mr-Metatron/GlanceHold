@@ -30,6 +30,8 @@ Choose Speed Control when you normally watch faster than 1x and want GlanceHold 
 
 ## Compatibility And Limits
 
+Known limitations:
+
 - Requires macOS 14 or later.
 - Requires a working camera and macOS camera permission.
 - Requires IINA plus the matching GlanceHold Bridge plugin.

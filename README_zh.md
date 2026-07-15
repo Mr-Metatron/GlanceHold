@@ -4,12 +4,12 @@
 
 GlanceHold 是一款 macOS 状态栏实用工具，专为在 IINA 中长时间观看视频而设计。它利用 Mac 内置摄像头和 Apple Vision 判断你的头部是否朝向屏幕，并在你注意力离开或返回时，采取保守的播放控制措施。
 
-GlanceHold 目前支持 IINA 播放器，并提供两种模式：
+GlanceHold 当前支持 IINA 播放器，并提供两种模式：
 
 - **速度控制模式（Speed Control）**：当你移开视线时，视频速度降至正常速度（1x），重新看向屏幕后自动恢复到之前设置的速度。
 - **暂停/恢复模式（Pause/Resume）**：当你移开视线时自动暂停，重新看向屏幕后恢复播放。
 
-摄像头图像数据仅在本地处理，不会被存储或上传。GlanceHold 使用本地环回桥（loopback bridge）与 GlanceHold Bridge IINA 插件通信；协议和信任模型细节请参考 [IINAPlugin/README.md](IINAPlugin/README.md)。
+摄像头画面会本地处理，不会保存，不会上传。GlanceHold 使用本地回环桥接（loopback bridge）与 GlanceHold Bridge IINA 插件通信；协议和信任模型细节请参考 [IINAPlugin/README.md](IINAPlugin/README.md)。
 
 GlanceHold 并非眼动追踪工具，无法识别你在屏幕上的具体注视位置。
 
@@ -33,10 +33,12 @@ GlanceHold 面向长期观看课程、讲座或长视频的 IINA 用户，尤其
 
 ## 兼容性及限制
 
+已知限制如下：
+
 - 需要 macOS 14 或更新版本。
 - 需要正常工作的摄像头，并授予 macOS 摄像头权限。
 - 需要 IINA 及对应版本的 GlanceHold Bridge 插件。
-- 目前不支持其他视频播放器。
+- 当前 release 不支持其他播放器。
 - GlanceHold 仅识别头部是否朝向屏幕的实用信号，无法确定你注视屏幕的具体区域。
 
 ## 从 Latest Release 安装
@@ -44,7 +46,7 @@ GlanceHold 面向长期观看课程、讲座或长视频的 IINA 用户，尤其
 1. 打开 [Latest Release](https://github.com/Mr-Metatron/GlanceHold/releases/latest)。
 2. 在发布页面中下载对应版本的 GlanceHold 应用 DMG 和 GlanceHold Bridge 插件包。具体文件以该 Release 正文为准，包括 `GlanceHold-<app-version>-build-<build>.dmg` 和 `GlanceHoldBridge-<app-version>-build-<build>.iinaplgz`。
 3. 打开应用前，根据该 Release 正文提供的 SHA-256 校验和验证下载到的应用文件。
-4. 应用未签名且未经过公证，安装时需要通过 macOS 手动打开 / Open Anyway。校验通过后，如果 macOS 阻止首次启动，可以右键 app 选择 Open，或在 System Settings -> Privacy & Security 中选择 Open Anyway。
+4. 此版本未签名、未公证；安装需要通过 macOS 手动打开 / Open Anyway。校验通过后，如果 macOS 阻止首次启动，可以右键 app 选择 Open，或在 System Settings -> Privacy & Security 中选择 Open Anyway。
 5. 安装对应的 GlanceHold Bridge 插件：使用与 app 来自同一个 GitHub Release 的 `GlanceHoldBridge-<app-version>-build-<build>.iinaplgz`，或使用同一个 DMG 中的插件包，用 IINA 打开/安装它，重启 IINA，在 IINA 中确认 `GlanceHold Bridge` 已启用，然后回到 GlanceHold。详细插件说明见 [IINAPlugin/README.md](IINAPlugin/README.md)。
 6. 打开 IINA 并载入一个可播放的视频。
 7. 启动 GlanceHold，打开状态栏菜单，选择 `校准正对屏幕姿态`（Calibrate Facing Pose）。
