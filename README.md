@@ -51,6 +51,8 @@ Choose Speed Control when you normally watch faster than 1x and want GlanceHold 
 11. Use `Speed Control` for the default hold-at-1x behavior, or switch to `Pause/Resume`.
 12. Use `Reset Calibration` later if your saved facing pose no longer matches your normal setup.
 
+For each published release, record these as separate facts in the GitHub Release body: IINA Bridge plugin package filename, IINA bridge plugin version, and Bridge protocol version.
+
 ## Calibration Guidance
 
 Calibration is needed before monitoring can use camera signals. Sit where you normally watch IINA, face the screen naturally, keep your face visible to the camera, and use steady room lighting without strong side glare or backlight.

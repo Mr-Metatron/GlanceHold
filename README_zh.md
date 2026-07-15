@@ -54,6 +54,8 @@ GlanceHold 面向长期观看课程、讲座或长视频的 IINA 用户，尤其
 11. 默认使用 `速度控制`（Speed Control）模式，或根据需要切换到 `暂停/恢复`（Pause/Resume）模式。
 12. 如果之后保存的正对屏幕姿态不再符合你的实际环境，使用 `重置校准`（Reset Calibration）。
 
+每次正式发布时，请在 GitHub Release 正文中分别记录：IINA Bridge 插件包文件名、IINA Bridge 插件版本和桥接协议版本。
+
 ## 校准指南
 
 启用监控前必须完成校准。请坐在日常观看 IINA 的位置，自然面对屏幕，保持摄像头可清晰捕捉到面部，并使用稳定的室内照明，避免强侧光、背光或脸部被遮挡。
@@ -64,7 +66,7 @@ GlanceHold 面向长期观看课程、讲座或长视频的 IINA 用户，尤其
 
 进行源码开发时，可以在 Xcode 中打开 `GlanceHold.xcodeproj`，或使用 Xcode 构建并运行 `GlanceHold` scheme。应用 target 使用 AVFoundation 捕获摄像头图像，使用 Vision 提供本地朝向屏幕信号，启用 App Sandbox 摄像头 entitlement，并通过 `com.apple.security.network.client` 与 IINA 的本地 WebSocket bridge 通信。
 
-插件协议和本地信任模型细节请参考 [IINAPlugin/README.md](IINAPlugin/README.md)。源码树中的插件文件和开发链接路径仅限开发和本地测试用途，并非 release 用户的默认路径。运行插件协议测试工具：
+插件协议和本地信任模型细节请参考 [IINAPlugin/README.md](IINAPlugin/README.md)。源码树中的插件文件和开发链接路径只用于开发和本地测试，不是默认的 release 用户路径。运行插件协议测试工具：
 
 ```zsh
 node IINAPlugin/GlanceHoldBridge.protocol.test.js
